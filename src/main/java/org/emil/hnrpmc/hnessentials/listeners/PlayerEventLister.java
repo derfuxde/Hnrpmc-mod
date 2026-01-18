@@ -66,6 +66,46 @@ public class PlayerEventLister {
         plugin.getStorageManager().loadPlayerData(player.getUUID());
         HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
 
+        List<Home> homes = playerData.getPlayerHomes();
+
+        //
+
+        BlockPos pos = player.getRespawnPosition();
+
+        if (homes != null && !homes.isEmpty()){
+            List<Home> bedhomes = homes.stream().filter(home -> home.getHomename().equals("bed")).toList();
+            if (bedhomes == null || bedhomes.isEmpty()) {
+                Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
+                homes.add(bedhome);
+                playerData.setPlayerHomes(homes);
+
+                plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+                plugin.getStorageManager().save(player.getUUID());
+            } else {
+                Home oldbedhome = bedhomes.getFirst();
+                if (pos != null) {
+                    homes.removeIf(home -> Objects.equals(home.getHomename(), "bed"));
+                    Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
+                    homes.add(bedhome);
+                    playerData.setPlayerHomes(homes);
+
+                    plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+                    plugin.getStorageManager().save(player.getUUID());
+                } else if (pos == null && oldbedhome==null) {
+                    Home bedhome = new Home(player.getUUID(), new Vec3(0, -1000, 0), "bed", player.level().dimension().location().toString());
+                    homes.add(bedhome);
+                    playerData.setPlayerHomes(homes);
+
+                    plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+                    plugin.getStorageManager().save(player.getUUID());
+                }
+            }
+        }
+
+
+
+
+
         int score = getPlayerScore(player, "VIPs");
 
         player.connection.send(new ScoreSyncPayload(score));

@@ -120,8 +120,7 @@ public final class ClanManager {
 
     public List<String> getOnlineNonMembers(CommandSourceStack source) {
         return source.getServer().getPlayerList().getPlayers().stream()
-                .filter(player -> getClanPlayer(player.getUUID()) == null)
-                .map(ServerPlayer::getScoreboardName)
+                .map(sp -> sp.getName().getString())
                 .collect(Collectors.toList());
     }
 

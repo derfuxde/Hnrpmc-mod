@@ -84,6 +84,10 @@ public final class HomeCommands extends ClanSBaseCommand {
                             }
                             UUID uuid = plugin.getServer().getProfileCache().get(splitplayername).get().getId();
                             Home home = plugin.getHomeManager().getHomeByName(splithome, splitplayername, player);
+                            if (home.getCoords().y == -1000){
+                                player.sendSystemMessage(Component.literal(formatMessage("§cKein Bett gefunden")));
+                                return 0;
+                            }
                             if (home == null) {
                                 player.sendSystemMessage(Component.literal(formatMessage("§cHaus mit dem namen {} konnte nicht gefunden werden", splithome)));
                                 return 0;
