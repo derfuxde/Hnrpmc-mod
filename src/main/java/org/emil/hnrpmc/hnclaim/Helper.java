@@ -1,0 +1,317 @@
+package org.emil.hnrpmc.hnclaim;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import org.emil.hnrpmc.simpleclans.SimpleClans;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import net.minecraft.server.level.ServerPlayer;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
+import static java.util.logging.Level.WARNING;
+import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
+import static org.emil.hnrpmc.simpleclans.utils.ChatUtils.stripColors;
+
+/**
+ * @author phaed
+ */
+
+public final class Helper {
+
+    private static final Gson GSON = HNClaims.getInstance().getGSON();
+    private Helper() {
+    }
+
+    @NotNull
+    public static Locale forLanguageTag(@Nullable String languageTag) {
+        Locale defaultLanguage = SimpleClans.getInstance().getSettingsManager().getLanguage();
+        if (languageTag == null) {
+            return defaultLanguage;
+        }
+        return Locale.forLanguageTag(languageTag);
+    }
+
+    @Contract("null -> null")
+    @Nullable
+    public static String toLanguageTag(@Nullable Locale locale) {
+        return locale != null ? locale.toLanguageTag() : null;
+    }
+
+    public static Set<Path> getPathsIn(String path, Predicate<? super Path> filter) {
+        Set<Path> files = new LinkedHashSet<>();
+        String packagePath = path.replace(".", "/");
+
+        try {
+            URI uri = SimpleClans.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+            Path root;
+
+            // Prüfung: Sind wir in einer JAR oder in einem Ordner (IDE)?
+            if (uri.getScheme().equals("jar")) {
+                FileSystem fileSystem;
+                try {
+                    fileSystem = FileSystems.getFileSystem(uri);
+                } catch (Exception e) {
+                    fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+                }
+                root = fileSystem.getPath(packagePath);
+            } else {
+                // Wir sind in IntelliJ/IDE -> Normaler Dateipfad
+                root = Path.of(uri).resolve(packagePath);
+            }
+
+            if (Files.exists(root)) {
+                try (var stream = Files.walk(root)) {
+                    files = stream.filter(Objects::nonNull)
+                            .filter(filter)
+                            .collect(Collectors.toSet());
+                }
+            }
+        } catch (URISyntaxException | IOException ex) {
+            SimpleClans.getInstance().getLogger().warn("Fehler beim Laden der Klassen-Pfade: {}", ex.getMessage());
+        }
+
+        return files;
+    }
+
+    public static Set<Class<?>> getClasses(String packageName) {
+        Set<Class<?>> classes = new LinkedHashSet<>();
+
+        Predicate<? super Path> filter = entry -> {
+            String path = entry.getFileName().toString();
+            return !path.contains("$") && path.endsWith(".class");
+        };
+
+        for (Path filesPath : getPathsIn(packageName, filter)) {
+            // Compatibility with different Java versions
+            String path = filesPath.toString();
+            if (path.charAt(0) == '/') {
+                path = path.substring(1);
+            }
+
+            String fileName = path.replace("/", ".").split(".class")[0];
+
+            try {
+                Class<?> clazz = Class.forName(fileName);
+                classes.add(clazz);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return classes;
+    }
+
+    public static boolean isValidRankName(String name) {
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Set<Class<? extends T>> getSubTypesOf(String packageName, Class<?> type) {
+        return getClasses(packageName).stream().
+                filter(type::isAssignableFrom).
+                map(aClass -> ((Class<? extends T>) aClass)).
+                collect(Collectors.toSet());
+    }
+
+    /**
+     * Parses the default rank from the specified Json String
+     *
+     * @param json the Json String
+     * @return the default rank or null if not found and/or it does not exist
+     */
+    public static @Nullable String defaultRankFromJson(@Nullable String json) {
+        if (json != null && !json.isEmpty()) {
+            JsonObject object = GSON.fromJson(json, JsonObject.class);
+            JsonElement defaultRank = object.get("defaultRank");
+            if (defaultRank != null && !defaultRank.isJsonNull()) {
+                return defaultRank.getAsString();
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * Converts a resign times map to a JSON String
+     *
+     * @param resignTimes the resign times
+     * @return a JSON String
+     */
+    public static String resignTimesToJson(Map<String, Long> resignTimes) {
+        return GSON.toJson(resignTimes);
+    }
+
+    /**
+     * Returns the delay in seconds to the specified hour and minute.
+     *
+     * @param hour   hour
+     * @param minute minute
+     * @return the delay in seconds
+     */
+    public static long getDelayTo(int hour, int minute) {
+        if (hour < 0 || hour > 23) hour = 1;
+        if (minute < 0 || minute > 59) minute = 0;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime d = LocalDateTime.of(now.toLocalDate(), LocalTime.of(hour, minute));
+        long delay;
+        if (now.isAfter(d)) {
+            delay = now.until(d.plusDays(1), ChronoUnit.SECONDS);
+        } else {
+            delay = now.until(d, ChronoUnit.SECONDS);
+        }
+        return delay;
+    }
+
+    private String prefix; // Normaler String (kann null sein)
+
+    public Optional<String> getPrefix() {
+        return Optional.ofNullable(prefix);
+    }
+
+
+    /**
+     * Converts string array to {@literal ArrayList<String>}, remove empty strings
+     *
+     * @param values
+     * @return
+     */
+    public static List<String> fromArrayToList(String... values) {
+        List<String> results = new ArrayList<>();
+        Collections.addAll(results, values);
+        results.remove("");
+        return results;
+    }
+
+    /**
+     * Converts string array to {@literal HashSet<String>}, remove empty strings
+     *
+     * @param values
+     * @return
+     */
+    @Deprecated
+    public static Set<String> fromArrayToSet(String... values) {
+        HashSet<String> results = new HashSet<>();
+        Collections.addAll(results, values);
+        results.remove("");
+        return results;
+    }
+
+    /**
+     * Converts  {@literal ArrayList<String>} to string array
+     *
+     * @param list
+     * @return
+     */
+    public static String[] toArray(List<String> list) {
+        return list.toArray(new String[0]);
+    }
+
+    /**
+     * Cleans up the tag from color codes and makes it lowercase
+     *
+     * @param tag
+     * @return
+     */
+    public static String cleanTag(String tag) {
+        return stripColors(tag).toLowerCase();
+    }
+
+    /**
+     * Generates page separator line
+     *
+     * @param sep
+     * @return
+     */
+    public static String generatePageSeparator(String sep) {
+        String out = "";
+
+        for (int i = 0; i < 320; i++) {
+            out += sep;
+        }
+        return out;
+    }
+
+    /**
+     * Escapes single quotes
+     *
+     * @param str
+     * @return
+     */
+    public static String escapeQuotes(@Nullable String str) {
+        if (str == null) {
+            return "";
+        }
+        return str.replace("'", "''");
+    }
+
+    /**
+     * Returns a prettier coordinate
+     *
+     * @param pos
+     * @return
+     */
+    public static String toLocationString(Vec3 pos, Level level) {
+        // In NeoForge erhält man den Namen der Welt über die Dimension-ResourceLocation
+        return pos.get(Direction.Axis.X) + " " + pos.get(Direction.Axis.Y) + " " + pos.get(Direction.Axis.Z) + " " + level.dimension().location();
+    }
+
+    /**
+     * Sorts a Map by value
+     *
+     * @param map the Map to sort
+     * @return the Map sorted
+     */
+    public static <K, V extends Comparable<V>> Map<K, V> sortByValue(Map<K, V> map) {
+        LinkedList<Entry<K, V>> entryList = new LinkedList<>(map.entrySet());
+        entryList.sort(Entry.comparingByValue());
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Entry<K, V> entry : entryList) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Formats max inactive days to an infinity symbol if it's negative or 0
+     *
+     * @param max inactive days
+     * @return formatted message
+     */
+    public static String formatMaxInactiveDays(int max) {
+        if (max <= 0) {
+            return "∞";
+        } else {
+            return String.valueOf(max);
+        }
+    }
+}

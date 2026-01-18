@@ -1,0 +1,29 @@
+@SubscribeEvent(priority = EventPriority.HIGH)
+    public void handleChatTags(ServerChatEvent event) {
+        ServerPlayer player = event.getPlayer();
+
+
+        var clanManager = plugin.getClanManager();
+        var settingsManager = SimpleClans.getInstance().getSettingsManager();
+
+        var cp = clanManager.getAnyClanPlayer(player.getUUID());
+        String tagLabel = (cp != null && cp.isTagEnabled()) ? cp.getTagLabel() : null;
+
+        // Prüfung der Settings (wie im Bukkit-Code)
+        if (settingsManager.is(CHAT_COMPATIBILITY_MODE) && settingsManager.is(DISPLAY_CHAT_TAGS)) {
+
+            if (tagLabel != null) {
+                Component tagComponent = Component.literal(tagLabel);
+
+
+
+                event.setMessage(Component.empty()
+                        .append(tagComponent)
+                        .append(event.getMessage()));
+
+            }
+        } else {
+            // Entspricht plugin.getClanManager().updateDisplayName(player)
+            plugin.getClanManager().updateDisplayName(player);
+        }
+    }

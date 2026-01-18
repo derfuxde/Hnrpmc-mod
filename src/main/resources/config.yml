@@ -1,0 +1,258 @@
+safe-civilians: false
+tag:
+    default-color: '8'
+    max-length: 5
+    min-length: 2
+    bracket:
+        color: '8'
+        leader-color: '4'
+        left: ''
+        right: ''
+    separator:
+        color: '8'
+        leader-color: '4'
+        char: ' .'
+settings:
+    enable-gui: true
+    disable-messages: false
+    tameable-mobs-sharing: false
+    teleport-blocks: false
+    teleport-home-on-spawn: false
+    drop-items-on-clan-home: false
+    keep-items-on-clan-home: false
+    item-list: []
+    show-debug-info: false
+    enable-auto-groups: false
+    chat-compatibility-mode: true
+    rival-limit-percent: 50
+    use-colorcode-from-prefix-for-name: true
+    accept-other-alphabets-letters-on-tag: false
+    display-chat-tags: true
+    global-friendly-fire: false
+    unrivable-clans:
+    - admin
+    - staff
+    - mod
+    show-unverified-on-list: false
+    blacklisted-worlds: []
+    banned-players: []
+    disallowed-tags:
+    - vip
+    - clan
+    language: en
+    user-language-selector: true
+    disallowed-tag-colors:
+    - '4'
+    - 'k'
+    server-name: '&4SimpleClans'
+    new-clan-verification-required: true
+    allow-regroup-command: true
+    allow-reset-kdr: false
+    rejoin-cooldown: 60
+    rejoin-cooldown-enabled: false
+    ranking-type: "DENSE"
+    list-default-order-by: kdr
+    lore-length: 36
+    past-clans-limit: 10
+    username-regex: '(\.|\*){0,1}[a-zA-Z0-9_$]{1,16}'
+    tag-regex: ''
+    date-time-pattern: 'HH:mm - dd/MM/yyyy'
+    bungee-servers: []
+war-and-protection:
+    war-enabled: false
+    land-sharing: true
+    protection-providers:
+        - Landlord4Provider
+        - WorldGuard6Provider
+        - GriefPreventionProvider
+    listeners:
+        priority: HIGHEST
+        ignored-list:
+            PLACE:
+                - "PLAYER_HEAD"
+            BREAK:
+                - "EMERALD_BLOCK"
+    set-base-only-in-land: false
+    war-normal-expiration-time: 0
+    war-disconnect-expiration-time: 0
+    edit-all-lands: false
+    land-creation:
+        only-leaders: false
+        only-one-per-clan: false
+    war-actions:
+        CONTAINER: true
+        INTERACT: true
+        BREAK: true
+        PLACE: true
+        DAMAGE: true
+        INTERACT_ENTITY: true
+    war-start:
+        request-enabled: true
+        members-online-max-difference: 5
+kdr-grinding-prevention:
+    enable-max-kills: false
+    max-kills-per-victim: 10
+    enable-kill-delay: false
+    delay-between-kills: 5
+commands:
+    more: more
+    ally: ally
+    clan: clan
+    accept: accept
+    deny: deny
+    global: global
+    clan_chat: "."
+    force-priority: true
+economy:
+    creation-price: 100.0
+    purchase-clan-create: false
+    verification-price: 1000.0
+    purchase-clan-verify: false
+    invite-price: 20.0
+    purchase-clan-invite: false
+    home-teleport-price: 5.0
+    purchase-home-teleport: false
+    home-teleport-set-price: 5.0
+    purchase-home-teleport-set: false
+    home-regroup-price: 5.0
+    purchase-home-regroup: false
+    discord-creation-price: 1000.0
+    purchase-discord-create: false
+    unique-tax-on-regroup: true
+    issuer-pays-regroup: true
+    money-per-kill: false
+    money-per-kill-kdr-multipier: 10
+    purchase-reset-kdr: true
+    reset-kdr-price: 10000.0
+    purchase-member-fee-set: false
+    member-fee-set-price: 1000.0
+    member-fee-enabled: false
+    member-fee-last-minute-change-interval: 8
+    max-member-fee: 200.0
+    upkeep: 200.0
+    upkeep-enabled: false
+    multiply-upkeep-by-clan-size: false
+    charge-upkeep-only-if-member-fee-enabled: true
+    bank-log:
+        enable: true
+kill-weights:
+    rival: 2.0
+    civilian: 0.0
+    neutral: 1.0
+    ally: -1.0
+    deny-same-ip-kills: false
+clan:
+    homebase-teleport-wait-secs: 10
+    homebase-can-be-set-only-once: true
+    min-size-to-set-rival: 3
+    max-length: 25
+    max-description-length: 120
+    min-description-length: 10
+    max-members: 25
+    unverified-max-members: 10
+    confirmation-for-promote: false
+    trust-members-by-default: false
+    confirmation-for-demote: false
+    percentage-online-to-demote: 100.0
+    ff-on-by-default: false
+    min-length: 2
+    max-alliances: -1
+    min-size-to-set-ally: 3
+    min-to-verify: 1
+    starter-ranks:
+        - recruit:
+            display-name: "&7Recruit"
+            permissions: [ stats, kills, mostkilled, rank.list ]
+        - ambassador:
+            display-name: "&bAmbassador"
+            permissions: [ ally.chat, ally.add, ally.remove, rival.add, rival.remove, war.end, war.start ]
+        - treasurer:
+            display-name: "&6Treasurer"
+            permissions: [ bank.balance, bank.deposit, bank.withdraw ]
+    default-rank: "recruit"
+
+tasks:
+    collect-upkeep:
+        hour: 1
+        minute: 30
+    collect-upkeep-warning:
+        hour: 12
+        minute: 0
+    collect-fee:
+        hour: 1
+        minute: 0
+page:
+    untrusted-color: '8'
+    clan-name-color: b
+    subtitle-color: '7'
+    headings-color: '8'
+    trusted-color: f
+    leader-color: '4'
+    separator: '-'
+    size: 100
+    help-size: 10
+clanchat:
+    enable: true
+    tag-based-clan-chat: false
+    announcement-color: e
+    format: "&b[%clan%&b] &4<%nick-color%%player%&4> %rank%: &b%message%"
+    spy-format: "&8[Spy] [&bC&8] <%clean-tag%&8> <%nick-color%*&8%player%>&8 %rank%&8: %message%"
+    rank: "&f[%rank%&f]"
+    leader-color: '4'
+    trusted-color: 'f'
+    member-color: '7'
+    listener-priority: LOW
+request:
+    message-color: b
+    ask-frequency-secs: 60
+    max-asks-per-request: 1440
+bb:
+    prefix: "&8* &e"
+    show-on-login: true
+    size: 6
+    login-size: 6
+allychat:
+    enable: true
+    format: "&b[Ally Chat] &4<%clan%&4> <%nick-color%%player%&4> %rank%: &b%message%"
+    spy-format: "&8[Spy] [&cA&8] <%clean-tag%&8> <%nick-color%*&8%player%>&8 %rank%&8: %message%"
+    rank: "&f[%rank%&f]"
+    leader-color: '4'
+    trusted-color: 'f'
+    member-color: '7'
+discordchat:
+    enable: false
+    auto-creation: true
+    discord-format: "%player% » %message%"
+    format: "&b[&9D&b] &b[%clan%&b] &4<%nick-color%%player%&4> %rank%: &b%message%"
+    spy-format: "&8[Spy] [&9D&8] <%clean-tag%&8> <%nick-color%*&8%player%>&8 %rank%&8: %message%"
+    rank: "[%rank%]"
+    leader-role: "Leader"
+    leader-color: 231, 76, 60, 100
+    leader-id: 0
+    min-linked-players-to-create: 3
+    text:
+        category-format: "SC - TextChannels"
+        category-ids: []
+        whitelist: []
+        clans-limit: 100
+purge:
+    inactive-player-data-days: 30
+    inactive-clan-days: 7
+    unverified-clan-days: 2
+mysql:
+    username: ''
+    host: localhost
+    port: 3306
+    enable: false
+    password: ''
+    database: ''
+    table_prefix: 'sc_'
+permissions:
+  auto-group-groupname: false
+  YourClanNameHere:
+  - test.permission
+performance:
+  save-periodically: true
+  save-interval: 10
+  use-threads: true
+  use-bungeecord: false
