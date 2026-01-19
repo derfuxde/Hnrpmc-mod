@@ -10,6 +10,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.hnessentials.commands.HNECommandManager;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerDataRequestPayload;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerEventLister;
@@ -40,6 +41,8 @@ public class HNessentials {
     public static final Map<java.util.UUID, Integer> clientPetSkins = new HashMap<>();
     public static int clientVipScore = 0;
 
+    private CommandHelper commandHelper;
+
     private static HNessentials instance;
 
     public HNessentials(IEventBus modEventBus) {
@@ -53,7 +56,11 @@ public class HNessentials {
         NeoForge.EVENT_BUS.addListener(this::setup);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
+        this.commandHelper = new CommandHelper(this);
+
         modEventBus.addListener(this::registerPayloads);
+
+
 
         NeoForge.EVENT_BUS.addListener(HNECommandManager::onRegisterCommands);
     }
@@ -121,7 +128,7 @@ public class HNessentials {
                             if (storage == null) return;
 
                             HNPlayerData ownerData = storage.getOrCreatePlayerData(animal.getOwnerUUID());
-                            int skinIndex = ownerData.getPetSelectedTextureForPet(payload.petUUID());
+                            int skinIndex = ownerData == null ? 0 : ownerData.getPetSelectedTextureForPet(payload.petUUID());
 
                             int vipScore = PlayerEventLister.getPlayerScore(player, "VIPs");
 
@@ -177,6 +184,10 @@ public class HNessentials {
 
     public List<String> getSkins() {
         return skins;
+    }
+
+    public CommandHelper getCommandHelper() {
+        return commandHelper;
     }
 
     public Logger getLogger() {

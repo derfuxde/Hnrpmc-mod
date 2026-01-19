@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // Hinweis: Du benötigst eine Library wie SnakeYAML oder eine eigene YAML-Wrapper Klasse,
 // da 'FileConfiguration' eine Bukkit-Klasse ist.
@@ -220,41 +222,49 @@ public final class SettingsManager {
     }
 
     public String parseConditionalMessage(ServerPlayer player, String settingKey) {
-        // 1. Das entsprechende Setting aus deiner Map holen
-        ConditionalSetting setting = loadedSettings.get(settingKey.replace("HNPH_", ""));
+        loadSettingsFromConfig();
 
-        // Sicherheitscheck: Wenn das Setting nicht existiert
-        if (setting == null) {
-            return settingKey;
-        }
+        Pattern pattern = Pattern.compile("%hnph_\\s*(.*?)\\s*%", Pattern.CASE_INSENSITIVE);
+        Matcher m = pattern.matcher(settingKey);
 
-        List<String> rulesFromConfig = setting.getRules();
+        String output = settingKey;
 
-        // 2. Den Placeholder-Wert berechnen
-        // Ich nutze hier den Placeholder aus dem Setting-Objekt
-        String placeholderValue = ClanScoreboard.formatplaceholder(plugin, setting.getPlaceholder(), player);
+        while (m.find()) {
+            String fullMatch = m.group(0);
+            String key = m.group(1).toLowerCase().trim();
 
-        // 3. Den Wert in eine Zahl umwandeln
-        double value;
-        try {
-            // Falls dein Placeholder Farbcodes enthält, vorher säubern
-            String cleanValue = ChatUtils.parseColors(placeholderValue).trim();
-            value = Double.parseDouble(cleanValue);
-        } catch (NumberFormatException e) {
-            // Fallback auf die letzte Regel, wenn es keine Zahl ist
-            return rulesFromConfig.isEmpty() ? "" : rulesFromConfig.get(rulesFromConfig.size() - 1);
-        }
+            ConditionalSetting setting = loadedSettings.get(key);
 
-        // 4. Die Regeln durchgehen
-        for (String rawRule : rulesFromConfig) {
-            ConditionRule rule = new ConditionRule(rawRule);
-            if (rule.matches(value)) {
-                return rule.getMessage();
+            if (setting != null) {
+                List<String> rulesFromConfig = setting.getRules();
+                if (rulesFromConfig.isEmpty()) continue;
+
+                String placeholderValue = ClanScoreboard.formatplaceholder(plugin, setting.getPlaceholder(), player);
+
+                double value;
+                try {
+                    String cleanValue = ChatUtils.parseColors(placeholderValue).trim();
+                    value = Double.parseDouble(cleanValue);
+                } catch (NumberFormatException e) {
+                    output = output.replace(fullMatch, rulesFromConfig.get(rulesFromConfig.size() - 1));
+                    continue;
+                }
+
+                // 3. Regeln prüfen
+                String resultMessage = rulesFromConfig.get(rulesFromConfig.size() - 1);
+                for (String rawRule : rulesFromConfig) {
+                    ConditionRule rule = new ConditionRule(rawRule);
+                    if (rule.matches(value)) {
+                        resultMessage = rule.getMessage();
+                        break;
+                    }
+                }
+
+                output = output.replace(fullMatch, resultMessage);
             }
         }
 
-        // 5. Standard-Fallback (letzte Regel)
-        return rulesFromConfig.get(rulesFromConfig.size() - 1);
+        return output;
     }
 
     public List<String> getStarterRankIds() {

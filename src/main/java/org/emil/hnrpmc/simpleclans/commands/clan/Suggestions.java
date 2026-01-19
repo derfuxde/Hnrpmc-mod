@@ -1,9 +1,13 @@
 package org.emil.hnrpmc.simpleclans.commands.clan;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
@@ -14,6 +18,8 @@ import org.emil.hnrpmc.simpleclans.*;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
@@ -107,7 +113,48 @@ public final class Suggestions {
 
     public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin) {
         boolean hhideme = true;
-        return (ctx, b) -> suggest(plugin.getClanManager().getAllClanPlayers().stream().filter(cp -> hhideme ? cp.getName() != ctx.getSource().getPlayer().getName().getString() : true).map(cp -> cp.getName()).toList(), b);
+        return allPlayers(plugin, hhideme);
+    }
+
+    public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin, boolean hhideme) {
+        //boolean hhideme = true;
+        return (ctx, b) -> suggest(
+                plugin.getClanManager().getAllClanPlayers().stream()
+                        .map(cp -> cp.toPlayer().getName().getString())
+                        .filter(name -> {
+                            if (hhideme && ctx.getSource().getPlayer() != null) {
+                                // Filtere den eigenen Namen heraus, wenn hhideme true ist
+                                return !name.equals(ctx.getSource().getPlayer().getName().getString());
+                            }
+                            return true;
+                        })
+                        .toList(),
+                b);
+    }
+
+    public static SuggestionProvider<CommandSourceStack> allPlayerNameFromHomes(HNessentials plugin) {
+        //boolean hhideme = true;
+        return (ctx, b) -> suggest( plugin.getStorageManager().getAllPlayerData().values().stream().map(pd -> pd.getPlayerName()).toList(),b);
+    }
+
+
+    public static List<String> getOfflinePlayerNames(MinecraftServer server) {
+        List<String> names = new ArrayList<>();
+        // Pfad zur usercache.json im Server-Root
+        Path cachePath = server.getServerDirectory().toAbsolutePath().resolve("usercache.json");
+
+        try {
+            if (Files.exists(cachePath)) {
+                String content = Files.readString(cachePath);
+                JsonArray array = JsonParser.parseString(content).getAsJsonArray();
+                array.forEach(element -> {
+                    names.add(element.getAsJsonObject().get("name").getAsString());
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return names;
     }
 
     public static SuggestionProvider<CommandSourceStack> getRequests(HNessentials plugin) {

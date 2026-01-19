@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.phys.AABB;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
 import org.emil.hnrpmc.hnclaim.claimperms;
@@ -147,9 +149,28 @@ public final class ClaimCommand extends ClanSBaseCommand {
             ChatBlock.sendMessage(src, ChatFormatting.RED + "Du stehst in keinem Claim.");
             return 0;
         }
+
+        BlockPos c1 = claimManager.parseString(claim.getCorner1());
+        BlockPos c3 = claimManager.parseString(claim.getCorner3());
+
+        // Nutze direkt die BlockPos, um die Differenz zu berechnen
+        // Math.abs sorgt dafür, dass es egal ist, welche Ecke "größer" ist
+        int breiteX = Math.abs(c1.getX() - c3.getX()) + 1;
+        int tiefeZ = Math.abs(c1.getZ() - c3.getZ()) + 1;
+        int flaeche = breiteX * tiefeZ;
+
         ChatBlock.sendMessage(src, ChatFormatting.GOLD + "=== Claim Info ===");
-        ChatBlock.sendMessage(src, "Name: " + claim.getName());
-        ChatBlock.sendMessage(src, "Besitzer: " + plugin.getServer().getProfileCache().get(claim.getownerUUID()).get().getName());
+        ChatBlock.sendMessage(src, "Name: " + ChatFormatting.WHITE + claim.getName());
+
+        // Sicherer Name-Abruf (vermeidet Fehler, falls Spieler nicht im Cache)
+        String ownerName = plugin.getServer().getProfileCache().get(claim.getownerUUID())
+                .map(profile -> profile.getName())
+                .orElse("Unbekannt");
+
+        ChatBlock.sendMessage(src, "Besitzer: " + ChatFormatting.WHITE + ownerName);
+        ChatBlock.sendMessage(src, "Größe: " + ChatFormatting.WHITE + breiteX + "x" + tiefeZ + " (" + flaeche + " Blöcke)");
+        ChatBlock.sendMessage(src, "Ecken: " + ChatFormatting.GRAY + "C1: " + c1.getX() + "," + c1.getZ() + " | C3: " + c3.getX() + "," + c3.getZ());
+
         return 1;
     }
 
@@ -233,7 +254,9 @@ public final class ClaimCommand extends ClanSBaseCommand {
 
             if (sp == null) return 0;
 
-            sp.sendSystemMessage(Component.literal(ClanScoreboard.formatplaceholder(SimpleClans.getInstance(), msg, player)));
+            String resmsg = ClanScoreboard.formatplaceholder(SimpleClans.getInstance(), msg, player);
+            resmsg = plugin.getSettingsManager().parseConditionalMessage(player, resmsg);
+            sp.sendSystemMessage(Component.literal(resmsg));
 
             return 1;
         } catch (CommandSyntaxException e) {

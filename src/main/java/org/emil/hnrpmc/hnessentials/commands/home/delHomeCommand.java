@@ -1,54 +1,31 @@
 package org.emil.hnrpmc.hnessentials.commands.home;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.RootCommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.Home;
-import org.emil.hnrpmc.hnessentials.Tpa;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
-import org.emil.hnrpmc.hnessentials.managers.StorageManager;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.clan.Suggestions;
-import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
-import org.emil.hnrpmc.simpleclans.utils.ChatUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.*;
-
-public final class HomeCommands extends ClanSBaseCommand {
+public class delHomeCommand extends ClanSBaseCommand {
 
     private final HNessentials plugin;
-
     private final CommandHelper commandHelper;
 
-    public HomeCommands(HNessentials plugin) {
+    public delHomeCommand(HNessentials plugin) {
         super(SimpleClans.getInstance());
         this.plugin = plugin;
         this.commandHelper = plugin.getCommandHelper();
@@ -56,7 +33,7 @@ public final class HomeCommands extends ClanSBaseCommand {
 
     @Override
     public @Nullable String primarycommand() {
-        return "home";
+        return "delhome";
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {
@@ -65,10 +42,10 @@ public final class HomeCommands extends ClanSBaseCommand {
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> root(CommandDispatcher<CommandSourceStack> dispatcher, String root) {
-        return home(root);
+        return delhome(root);
     }
 
-    private LiteralArgumentBuilder<CommandSourceStack> home(String root) {
+    private LiteralArgumentBuilder<CommandSourceStack> delhome(String root) {
         return Commands.literal(root)
                 .then(Commands.argument("Home", StringArgumentType.greedyString())
                         .suggests(Suggestions.PlayerHomes(plugin))
@@ -90,19 +67,22 @@ public final class HomeCommands extends ClanSBaseCommand {
                                 player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§cHaus mit dem namen {} konnte nicht gefunden werden", splithome)));
                                 return 0;
                             }
-                            if (home.getCoords().y == -1000){
-                                player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§cKein Bett gefunden")));
+
+                            HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(uuid);
+                            if (playerData == null) {
+                                player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§cSpieler Daten für Spieler {} konnten nicht gefunden werden", splitplayername)));
                                 return 0;
                             }
+                            List<Home> playerhomelist = playerData.getPlayerHomes();
+                            playerhomelist.remove(home);
+                            playerData.setPlayerHomes(playerhomelist);
+                            plugin.getStorageManager().setPlayerData(uuid, playerData);
 
-                            player.teleportTo(commandHelper.getLevelByName(home.getWorld_name()), home.getCoords().x, home.getCoords().y, home.getCoords().z, 0, 0);
-
-                            player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§7Du wurdest erfolgreich zum Haus {} telepotiert", splithome)));
+                            player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§7Haus {} wurde erfolgreich gelöscht", splithome)));
 
                             return 1;
-                        }
 
-                        )
+                        })
                 );
     }
 }

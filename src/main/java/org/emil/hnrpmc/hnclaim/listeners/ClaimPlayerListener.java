@@ -97,9 +97,13 @@ public class ClaimPlayerListener {
             claimManager.spawnParticleLine(level, claim.getCorner3(), claim.getCorner4(), player);
             claimManager.spawnParticleLine(level, claim.getCorner4(), claim.getCorner1(), player);
         } else if (claim == null && !playerlastclaim.isEmpty() && playerlastclaim.get(player.getUUID().toString()) != null) {
-            String plname = plugin.getServer().getProfileCache().get(player.getUUID()).get().getName();
-            player.displayClientMessage(Component.literal("Du hast den Claim von " + plname + " verlassen"), true);
-            playerlastclaim.remove(player.getUUID().toString());
+            if (playerlastclaim != null) {
+                Claim plc = playerlastclaim.get(player.getUUID().toString());
+                String plname = plugin.getServer().getProfileCache().get(plc.getownerUUID()).get().getName();
+                player.displayClientMessage(Component.literal("Du hast den Claim von " + plname + " verlassen"), true);
+                playerlastclaim.remove(player.getUUID().toString());
+            }
+
         }
 
         if (claim != null && claim.getBanPlayers() != null && claim.getBanPlayers().contains(player.getUUID())) {

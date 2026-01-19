@@ -22,6 +22,7 @@ import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.managers.channel.concrete.C
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.requests.Response;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.requests.RestAction;
 import com.hypherionmc.sdlink.util.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -180,7 +181,7 @@ public final class DiscordHook {
 
         updateViewPermission(member, clan, REMOVE);
         updateLeaderRole(member, clanPlayer, REMOVE);
-        updateClanRole(clanPlayer.getUniqueId(), clan.getTag(), false);
+        updateClanRoleAll(clan.getTag());
     }
 
     @SubscribeEvent
@@ -196,7 +197,7 @@ public final class DiscordHook {
             return;
         }
 
-        updateClanRole(clanPlayer.getUniqueId(), clan.getTag(), true);
+        updateClanRoleAll(clan.getTag());
         updateViewPermission(member, clan, ADD);
     }
 
@@ -511,6 +512,37 @@ public final class DiscordHook {
         });
     }
 
+    public void updateClanRoleAll(String clanTag) {
+        Clan targetClan = plugin.getClanManager().getClan(clanTag);
+        Map<ClanPlayer, Member> discordClanPlayers = getDiscordPlayers(targetClan);
+        Map<String, String> allRoles = new HashMap<>();
+        Object raw = settingsManager.getMap(DISCORDCHAT_ROLE_LIST);
+        if (raw instanceof Map) {
+            allRoles.putAll((Map<String, String>) raw);
+        }
+        if (!allRoles.containsKey(targetClan.getTag())) return;
+
+        Role role = getGuild().getRoleById(allRoles.get(targetClan.getTag()));
+        discordClanPlayers.values().forEach(member -> {
+            getGuild().addRoleToMember(member, role).queue();
+        });
+
+        for (ClanPlayer cp : clanManager.getAllClanPlayers()) {
+            Member member = getMember(cp);
+            if (member == null) {
+                if (plugin.getServer().getPlayerList().getPlayers().contains(cp.toPlayer())) return;
+                cp.toPlayer().connection.disconnect(Component.literal("Discord nicht gefunden"));
+
+                return;
+            }
+            if (!member.getRoles().contains(role)) return;
+            if (discordClanPlayers.containsValue(member)) return;
+            if (cp.getClan() != null && Objects.equals(cp.getClan().getTag(), clanTag)) {
+                getGuild().removeRoleFromMember(member, role).queue();
+            }
+        }
+    }
+
     private void createClanRole(@NotNull String clanName) {
         Clan targetClan = clanManager.getClanByName(clanName);
         if (targetClan == null) return;
@@ -558,7 +590,7 @@ public final class DiscordHook {
                             if (masterMap.get(targetClan.getTag()) instanceof Map<?, ?> channelMap) {
                                 CategoryManager cat = getGuild().getCategoryById(channelMap.keySet().toString()).getManager();
 
-                                cat.putRolePermissionOverride(role.getIdLong(), Arrays.asList(VIEW_CHANNEL, MESSAGE_SEND, VOICE_SPEAK), null);
+                                cat.putRolePermissionOverride(role.getIdLong(), Arrays.asList(VIEW_CHANNEL, MESSAGE_SEND, VOICE_SPEAK), null).queue();
                             }
                         }
                     }

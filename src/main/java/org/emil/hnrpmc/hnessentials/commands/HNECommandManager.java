@@ -13,6 +13,9 @@ import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.commands.home.HomeCommands;
+import org.emil.hnrpmc.hnessentials.commands.home.SetHomeCommand;
+import org.emil.hnrpmc.hnessentials.commands.home.delHomeCommand;
+import org.emil.hnrpmc.hnessentials.commands.home.homesCommand;
 import org.emil.hnrpmc.hnessentials.commands.tpa.TpaCommands;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
@@ -48,13 +51,19 @@ public final class HNECommandManager {
 
         List<ClanSBaseCommand> commands = new ArrayList<>();
         commands.add(new TpaCommands(plugin));
+        commands.add(new homesCommand(plugin));
+        commands.add(new delHomeCommand(plugin));
+        commands.add(new SetHomeCommand(plugin));
         commands.add(new HomeCommands(plugin));
 
         for (ClanSBaseCommand command : commands) {
             String sprimarycommand = command.primarycommand();
-            String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? "hnrpmc:" +sprimarycommand : "hnrpmc:essentials";
+            String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "essentials";
+            String commandname2 = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? "hnrpmc:" +sprimarycommand : "hnrpmc:essentials";
             CommandNode<CommandSourceStack> rootNode =
                     command.register(dispatcher,  commandname);
+            CommandNode<CommandSourceStack> rootNode2 =
+                    command.register(dispatcher,  commandname2);
 
             if (allcommandstarts.contains(commandname)) {
                 allcommandstarts.add(commandname);
@@ -62,6 +71,7 @@ public final class HNECommandManager {
 
             for (int i = 1; i < aliases.size(); i++) {
                 dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
+                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode2));
             }
         }
 

@@ -151,7 +151,7 @@ public final class ClanScoreboard {
         boolean hasClan = (clan != null);
 
         String clanName = hasClan ? clan.getStringName() : "";
-        String clanTag = hasClan ? clan.getColorTag() : "";
+        String clanTag = hasClan ? clan.getTag() : "";
         String clanColor = clan != null ? (clan.getClanColor() != null && !Objects.equals(clan.getClanColor(), "") ? clan.getClanColor() : "§b") : "§b";
         String clanmembers = String.valueOf(hasClan ? clan.getMembers().size() : 0);
 

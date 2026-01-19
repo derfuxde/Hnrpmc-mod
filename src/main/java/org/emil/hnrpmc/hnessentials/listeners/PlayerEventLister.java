@@ -38,8 +38,8 @@ public class PlayerEventLister {
             BlockPos pos = event.getNewSpawn();
             boolean isForced = event.isForced(); // true bei /spawnpoint, false bei Bett
 
-            System.out.println("Spieler " + player.getName().getString() +
-                    " hat neuen Spawn bei: " + pos.toString());
+
+            if (pos == null) return;
 
             HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
             List<Home> homes = playerData.getPlayerHomes();
@@ -75,6 +75,7 @@ public class PlayerEventLister {
         if (homes != null && !homes.isEmpty()){
             List<Home> bedhomes = homes.stream().filter(home -> home.getHomename().equals("bed")).toList();
             if (bedhomes == null || bedhomes.isEmpty()) {
+                if (pos == null) return;
                 Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
                 homes.add(bedhome);
                 playerData.setPlayerHomes(homes);

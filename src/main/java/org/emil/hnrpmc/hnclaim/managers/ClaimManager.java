@@ -123,9 +123,11 @@ public final class ClaimManager {
             BlockPos pos = parseString(claim.getCorner1());
             BlockPos pos2 = parseString(claim.getCorner3());
 
-            AABB claimBox = new AABB(pos.getBottomCenter(), pos2.getBottomCenter()).inflate(1.0);
+            int breiteX = Math.abs(pos.getX() - pos2.getX()) + 1;
+            int tiefeZ = Math.abs(pos2.getZ() - pos2.getZ()) + 1;
+            int flaeche = breiteX * tiefeZ;
 
-            size = size + claimBox.getSize();
+            size = size + flaeche;
         }
 
         return size - minus;
@@ -279,6 +281,8 @@ public final class ClaimManager {
 
         List<BlockPos> bplist = new ArrayList<>();
         Map<String, List<BlockPos>> innermap = new HashMap<>();
+        if (displayblocklist == null) return;
+        displayblocklist.computeIfAbsent(player.getUUID(), k -> new HashMap<>());
         if (!displayblocklist.isEmpty() && !displayblocklist.get(player.getUUID()).isEmpty()) {
             innermap = displayblocklist.get(player.getUUID());
         }
@@ -503,11 +507,14 @@ public final class ClaimManager {
 
         String maxblocks = plugin.getSettingsManager().getString(MAX_CLAIMED_BLOCKS);
         String enmax = maxblocks;
+        int breiteX = Math.abs(c1.getX() - c3.getX()) + 1;
+        int tiefeZ = Math.abs(c1.getZ() - c3.getZ()) + 1;
+        int flaeche = breiteX * tiefeZ;
         if (maxblocks.contains("%")) {
             enmax = plugin.getSettingsManager().parseConditionalMessage(pl, plugin.getSettingsManager().getString(MAX_CLAIMED_BLOCKS));
         }
 
-        if (claimBox2.getSize() + getAllClaimsize(pl) > Integer. parseInt(enmax)) {
+        if (flaeche + getAllClaimsize(pl) > Integer. parseInt(enmax)) {
             pl.sendSystemMessage(Component.literal("§cDu hast die maximale anzahl an geclaimten blöcken erreicht"));
             return;
         }

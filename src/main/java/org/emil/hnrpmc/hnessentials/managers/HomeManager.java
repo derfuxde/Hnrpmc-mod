@@ -38,6 +38,7 @@ public class HomeManager {
     public List<Home> getHomes(UUID ownerUUID) {
         storageManager.loadAllPlayerDatas();
         HNPlayerData playerData = storageManager.getOrCreatePlayerData(ownerUUID);
+        if (playerData == null) return new ArrayList<>();
         homeList.put(ownerUUID, playerData.getPlayerHomes());
         return homeList.get(ownerUUID);
     }

@@ -7,9 +7,11 @@ import com.hypherionmc.sdlink.api.messaging.discord.DiscordMessageBuilder;
 import com.hypherionmc.sdlink.core.config.SDLinkConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -59,17 +61,30 @@ public final class ChatNameHandler {
 
     private static Component createPlayerHover(ServerPlayer sender, ServerChatEvent event, String formated) {
 
-        String nomsg = formated.replace(event.getMessage().getString(), "");//.trim();
-        HoverEvent.EntityTooltipInfo playertip = new HoverEvent.EntityTooltipInfo(EntityType.PLAYER, sender.getUUID(), Component.literal(sender.getName().getString()));
-        Component part1 = Component.literal(nomsg)
+        String[] parts = formated.split("%message%", 2);
+        String prefixText = parts[0];
+        String suffixText = parts.length > 1 ? parts[1] : "";
+
+        HoverEvent.EntityTooltipInfo playertip = new HoverEvent.EntityTooltipInfo(
+                EntityType.PLAYER,
+                sender.getUUID(),
+                Component.literal(sender.getName().getString())
+        );
+
+        MutableComponent namePart = Component.literal(prefixText)
                 .withStyle(style -> style
                         .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + sender.getName().getString() + " "))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY, playertip))
                 );
-        //Component.literal("" + event.getMessage().getString());
-        return Component.literal("")
-                .append(part1)
-                .append(Component.literal("" + event.getRawText().trim()));
+
+        MutableComponent messagePart = Component.literal(event.getRawText());
+
+        MutableComponent suffixPart = Component.literal(suffixText);
+
+        return Component.empty()
+                .append(namePart)
+                .append(messagePart)
+                .append(suffixPart);
     }
 
     private static void init() {
@@ -119,7 +134,7 @@ public final class ChatNameHandler {
                 }
             }
 
-            Component msg = createPlayerHover(event.getPlayer(), event, endformat);
+            Component msg = createPlayerHover(event.getPlayer(), event, nameFormatted);
             for (ServerPlayer sp : p.getServer().getPlayerList().getPlayers()) {
                 sp.sendSystemMessage(msg);
             }
