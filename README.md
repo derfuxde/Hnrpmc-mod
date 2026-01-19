@@ -2,6 +2,8 @@
 - Clan-System
 - Clam-System
 - Tpa/Home-System
+- Placeholder
+- Bedingter Placeholder
 
 # Clan-System
 Erstelle ein Clan und Verwalte ihn
