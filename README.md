@@ -1,4 +1,4 @@
-# Hnrpmc - SimpleClans & Essentials
+# Hnrpmc minecraft mod
 
 Ein umfassendes Minecraft-Plugin-System für **NeoForge**, das ein tiefgreifendes Clan-System mit essentiellen Utility-Funktionen wie Teleportation und Claims kombiniert.
 
