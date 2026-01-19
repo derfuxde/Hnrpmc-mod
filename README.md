@@ -1,66 +1,79 @@
-# Hnrpmc minecraft mod
+# Hnrpmc Mod
 
-Ein umfassendes Minecraft-Plugin-System für **NeoForge**, das ein tiefgreifendes Clan-System mit essentiellen Utility-Funktionen wie Teleportation und Claims kombiniert.
+Hnrpmc ist ein leistungsstarkes Minecraft-Mod-System für **NeoForge**, das ein tiefgreifendes Clan-Management mit essenziellen Survival-Features wie Claims, Homes und Teleportation vereint.
 
-## ✨ Features
+---
 
-* 🛡️ **Advanced Clan System:** Erstelle Clans, verwalte Ränge und kommuniziere in internen Chats.
-* 🗺️ **Claim System:** Schütze dein Land vor fremden Zugriffen.
-* 🏠 **Home & TPA:** Intuitives Teleportations-System für Spieler und Clan-Mitglieder.
-* 📊 **Dynamic Placeholders:** Umfangreiche Platzhalter-Unterstützung für Scoreboards und Chats.
-* ⚙️ **Bedingte Logik:** Intelligente Berechtigungsabfragen und bedingte Platzhalter.
+## ✨ Hauptfeatures
+
+* 🛡️ **Clan-System:** Gründung, Ränge, Bulletin Boards und interne Chats.
+* 🗺️ **Claim-System:** Schütze deine Gebiete und verwalte Berechtigungen für Spieler und ganze Clans.
+* 🏠 **Home-System:** Erstelle mehrere Homes, verwalte sie und besuche (bei Erlaubnis) andere Spieler.
+* 🔄 **TPA-System:** Intuitives Anfragen-System für Teleportationen (TPA/TPAHere).
+* 📊 **Placeholders:** Dynamische Platzhalter für Clan-Tags, Ränge und Statistiken.
 
 ---
 
 ## 🛡️ Clan-System
+Verwalte deine Community effizient.
 
-Verwalte deine Gemeinschaft mit einem robusten Befehlssystem.
-
-### Basis-Befehle
 | Befehl | Beschreibung |
 | :--- | :--- |
-| `/clan` | Öffnet das Hauptmenü oder zeigt die Clan-Info. |
 | `/clan create <Tag> <Name>` | Gründet einen neuen Clan. |
-| `/clan invite <Spieler>` | Lädt einen Spieler in deinen Clan ein. |
-| `/clan resign` | Verlasse deinen aktuellen Clan. |
-
-### Management & Kommunikation
-* **Ränge:** Erstelle eigene Ränge mit spezifischen Permissions (`/clan rank`).
-* **BB (Bulletin Board):** Hinterlasse Nachrichten für deine Mitglieder (`/clan bb`).
-* **Clan-Chat:** Nutze `/clan chat` für private Gespräche oder `/clan ally` für Verbündete.
-* **Moderation:** Kicke Mitglieder, lösche Clans oder ändere Tags (für Leader).
+| `/clan invite <Spieler>` | Lädt ein neues Mitglied ein. |
+| `/clan rank` | Erstellt und verwaltet Ränge sowie Permissions innerhalb des Clans. |
+| `/clan bb <Nachricht>` | Schreibt eine Nachricht an das Clan-Bulletin-Board. |
+| `/clan chat` | Wechselt in den Clan-Chat-Kanal. |
+| `/clan ally` | Kommuniziere mit befreundeten Clans. |
+| `/clan resign` | Verlässt den aktuellen Clan (erfordert Bestätigung). |
 
 ---
 
-## 🏠 Home & Teleport
-Optimiert für das Zusammenspiel im Clan.
+## 🗺️ Claim-System
+Sichere deine Basis gegen Griefing.
 
-* `/sethome [Name]` / `/home [Name]` - Verwalte deine persönlichen Punkte.
-* **Clan-Home:** Setze einen gemeinsamen Treffpunkt für alle Clan-Mitglieder.
-* **Regroup:** Leader können Clan-Mitglieder zu sich rufen (Home-Regroup).
-* **TPA:** Sende Teleport-Anfragen an Freunde oder Clan-Kollegen.
+* **`/claim`**: Das Hauptmenü für Claims.
+* **Berechtigungen**: Nutze `/claim perm <add/remove> <Permission> <Spieler/Clan>`, um Rechte gezielt zu vergeben.
+    * *Besonderheit:* Du kannst Rechte nicht nur an Einzelspieler, sondern direkt an ganze Clans vergeben!
+* **Visualisierung:** Claims nutzen Markierungen, um Grenzen im Spiel anzuzeigen.
 
 ---
 
-## 📍 Platzhalter (Placeholders)
-Das Plugin bietet verschiedene Platzhalter zur Integration in andere Systeme:
+## 🏠 Home & Teleportation
+Flexibles Reisen für dich und deine Freunde.
 
-* `%clan_name%`: Name des Clans.
-* `%clan_tag%`: Das Kürzel des Clans.
-* `%clan_rank%`: Der aktuelle Rang des Spielers.
-* **Bedingte Platzhalter:** Zeigt Informationen nur an, wenn der Spieler tatsächlich in einem Clan ist (verhindert leere Klammern im Chat).
+### Homes
+- `/sethome <Name>`: Erstellt einen neuen Home-Punkt.
+- `/home <Name>`: Teleportiert dich zu deinem Home.
+- `/delhome <Name>`: Löscht einen Home-Punkt.
+- `/homes [Spieler]`: Listet deine Homes oder (mit Permission) die eines anderen Spielers auf.
+
+### TPA (Teleport Requests)
+- `/tpa <Spieler>`: Sende eine Teleport-Anfrage.
+- `/tpahere <Spieler>`: Bitte einen Spieler, sich zu dir zu teleportieren.
+- `/tpaccept`: Nimmt die letzte Anfrage an.
+- `/tpdeny`: Lehnt die Anfrage ab.
+
+---
+
+## ⚙️ Technische Details & Placeholders
+Das Plugin ist hochgradig konfigurierbar und bietet Integrationen:
+
+* **Placeholders:**
+    * `%clan_tag%`, `%clan_name%`
+    * Bedingte Platzhalter, die sich automatisch ausblenden, wenn man in keinem Clan ist.
+* **Events für Entwickler:**
+    * `TagChangeEvent`: Reagiere auf Namensänderungen.
+    * `HomeRegroupEvent`: Logge oder beeinflusse Clan-Teleportationen.
 
 ---
 
 ## 🛠️ Installation
-1. Lade die neueste `.jar` Datei herunter.
-2. Schiebe sie in deinen `mods`-Ordner (NeoForge Server).
-3. Starte den Server, um die Konfigurationsdateien in `/world/serverconfig/simpleclans` zu generieren.
+1. Lade die `.jar` Datei in den `mods`-Ordner deines NeoForge-Servers.
+2. Starte den Server einmal, um die Configs zu generieren.
+3. Konfiguriere die Berechtigungen in deinem Permission-Plugin (z.B. LuckPerms).
 
 ---
 
-## 🏗️ Entwicklung & API
-Hnrpmc bietet Events für Entwickler an, um das System zu erweitern:
-* `TagChangeEvent`: Wird gefeuert, wenn ein Clan-Tag geändert wird.
-* `PlayerRankUpdateEvent`: Überwacht Rang-Änderungen.
-* `HomeRegroupEvent`: Ideal für Logging oder Begrenzungen.
+## 📝 Lizenz
+Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
