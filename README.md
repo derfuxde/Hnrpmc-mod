@@ -1,6 +1,6 @@
 # Hnrpmc Mod
 
-$${\color{red}Dieser Mod befindet sich noch in der Beta Version}$$
+$${\color{red}Dieser \space Mod \space befindet \space sich \space noch \space in \space der \space Beta \space Version}$$
 
 Hnrpmc ist ein leistungsstarkes Minecraft-Mod-System für **NeoForge**, das ein tiefgreifendes Clan-Management mit essenziellen Survival-Features wie Claims, Homes und Teleportation vereint.
 
@@ -9,7 +9,7 @@ Hnrpmc ist ein leistungsstarkes Minecraft-Mod-System für **NeoForge**, das ein 
 ## ✨ Hauptfeatures
 
 * 🛡️ **Clan-System:** Gründung, Ränge, Bulletin Boards und interne Chats.
-* 🗺️ **Claim-System:** Schütze deine Gebiete und verwalte Berechtigungen für Spieler und ganze Clans.
+* 🗺️ **Claim-System:** Schütze deine Gebiete und verwalte Berechtigungen für Spieler und ganze Clans. 
 * 🏠 **Home-System:** Erstelle mehrere Homes, verwalte sie und besuche (bei Erlaubnis) andere Spieler.
 * 🔄 **TPA-System:** Intuitives Anfragen-System für Teleportationen (TPA/TPAHere).
 * 📊 **Placeholders:** Dynamische Platzhalter für Clan-Tags, Ränge und Statistiken.
