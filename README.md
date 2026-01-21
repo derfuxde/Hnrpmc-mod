@@ -101,9 +101,4 @@ Das Plugin ist hochgradig konfigurierbar und bietet Integrationen:
 ## 🛠️ Installation
 1. Lade die `.jar` Datei in den `mods`-Ordner deines NeoForge-Servers.
 2. Starte den Server einmal, um die Configs zu generieren.
-3. Konfiguriere die Berechtigungen in deinem Permission-Plugin (z.B. LuckPerms).
-
----
-
-## 📝 Lizenz
-Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
+3. Konfiguriere die Berechtigungen in deinem Permission-Mod (z.B. [LuckPerms](https://modrinth.com/plugin/luckperms)).
