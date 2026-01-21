@@ -93,8 +93,8 @@ Das Plugin ist hochgradig konfigurierbar und bietet Integrationen:
     | `%player_ping_colored%` | Farbiger Spieler ping |
     | `%player_ping%` | Spieler ping |
     | `%server_maxplayers%` | Die Maximale Anzahl an Spielern auf dem Server |
-  
-                  **Mehr: bald**
+
+   **Mehr: bald**
   
     * Plazhalter können mit `/caim placeholder <Spieler> <Nachricht>`
     * Bedingte Platzhalter, die sich automatisch ausblenden, wenn man in keinem Clan ist.
