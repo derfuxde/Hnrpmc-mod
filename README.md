@@ -62,7 +62,32 @@ Flexibles Reisen für dich und deine Freunde.
 Das Plugin ist hochgradig konfigurierbar und bietet Integrationen:
 
 * **Placeholders:**
-    * `%clan_tag%`, `%clan_name%`
+    | Placeholder | Beschreibung |
+    | :--- | :--- |
+    | `%playtime%` | Formatierte Spielzeit das Spielers |
+    | `%playername%` | Spielername |
+    | `%player_allow_flight%` | Ist der Spieler erlaubt zu fliegen |
+    | `%player_armor_helmet_name%` | Helm name wenn Spieler einen auf hat |
+    | `%player_armor_helmet_durability%` | Helm haltbarkeit wenn Spieler einen auf hat |
+    | `%player_armor_chestplate_name%` | Brustplatten name wenn Spieler eine an hat |
+    | `%player_armor_chestplate_durability%` | Brustplatten haltbarkeit wenn Spieler eine an hat |
+    | `%player_armor_leggings_name%` | Hose name wenn Spieler eine an hat |
+    | `%player_armor_leggings_durability%` | Hose haltbarkeit wenn Spieler eine an hat |
+    | `%player_armor_boots_name%` |  Schuhe name wenn Spieler welche an hat |
+    | `%player_armor_boots_durability%` | Schuh haltbarkeit wenn Spieler eine an hat |
+    | `%player_health%` | Spieler leben |
+    | `%clan_name%` | Clanname wenn Spieler in einem |
+    | `%clan_tag%` | Clantag wenn Spieler in einem |
+    | `%clan_color%` | Clan Farbe wenn Spieler in einem |
+    | `%clan_rank_name%` | Rang name wenn vorhanden |
+    | `%clan_rank_id%` | Rang id wenn vorhanden |
+    | `%isinclan%` | ist Spieler in einem Clan gibt `yes` oder `no` |
+    | `%clan_members%` | Die Clan Mitglieder Anzahl |
+    | `%clan_onlinemembers%` | Die Clan mitglieder Anzahl die online sind |
+    | `%server_players%` | Die Anzahl an Spieler auf dem Server |
+    | `%player_ping_colored%` | Farbiger Spieler ping |
+    | `%player_ping%` | Spieler ping |
+    | `%server_maxplayers%` | Die Maximale Anzahl an Spielern auf dem Server |
     * Bedingte Platzhalter, die sich automatisch ausblenden, wenn man in keinem Clan ist.
 * **Events für Entwickler:**
     * `TagChangeEvent`: Reagiere auf Namensänderungen.
