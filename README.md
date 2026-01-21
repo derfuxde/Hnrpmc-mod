@@ -34,7 +34,7 @@ Verwalte deine Community effizient.
 ## 🗺️ Claim-System
 Sichere deine Basis gegen Griefing.
 
-* **`/claim`**: Das Hauptmenü für Claims.
+* **`/claim`**: Claim einen bereich
 * **Berechtigungen**: Nutze `/claim perm <add/remove> <Claim> <Permission>`, um generelle Rechte zu vergeben.
      * *Info:* GUI kommt bald
 * Nutze `/claim playerperms <add/remove> <Claim> <Player/Clan> <Permission>`, um gezielt Rechte zu vergeben. 
