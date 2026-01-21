@@ -33,7 +33,9 @@ Verwalte deine Community effizient.
 Sichere deine Basis gegen Griefing.
 
 * **`/claim`**: Das Hauptmenü für Claims.
-* **Berechtigungen**: Nutze `/claim perm <add/remove> <Permission> <Spieler/Clan>`, um Rechte gezielt zu vergeben.
+* **Berechtigungen**: Nutze `/claim perm <add/remove> <Claim> <Permission>`, um generelle Rechte zu vergeben.
+     * *Info:* GUI kommt bald
+* Nutze `/claim playerperms <add/remove> <Claim> <Player/Clan> <Permission>`, um gezielt Rechte zu vergeben. 
     * *Besonderheit:* Du kannst Rechte nicht nur an Einzelspieler, sondern direkt an ganze Clans vergeben!
 * **Visualisierung:** Claims nutzen Markierungen, um Grenzen im Spiel anzuzeigen.
 
