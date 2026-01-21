@@ -29,6 +29,9 @@ Verwalte deine Community effizient.
 | `/clan ally` | Kommuniziere mit befreundeten Clans. |
 | `/clan resign` | Verlässt den aktuellen Clan (erfordert Bestätigung). |
 
+Der Clan-Tag wird im chat angezeigt
+Standart: [Clan-Tag] <Spielername> Nachricht
+
 ---
 
 ## 🗺️ Claim-System
