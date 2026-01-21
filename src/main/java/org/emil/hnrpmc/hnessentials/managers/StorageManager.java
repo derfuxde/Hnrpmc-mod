@@ -20,6 +20,7 @@ public class StorageManager {
     private final HNessentials plugin;
     private final File file;
     private Map<String, HNPlayerData> data = new TreeMap<>();
+    private Map<String, Object> generalData = new TreeMap<>();
 
     private final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
@@ -30,7 +31,7 @@ public class StorageManager {
         this.plugin = plugin;
         Path worldRoot = plugin.getServer().getWorldPath(LevelResource.ROOT);
         // Pfad: world/HNessentials/players.json
-        Path dbPath = worldRoot.resolve("clans").resolve("players.json");
+        Path dbPath = worldRoot.resolve("clans").resolve("general.json");
 
         try {
             Files.createDirectories(dbPath.getParent());

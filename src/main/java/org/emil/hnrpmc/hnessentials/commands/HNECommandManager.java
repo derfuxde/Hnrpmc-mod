@@ -12,6 +12,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.emil.hnrpmc.hnessentials.HNessentials;
+import org.emil.hnrpmc.hnessentials.commands.PlayerData.registerAdminGui;
 import org.emil.hnrpmc.hnessentials.commands.home.HomeCommands;
 import org.emil.hnrpmc.hnessentials.commands.home.SetHomeCommand;
 import org.emil.hnrpmc.hnessentials.commands.home.delHomeCommand;
@@ -55,6 +56,7 @@ public final class HNECommandManager {
         commands.add(new delHomeCommand(plugin));
         commands.add(new SetHomeCommand(plugin));
         commands.add(new HomeCommands(plugin));
+        commands.add(new registerAdminGui(plugin));
 
         for (ClanSBaseCommand command : commands) {
             String sprimarycommand = command.primarycommand();

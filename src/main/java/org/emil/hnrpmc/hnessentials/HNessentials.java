@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -18,10 +19,7 @@ import org.emil.hnrpmc.hnessentials.managers.HomeManager;
 import org.emil.hnrpmc.hnessentials.managers.StorageManager;
 import org.emil.hnrpmc.hnessentials.managers.TpaManager;
 import org.emil.hnrpmc.hnessentials.menu.PetMorphScreen;
-import org.emil.hnrpmc.hnessentials.network.PlayerDataResponsePayload;
-import org.emil.hnrpmc.hnessentials.network.SaveSkinPayload;
-import org.emil.hnrpmc.hnessentials.network.ScoreSyncPayload;
-import org.emil.hnrpmc.hnessentials.requester.TpaRequester;
+import org.emil.hnrpmc.hnessentials.network.*;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
 import org.slf4j.Logger;
@@ -38,7 +36,7 @@ public class HNessentials {
     private HomeManager homeManager;
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final List<String> skins = List.of("Standard", "Shadow", "Gold", "Diamond", "Rainbow");
-    public static final Map<java.util.UUID, Integer> clientPetSkins = new HashMap<>();
+    public static final Map<UUID, Integer> clientPetSkins = new HashMap<>();
     public static int clientVipScore = 0;
 
     private CommandHelper commandHelper;
@@ -169,6 +167,23 @@ public class HNessentials {
                         PetMorphScreen.currentSkinName = skins.get(payload.selected());
                     }
                 })
+        );
+
+        // SERVER -> CLIENT
+        registrar.playToClient(
+                OpenAdminScreenPayload.TYPE,
+                OpenAdminScreenPayload.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    // Diese Prüfung und das verzögerte Aufrufen verhindern den Crash
+                    ClientPacketHandler.handleAdminGuiOpen(payload, context);
+                }
+        ));
+
+        // CLIENT -> SERVER
+        registrar.playToServer(
+                AdminUpdateDataPayload.TYPE,
+                AdminUpdateDataPayload.STREAM_CODEC,
+                ServerPacketHandler::handleAdminUpdate
         );
     }
 

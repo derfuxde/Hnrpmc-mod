@@ -14,10 +14,12 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.Home;
-import org.emil.hnrpmc.hnessentials.network.ScoreSyncPayload;
+import org.emil.hnrpmc.hnessentials.network.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -102,15 +104,11 @@ public class PlayerEventLister {
                 }
             }
         }
-
-
-
-
-
         int score = getPlayerScore(player, "VIPs");
 
         player.connection.send(new ScoreSyncPayload(score));
     }
+
 
     @SubscribeEvent
     public void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {

@@ -94,6 +94,58 @@ public class HNPlayerData {
         return PetSelectedTexture;
     }
 
+    public boolean isGodMode() {
+        return isGodMode();
+    }
+
+    public boolean isJailed() {
+        return jailed;
+    }
+
+    public boolean isMuted() {
+        return muted;
+    }
+
+    public boolean isTeleportAuto() {
+        return teleportAuto;
+    }
+
+    public boolean isTeleportEnabled() {
+        return teleportEnabled;
+    }
+
+    public InetAddress getIpAddress() {
+        return ipAddress;
+    }
+
+    public Map<String, Object> getLogoutLocation() {
+        return logoutLocation;
+    }
+
+    public String getIp_adress() {
+        return ip_adress;
+    }
+
+    public Vec3 getLastLocation() {
+        return lastLocation;
+    }
+
+    public void setGodMode(boolean godMode) {
+        this.godMode = godMode;
+    }
+
+    public void setIp_adress(String ip_adress) {
+        this.ip_adress = ip_adress;
+    }
+
+    public void setIpAddress(InetAddress ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public void setJailed(boolean jailed) {
+        this.jailed = jailed;
+    }
+
     public double getMoney() { return money; }
     public void setMoney(double money) { this.money = money; }
 
