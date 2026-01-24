@@ -5,20 +5,24 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.emil.hnrpmc.hnessentials.CosmeticSlot;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.Home;
+import org.emil.hnrpmc.hnessentials.cosmetics.SyncCosmeticPayload;
 import org.emil.hnrpmc.hnessentials.network.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,6 +67,21 @@ public class PlayerEventLister {
     }
 
     @SubscribeEvent
+    public void onLivingTarget(LivingChangeTargetEvent event) {
+        // Prüfen, ob die angreifende Entity ein Wolf ist
+        if (event.getEntity() instanceof Wolf wolf) {
+            // Nur wenn der Wolf gezähmt ist
+            if (wolf.isTame()) {
+                // Prüfen, ob das neue Ziel ein Spieler ist
+                if (event.getTargetType() instanceof Player) {
+                    // Den Angriff abbrechen
+                    event.setCanceled(true);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         plugin.getStorageManager().loadPlayerData(player.getUUID());
@@ -70,7 +89,7 @@ public class PlayerEventLister {
 
         List<Home> homes = playerData.getPlayerHomes();
 
-        //
+        ServerPacketHandler.sendData(player.getUUID());
 
         BlockPos pos = player.getRespawnPosition();
 

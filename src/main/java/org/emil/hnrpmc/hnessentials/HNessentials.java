@@ -1,6 +1,10 @@
 package org.emil.hnrpmc.hnessentials;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
@@ -13,6 +17,12 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.hnessentials.commands.HNECommandManager;
+import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
+import org.emil.hnrpmc.hnessentials.cosmetics.SyncCosmeticPayload;
+import org.emil.hnrpmc.hnessentials.cosmetics.api.*;
+import org.emil.hnrpmc.hnessentials.cosmetics.impl.CosmeticFetcher;
+import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
+import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerDataRequestPayload;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerEventLister;
 import org.emil.hnrpmc.hnessentials.managers.HomeManager;
@@ -24,10 +34,8 @@ import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class HNessentials {
     private StorageManager storageManager;
@@ -38,6 +46,8 @@ public class HNessentials {
     private static final List<String> skins = List.of("Standard", "Shadow", "Gold", "Diamond", "Rainbow");
     public static final Map<UUID, Integer> clientPetSkins = new HashMap<>();
     public static int clientVipScore = 0;
+    public Map<UUID, HNPlayerData> HNplayerDataMap = new HashMap<>();
+    public Map<UUID, PlayerData> playerDataMap = new HashMap<>();
 
     private CommandHelper commandHelper;
 
@@ -57,8 +67,6 @@ public class HNessentials {
         this.commandHelper = new CommandHelper(this);
 
         modEventBus.addListener(this::registerPayloads);
-
-
 
         NeoForge.EVENT_BUS.addListener(HNECommandManager::onRegisterCommands);
     }
@@ -85,10 +93,16 @@ public class HNessentials {
         this.server = null;
     }
 
+    public final Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .enableComplexMapKeySerialization()
+            .create();
+
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
         final var registrar = event.registrar("hnrpmc");
 
-        // --- CLIENT -> SERVER: Skin speichern ---
+        // --- CLIENT -> SERVER ---
         registrar.playToServer(
                 SaveSkinPayload.TYPE,
                 SaveSkinPayload.STREAM_CODEC,
@@ -102,23 +116,20 @@ public class HNessentials {
                         data.setPetSelectedTextureForPet(payload.skinint(), petUuid);
                         storage.save(player.getUUID());
 
-                        // Optional: Broadcast an alle Spieler in der Nähe, damit der Skin sofort aktualisiert wird
                         context.reply(new PlayerDataResponsePayload(payload.PetUUID(), payload.skinint()));
                     }
                 })
         );
 
-        // --- CLIENT -> SERVER: Daten anfragen ---
+        // --- CLIENT -> SERVER ---
         registrar.playToServer(
                 PlayerDataRequestPayload.TYPE,
                 PlayerDataRequestPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     ServerPlayer player = (ServerPlayer) context.player();
 
-                    // WICHTIG: Zu ServerLevel casten, um getEntity(UUID) nutzen zu können
                     if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
 
-                        // Nutze die UUID aus dem Payload
                         net.minecraft.world.entity.Entity target = serverLevel.getEntity(payload.petUUID());
 
                         if (target instanceof net.minecraft.world.entity.TamableAnimal animal && animal.getOwnerUUID() != null) {
@@ -137,7 +148,7 @@ public class HNessentials {
                 })
         );
 
-        // --- SERVER -> CLIENT: Score empfangen ---
+        // --- SERVER -> CLIENT ---
         registrar.playToClient(
                 ScoreSyncPayload.TYPE,
                 ScoreSyncPayload.STREAM_CODEC,
@@ -146,23 +157,20 @@ public class HNessentials {
                 })
         );
 
-        // --- SERVER -> CLIENT: Pet-Daten empfangen (NUR EINMAL REGISTRIEREN!) ---
+        // --- SERVER -> CLIENT ---
         registrar.playToClient(
                 PlayerDataResponsePayload.TYPE,
                 PlayerDataResponsePayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     UUID petUuid = UUID.fromString(payload.PetUUID());
 
-                    // 1. In den Cache für den Renderer (GoldWolfLayer) speichern
                     clientPetSkins.put(petUuid, payload.selected());
 
-                    // 2. GUI updaten, falls der Spieler gerade im Menü ist
                     net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
                     if (mc.screen instanceof PetMorphScreen morphScreen) {
                         morphScreen.updateSelectedSkin(payload.selected());
                     }
 
-                    // 3. Den Namen des Skins global für das Menü setzen
                     if (payload.selected() >= 0 && payload.selected() < skins.size()) {
                         PetMorphScreen.currentSkinName = skins.get(payload.selected());
                     }
@@ -174,7 +182,6 @@ public class HNessentials {
                 OpenAdminScreenPayload.TYPE,
                 OpenAdminScreenPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
-                    // Diese Prüfung und das verzögerte Aufrufen verhindern den Crash
                     ClientPacketHandler.handleAdminGuiOpen(payload, context);
                 }
         ));
@@ -185,7 +192,135 @@ public class HNessentials {
                 AdminUpdateDataPayload.STREAM_CODEC,
                 ServerPacketHandler::handleAdminUpdate
         );
+
+
+        // CLIENT -> SERVER
+        registrar.playToServer(
+                requestPlayerData.TYPE,
+                requestPlayerData.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    ServerPacketHandler.sendData(payload.target());
+                }
+        ));
+
+        // SERVER -> CLIENT
+        registrar.playToClient(
+                CosmeticUpdatePayload.TYPE,
+                CosmeticUpdatePayload.STREAM_CODEC,
+                (payload, context) -> ClientPacketHandler.ClientDataCache.updateCosmetic(payload.playerUUID(), CosmeticSlot.HAT, payload.cosmeticId())
+        );
+
+        // Server -> Client
+        registrar.playToClient(
+                responsePlayerData.TYPE,
+                responsePlayerData.CODEC,
+                (payload, context) -> {
+                    // Das hier passiert auf dem Client, wenn das Paket ankommt
+                    context.enqueueWork(() -> {
+                        try {
+                            System.out.println("Empfange JSON: " + payload.jsonString());
+
+                            // 1. Erstmal als generisches Element parsen
+                            JsonElement element = JsonParser.parseString(payload.jsonString());
+
+                            if (element.isJsonObject()) {
+                                JsonObject rootObj = element.getAsJsonObject();
+                                Map<UUID, HNPlayerData> newMap = new HashMap<>();
+
+                                // 2. Jeden Eintrag einzeln durchgehen
+                                for (Map.Entry<String, JsonElement> entry : rootObj.entrySet()) {
+                                    try {
+                                        UUID uuid = UUID.fromString(entry.getKey());
+
+                                        // HIER passiert der Fehler:
+                                        // Wenn entry.getValue() ein String ist, kann GSON kein HNPlayerData daraus machen.
+                                        if (entry.getValue().isJsonObject()) {
+                                            HNPlayerData data = gson.fromJson(entry.getValue(), HNPlayerData.class);
+                                            newMap.put(uuid, data);
+                                        } else {
+                                            System.err.println("Überspringe Key " + entry.getKey() + " weil der Wert kein Objekt ist: " + entry.getValue());
+                                        }
+                                    } catch (IllegalArgumentException e) {
+                                        System.err.println("Ungültige UUID im JSON-Key: " + entry.getKey());
+                                    }
+                                }
+
+
+                                if (HNplayerDataMap == null) HNplayerDataMap = new HashMap<>();
+                                HNplayerDataMap.putAll(newMap);
+
+                                Map<UUID, PlayerData> playerDataMap1 = new HashMap<>();
+                                for (HNPlayerData hnPlayerData : newMap.values()){
+                                    List<BakableModel> hatbakableModels = new ArrayList<>();
+                                    if (hnPlayerData.hats() != null) {
+                                        for (String hatid : hnPlayerData.hats()) {
+                                            Model hatmodel = CosmeticFetcher.getModel(CosmeticType.HAT, hatid);
+                                            if (hatmodel != null) {
+                                                BakableModel hatbm = Models.createBakableModel(hatmodel);
+                                                if (hatbm != null) {
+                                                    hatbakableModels.add(hatbm);
+                                                }
+                                            }
+                                        }
+                                    }
+
+
+                                    BakableModel LBudybm = null;
+                                    if (hnPlayerData.leftShoulderBuddy() != null) {
+                                        Model LBudymodel = CosmeticFetcher.getModel(CosmeticType.HAT, hnPlayerData.leftShoulderBuddy());
+
+                                        if (LBudymodel != null) {
+                                            LBudybm = Models.createBakableModel(LBudymodel);
+                                        }
+                                    }
+
+                                    BakableModel RBudybm = null;
+                                    if (hnPlayerData.leftShoulderBuddy() != null) {
+                                        Model RBudymodel = CosmeticFetcher.getModel(CosmeticType.HAT, hnPlayerData.rightShoulderBuddy());
+
+                                        if (RBudymodel != null) {
+                                            RBudybm = Models.createBakableModel(RBudymodel);
+                                        }
+                                    }
+
+                                    BakableModel BBlingbm = null;
+                                    if (hnPlayerData.backBling() != null) {
+                                        Model RBudymodel = CosmeticFetcher.getModel(CosmeticType.HAT, hnPlayerData.backBling());
+
+                                        if (RBudymodel != null) {
+                                            BBlingbm = Models.createBakableModel(RBudymodel);
+                                        }
+                                    }
+
+                                    PlayerData newPLData = new PlayerData(hnPlayerData.lore(), hnPlayerData.upsideDown(), hnPlayerData.icon(), hnPlayerData.online(), hnPlayerData.prefix(), hnPlayerData.suffix(), hatbakableModels, null, LBudybm, RBudybm, BBlingbm, hnPlayerData.skin(), hnPlayerData.slim());
+                                    playerDataMap1.put(hnPlayerData.getPlayerUUID(), newPLData);
+                                }
+                                playerDataMap = playerDataMap1;
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Totaler Fehler beim PlayerData-Parsing!");
+                            e.printStackTrace();
+                        }
+                    });
+                }
+        );
+
+        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/longhat/longhat");
+
+        CosmeticRegistry.register(LONG_HAT);
+        CosmeticRegistry.register(WITCH_HAT);
+        CosmeticRegistry.register(MASK);
+        CosmeticRegistry.register(WASSER_MELONE);
     }
+
+    public static final CustomCosmetic LONG_HAT = create("longhat", "Long Hat", CosmeticType.HAT, CosmeticSlot.HAT);
+    public static final CustomCosmetic WITCH_HAT = create("witchhat", "Witch Hat", CosmeticType.HAT, CosmeticSlot.HAT);
+    public static final CustomCosmetic WASSER_MELONE = create("wassermelone", "Wassermelone", CosmeticType.HAT, CosmeticSlot.HAT);
+    public static final CustomCosmetic MASK = create("mask", "Player Mask", CosmeticType.HAT, CosmeticSlot.HAT);
+    private static CustomCosmetic create(String id, String name, CosmeticType<?> type, CosmeticSlot slot) {
+        return new SimpleCosmetic(id, name, type, slot);
+    }
+
 
     private void registerEvents() {
         var bus = NeoForge.EVENT_BUS;

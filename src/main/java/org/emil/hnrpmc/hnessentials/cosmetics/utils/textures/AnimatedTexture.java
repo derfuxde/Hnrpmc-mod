@@ -1,0 +1,90 @@
+package org.emil.hnrpmc.hnessentials.cosmetics.utils.textures;
+
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.emil.hnrpmc.hnessentials.cosmetics.mixin.textures.NativeImageAccessorMixin;
+
+public abstract class AnimatedTexture extends AbstractTexture {
+    public AnimatedTexture(int aspectRatio) {
+        this.aspectRatio = aspectRatio;
+    }
+
+    protected NativeImage image;
+    protected int frameCounterTicks = 1;
+
+    protected final int aspectRatio;
+    private int frames = 1;
+    private int frameHeight;
+    private int frame;
+    private int tick;
+
+    protected void setupAnimations() throws IllegalStateException {
+        if (!this.isAnimatable()) {
+            throw new IllegalStateException("Not an animatable texture but setupAnimations() was called!");
+        }
+
+        this.frame = 0;
+        this.frames = (this.aspectRatio * this.image.getHeight()) / this.image.getWidth();
+        this.frameHeight = this.image.getHeight() / this.frames;
+
+
+        if (this.frames <= 0) {
+            throw new IllegalStateException("Frames cannot be less than one! If you're not using a cape loaded locally, please contact the Cosmetica devs asap. Debug data: frames=" + this.frames + ",frameHeight=" + this.frameHeight + ",frameDelayTicks=" + this.frameCounterTicks + ",width=" + this.image.getWidth() + ",height=" + this.image.getHeight());
+        }
+    }
+
+    protected void setupStatic() {
+        this.frameHeight = this.image.getHeight();
+    }
+
+    protected void upload() {
+        TextureUtil.prepareImage(this.getId(), 0, this.image.getWidth(), this.frameHeight);
+        this.image.upload(0, 0, 0, 0, this.frameHeight * this.frame, this.image.getWidth(), this.frameHeight, this.blur, false, false, false);
+    }
+
+    protected void doTick() {
+        if (((NativeImageAccessorMixin) (Object) this.image).getPixels() != 0) {
+            this.tick = (this.tick + 1) % this.frameCounterTicks;
+
+            if (this.tick == 0) {
+                this.frame = (this.frame + 1) % this.frames;
+
+                this.upload();
+            }
+        }
+    }
+
+    /**
+     * Get the raw image being used by this animated texture, including all frames.
+     */
+    public NativeImage getRawImage() {
+        return this.image;
+    }
+
+    public boolean isAnimatable() {
+        return this.aspectRatio > 0;
+    }
+
+    public int getFrameHeight() {
+        return this.isAnimatable() ? this.frameHeight : this.image.getHeight();
+    }
+
+    public int getFrameCount() {
+        return this.frames;
+    }
+
+    @Override
+    public String toString() {
+        return "AnimatedTexture{" +
+                "image=" + image +
+                ", frameCounterTicks=" + frameCounterTicks +
+                ", aspectRatio=" + aspectRatio +
+                ", frames=" + frames +
+                ", frameHeight=" + frameHeight +
+                ", frame=" + frame +
+                ", tick=" + tick +
+                '}';
+    }
+    // TODO do we have a memory leak? should I be closing the image on close()?
+}

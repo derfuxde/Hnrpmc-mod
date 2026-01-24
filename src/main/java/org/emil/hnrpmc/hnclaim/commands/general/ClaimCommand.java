@@ -28,6 +28,7 @@ import org.emil.hnrpmc.simpleclans.ChatBlock;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.clan.Suggestions;
+import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.emil.hnrpmc.simpleclans.overlay.ClanScoreboard;
 import org.jetbrains.annotations.Nullable;
 
@@ -177,7 +178,7 @@ public final class ClaimCommand extends ClanSBaseCommand {
     private int executeDelete(CommandSourceStack src) {
         ServerPlayer player = src.getPlayer();
         Claim claim = claimManager.getClaimbyPlayerPos(player);
-        if (claim != null && claim.getownerUUID().equals(player.getUUID())) {
+        if (claim != null && claim.getownerUUID().equals(player.getUUID()) || claim != null && Conditions.permission(player, "hnrpmc.claim.admin")) {
             claimManager.getClaims().remove(claim.getName());
             claimManager.removeClaim(claim.getName());
             plugin.getStorageManager().deleteClaim(claim);
@@ -200,7 +201,7 @@ public final class ClaimCommand extends ClanSBaseCommand {
         String claimname = StringArgumentType.getString(ctx, "claim");
         if (Objects.equals(claimname, "alle")) {
             for (Claim claim : claimManager.getClaims().stream().filter(cc -> cc.getownerUUID().equals(player.getUUID())).toList()) {
-                if (claim != null && !claim.getownerUUID().equals(player.getUUID())) {
+                if (claim != null && !claim.getownerUUID().equals(player.getUUID()) || claim != null && !Conditions.permission(player, "hnrpmc.claim.admin")) {
                     ChatBlock.sendMessage(src, ChatFormatting.RED + "Nur der Besitzer kann das.");
                     return 0;
                 } else if (claim == null) {
@@ -223,7 +224,7 @@ public final class ClaimCommand extends ClanSBaseCommand {
             }
         }
         Claim claim = claimManager.getClaimByName(claimname);
-        if (claim != null && !claim.getownerUUID().equals(player.getUUID())) {
+        if (claim != null && !claim.getownerUUID().equals(player.getUUID()) || claim != null && !Conditions.permission(player, "hnrpmc.claim.admin")) {
             ChatBlock.sendMessage(src, ChatFormatting.RED + "Nur der Besitzer kann das.");
             return 0;
         } else if (claim == null) {

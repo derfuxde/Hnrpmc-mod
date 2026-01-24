@@ -1,7 +1,13 @@
 package org.emil.hnrpmc.hnessentials;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
+import org.emil.hnrpmc.hnessentials.cosmetics.CapeData;
+import org.emil.hnrpmc.hnessentials.cosmetics.impl.UserInfoImpl;
+import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
+import org.jetbrains.annotations.Nullable;
+
 import java.net.InetAddress;
 import java.util.*;
 
@@ -17,12 +23,19 @@ public class HNPlayerData {
     private boolean muted = false;
     private boolean jailed = false;
 
-    // WICHTIG: HashMap nutzen, damit GSON Werte beim Laden ändern darf
+    private Map<CosmeticSlot, String> equippedCosmetics = new HashMap<>();
+    //private transient UserInfoImpl userInfo;
+
+
     private Map<String, Integer> timestamps = new HashMap<>();
     private double money = 0.0;
     private Map<String, Object> logoutLocation = new HashMap<>();
     private InetAddress ipAddress;
     private List<Home> playerHomes = new ArrayList<>();
+
+    public static ResourceLocation getSkinValue(ServerPlayer player) {
+        return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/slim/steve.png");
+    }
 
     // Leerer Konstruktor für GSON
     public HNPlayerData(ServerPlayer player) {
@@ -33,6 +46,41 @@ public class HNPlayerData {
         teleportEnabled = true;
         ip_adress = player.getIpAddress();
         PetSelectedTexture = new HashMap<>();
+        equippedCosmetics = new HashMap<>();
+
+        this.lore = "";
+        this.upsideDown = false;
+        this.prefix = "";
+        this.suffix = "";
+        this.hatIds = new ArrayList<>();
+        this.capeId = null;
+        this.leftShoulderBuddyId = null;
+        this.rightShoulderBuddyId = null;
+        this.backBlingId = null;
+        this.skin = getSkinValue(player);
+        this.slim = false;
+        // 1.2.2
+        this.icon = null;
+        this.online = true;
+
+        /*userInfo = new UserInfoImpl(
+                getSkinValue(player).getPath(),
+                false,
+                lore,
+                "java",
+                "default",
+                false,
+                prefix(),
+                suffix,
+                null,
+                online,
+                hatIds,
+                rightShoulderBuddyId,
+                leftShoulderBuddyId,
+                backBlingId,
+                "",
+                ""
+        );*/
         //playerHomes = plugin.getHomeManager().getHomes(playerUUID);
     }
 
@@ -95,7 +143,7 @@ public class HNPlayerData {
     }
 
     public boolean isGodMode() {
-        return isGodMode();
+        return this.godMode;
     }
 
     public boolean isJailed() {
@@ -130,6 +178,55 @@ public class HNPlayerData {
         return lastLocation;
     }
 
+    /*public UserInfoImpl getUserInfo() {
+        return userInfo;
+    }*/
+
+
+    public void setCosmetic(CosmeticSlot slot, String cosmeticId) {
+        if (equippedCosmetics == null) this.equippedCosmetics = new HashMap<>();
+        equippedCosmetics.put(slot, cosmeticId);
+        if (slot == CosmeticSlot.HAT) {
+            hatIds = new ArrayList<>();
+            if (hatIds != null) {
+                hatIds.add(cosmeticId);
+
+            }
+        }
+        /*userInfo = new UserInfoImpl(
+                getSkinValue(null).getPath(),
+                slim,
+                lore,
+                "java",
+                "default",
+                upsideDown,
+                prefix,
+                suffix,
+                null,
+                online,
+                hatIds,
+                rightShoulderBuddyId,
+                leftShoulderBuddyId,
+                backBlingId,
+                capeId,
+                ""
+        );*/
+    }
+
+
+
+    public List<String> getEquippedCosmetics() {
+        if (equippedCosmetics == null) return new ArrayList<>();
+        if (equippedCosmetics.isEmpty()) return new ArrayList<>();
+        return equippedCosmetics.values().stream().toList();
+    }
+
+    public String getCosmetic(CosmeticSlot slot) {
+        if (equippedCosmetics == null) return null;
+        if (equippedCosmetics.isEmpty()) return null;
+        return equippedCosmetics.getOrDefault(slot, null);
+    }
+
     public void setGodMode(boolean godMode) {
         this.godMode = godMode;
     }
@@ -158,4 +255,116 @@ public class HNPlayerData {
     }
 
     public Map<String, Integer> getTimestamps() { return timestamps; }
+
+    // -- CosmeticDatas --
+
+    private final String lore;
+    private final boolean upsideDown;
+    private final @Nullable ResourceLocation icon;
+    private final boolean online;
+
+    private final String prefix;
+    private final String suffix;
+    //private List<BakableModel> hats;
+    //private final CapeData cape;
+    //private final @Nullable BakableModel leftShoulderBuddy;
+    //private final @Nullable BakableModel rightShoulderBuddy;
+    //private final @Nullable BakableModel backBling;
+    private List<String> hatIds = new ArrayList<>();
+    private String capeId; // Oder CapeData, sofern CapeData keine Client-Klassen enthält
+    private @Nullable String leftShoulderBuddyId;
+    private @Nullable String rightShoulderBuddyId;
+    private @Nullable String backBlingId;
+    private final ResourceLocation skin;
+    private final boolean slim;
+    private static Map<UUID, HNPlayerData> playerDataCache = new HashMap<>();
+
+
+    public String lore() {
+        return lore;
+    }
+
+    public boolean upsideDown() {
+        return upsideDown;
+    }
+
+    public String prefix() {
+        return prefix;
+    }
+
+    public String suffix() {
+        return suffix;
+    }
+
+    public List<String> hats() {
+        if (hatIds == null) return List.of("none");
+        if (hatIds.isEmpty()) return List.of("none");
+        return hatIds;
+    }
+
+    public String leftShoulderBuddy() {
+        return leftShoulderBuddyId;
+    }
+
+    public String rightShoulderBuddy() {
+        return rightShoulderBuddyId;
+    }
+
+    public String backBling() {
+        return backBlingId;
+    }
+
+    public String cape() {
+        return this.capeId;
+    }
+
+    public ResourceLocation skin() {
+        return skin;
+    }
+
+    public boolean slim() {
+        return slim;
+    }
+
+    public ResourceLocation icon() {
+        return icon;
+    }
+
+    public boolean online() {
+        return online;
+    }
+
+    public static boolean has(UUID uuid) {
+        synchronized (playerDataCache) {
+            return playerDataCache.containsKey(uuid);
+        }
+    }
+
+    public static HNPlayerData getCached(UUID player) {
+        synchronized (playerDataCache) {
+            return playerDataCache.get(player);
+        }
+    }
+
+    public static void clear(UUID uuid) {
+        synchronized (playerDataCache) {
+            playerDataCache.remove(uuid);
+        }
+    }
+
+    public static int getCacheSize() {
+        synchronized (playerDataCache) {
+            return playerDataCache.size();
+        }
+    }
+
+    public static Collection<UUID> getCachedPlayers() {
+        synchronized (playerDataCache) {
+            return playerDataCache.keySet();
+        }
+    }
+
+    public static void clearCaches() {
+        playerDataCache = new HashMap<>();
+    }
 }

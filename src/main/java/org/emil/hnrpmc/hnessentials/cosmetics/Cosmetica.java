@@ -1,0 +1,689 @@
+package org.emil.hnrpmc.hnessentials.cosmetics;
+
+import com.google.common.collect.Iterables;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+// Für Minecraft-interne Resource-Reload-Interfaces:
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.SharedConstants;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.emil.hnrpmc.hnessentials.HNPlayerData;
+import org.emil.hnrpmc.hnessentials.cosmetics.api.*;
+import org.emil.hnrpmc.hnessentials.cosmetics.api.ShoulderBuddies;
+import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
+import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.Playerish;
+import org.emil.hnrpmc.hnessentials.cosmetics.utils.NamedThreadFactory;
+import org.emil.hnrpmc.hnessentials.cosmetics.utils.TextComponents;
+import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+@OnlyIn(value = Dist.CLIENT)
+public class Cosmetica {
+    public static String authServer;
+    public static String websiteHost;
+    // Initialise to an unauthenticated instance, Authenticate later, if possible.
+    public static CosmeticaAPI api;
+
+    // for cosmetic sniper
+    public static Player farPickPlayer;
+    public static HitResult farPickHitResult;
+
+    // for welcome & vcheck
+    public static Component displayNext;
+
+    public static String currentServerAddressCache = "";
+
+    public static final Logger LOGGER = LogManager.getLogger("Cosmetica");
+
+    private static final ExecutorService MAIN_POOL = Executors.newFixedThreadPool(
+            Integer.parseInt(System.getProperty("cosmetica.lookupThreads", "8")),
+            new NamedThreadFactory("Cosmetica Lookup Thread"));
+
+    private static Path configDirectory;
+    private static Path cacheDirectory;
+
+    private static boolean mayShowWelcomeScreen = false;
+
+    /**
+     * The timestamp for the africa endpoint.
+     */
+    private static OptionalLong toto = OptionalLong.empty();
+    private static final Pattern UNDASHED_UUID_GAPS = Pattern.compile("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})");
+    private static final String UUID_DASHIFIER_REPLACEMENT = "$1-$2-$3-$4-$5";
+
+    private static final List<String> splashes = new LinkedList<>();
+
+    private static void addSplash(String splash) {
+        splashes.add(splash);
+    }
+
+    public static Collection<String> getSplashes() {
+        return splashes;
+    }
+
+    public static Path getConfigDirectory() {
+        return configDirectory;
+    }
+
+    public static Path getCacheDirectory() {
+        return cacheDirectory;
+    }
+
+    /**
+     * Gets whether the client is allowed to show the welcome screen.
+     * @return a boolean giving the status of whether the client is allowed to show the welcome screen.
+     */
+    public static boolean mayShowWelcomeScreen() {
+        return mayShowWelcomeScreen;
+    }
+
+    public static boolean isProbablyNPC(UUID uuid) {
+        return uuid.version() == 2; // NPCs are uuid version 2. Of course, this can't always be guaranteed with the many different server software, but it seems to be the case at least on hypixel
+    }
+
+    private static String loadOrCache(File file, @Nullable String value) {
+        try {
+            if (value != null) {
+                file.createNewFile();
+
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(value);
+                }
+            } else if (file.isFile()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    value = reader.readLine().trim();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return value;
+    }
+
+    /*
+     * Adapted from code at https://github.com/FabricMC/fabric-installer
+     * Original license has been preserved for this method.
+     *
+     * Copyright (c) 2016, 2017, 2018, 2019 FabricMC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    private static Path findDefaultInstallDir(String application) {
+        String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+        Path dir;
+
+        if (os.contains("win") && System.getenv("APPDATA") != null) {
+            dir = Paths.get(System.getenv("APPDATA")).resolve("." + application);
+        } else {
+            String home = System.getProperty("user.home", ".");
+            Path homeDir = Paths.get(home);
+
+            if (os.contains("mac")) {
+                dir = homeDir.resolve("Library").resolve("Application Support").resolve(application);
+            } else {
+                dir = homeDir.resolve("." + application);
+            }
+        }
+
+        return dir.toAbsolutePath().normalize();
+    }
+
+    public static void onShutdownClient() {
+        try {
+            MAIN_POOL.shutdownNow();
+        } catch (RuntimeException e) { // Just in case.
+            e.printStackTrace();
+        }
+    }
+
+    // =================
+    //       IMPL
+    // =================
+
+    public static String dashifyUUID(String uuid) {
+        return UNDASHED_UUID_GAPS.matcher(uuid).replaceAll(UUID_DASHIFIER_REPLACEMENT);
+    }
+
+    public static String base64Ip(InetSocketAddress ip) {
+        byte[] arr = (ip.getAddress().getHostAddress() + ":" + ip.getPort()).getBytes(StandardCharsets.UTF_8);
+        return Base64.encodeBase64String(arr);
+    }
+
+    // Start Africa
+
+    public static void safari(Minecraft minecraft, boolean yourFirstRodeo, boolean ignoreSelf) {
+        InetSocketAddress prideRock = minecraft.isLocalServer() ? new InetSocketAddress("127.0.0.1", 25565) : null;
+        if (prideRock == null && minecraft.getConnection().getConnection().getRemoteAddress() instanceof InetSocketAddress ip)
+            prideRock = ip;
+        if (prideRock != null)
+            safari(prideRock, yourFirstRodeo, ignoreSelf);
+    }
+
+    /**
+     * Keep track of africa fails to silence it after 3 fails.
+     * If elevated logging is on, this is ignored.
+     */
+    private static int africaFails = 0;
+
+    public static void safari(InetSocketAddress prideRock, boolean yourFirstRodeo, boolean ignoreSelf) {
+        if (api != null && api.isAuthenticated()) {
+
+            api.everyThirtySecondsInAfricaHalfAMinutePasses(prideRock, yourFirstRodeo || !Cosmetica.toto.isPresent() ? 0 : Cosmetica.toto.getAsLong())
+                    .ifSuccessfulOrElse(theLionSleepsTonight -> {
+                        // the speech from the lion king
+                        for (String notification : theLionSleepsTonight.getNotifications()) { // let's hope I made sure this isn't null
+                            try {
+                                Minecraft.getInstance().gui.getChat().addMessage(
+                                        TextComponents.literal("§6§lCosmetica§f §l>§7 ").append(TextComponents.chatEncode(notification))
+                                );
+                            }
+                            catch (Exception e) {
+                                Cosmetica.LOGGER.error("Error sending cosmetica notification.", e);
+                            }
+                        }
+
+                        Cosmetica.toto = OptionalLong.of(theLionSleepsTonight.getTimestamp());
+
+                        if (!yourFirstRodeo) {
+                            for (User individual : theLionSleepsTonight.getNeedsUpdating()) {
+                                UUID uuid = individual.getUUID();
+
+                                if (PlayerData.has(uuid)) {
+                                    PlayerData.clear(uuid);
+
+                                    // if ourselves, refresh asap
+                                    if (!ignoreSelf && uuid.equals(Minecraft.getInstance().player.getUUID())) {
+                                        PlayerData.get(Minecraft.getInstance().player);
+                                    }
+                                } else {
+                                    // Here are EyezahMC inc. we strive to be extremely descriptive with our debug messages.
+                                    // use username to clear the info - might be in offline mode or something
+                                    String username = individual.getUsername();
+
+                                    PlayerInfo info = Minecraft.getInstance().getConnection().getPlayerInfo(username);
+
+                                    if (info != null) {
+                                        UUID serverUuid = info.getProfile().getId();
+
+                                        if (PlayerData.has(serverUuid)) {
+                                            PlayerData.clear(serverUuid);
+
+                                            // if ourselves, refresh asap
+                                            if (!ignoreSelf && username.equals(String.valueOf(Minecraft.getInstance().player.getName()))) {
+                                                PlayerData.get(Minecraft.getInstance().player);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        africaFails = 0;
+                    }, logErr("Error checking for cosmetic updates on the remote server", e -> {
+                        if (africaFails < 3) {
+                            africaFails++;
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }));
+        }
+    }
+
+    // End Africa
+
+    public static void cinder(Minecraft minecraft, float yawProbably) {
+        Entity entity = minecraft.getCameraEntity();
+
+        if (entity != null) {
+            if (minecraft.level != null) {
+                minecraft.getProfiler().push("snipe");
+                Cosmetica.farPickPlayer = null;
+
+                final double maxDist = 64.0f;
+                Cosmetica.farPickHitResult = entity.pick(maxDist, yawProbably, false);
+                Vec3 eyePosition = entity.getEyePosition(yawProbably);
+
+                double maxDistSqr = maxDist;
+                maxDistSqr *= maxDistSqr;
+
+                if (Cosmetica.farPickHitResult != null) {
+                    maxDistSqr = Cosmetica.farPickHitResult.getLocation().distanceToSqr(eyePosition);
+                }
+
+                Vec3 view = entity.getViewVector(1.0F);
+                Vec3 castTowards = eyePosition.add(view.x * maxDist, view.y * maxDist, view.z * maxDist);
+
+                final float inflation = 1.0F;
+                AABB selectionBoundingBox = entity.getBoundingBox().expandTowards(view.scale(maxDist)).inflate(inflation, inflation, inflation);
+                EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(entity, eyePosition, castTowards, selectionBoundingBox, e -> !e.isSpectator() && e.isPickable(), maxDistSqr);
+
+                if (entityHitResult != null) {
+                    Entity entity2 = entityHitResult.getEntity();
+                    Vec3 resultLocation = entityHitResult.getLocation();
+                    double distance = eyePosition.distanceToSqr(resultLocation);
+
+                    if (distance < maxDistSqr || Cosmetica.farPickHitResult == null) {
+                        Cosmetica.farPickHitResult = entityHitResult;
+
+                        if (entity2 instanceof Player player) { // vanilla crosshair pick: entity2 instanceof LivingEntity || entity2 instanceof ItemFrame
+                            Cosmetica.farPickPlayer = player;
+                        }
+                    }
+                }
+
+                minecraft.getProfiler().pop();
+            }
+        }
+    }
+
+    public static void runOffthread(Runnable runnable, @SuppressWarnings("unused") ThreadPool pool) {
+        if (Thread.currentThread().getName().startsWith("Cosmetica")) { // if already on a cosmetica worker
+            runnable.run();
+        } else {
+            MAIN_POOL.execute(runnable);
+        }
+    }
+
+    public static boolean shouldRenderUpsideDown(Player player) {
+        return PlayerData.get(player).upsideDown();
+    }
+
+    public static String urlEncode(String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+    }
+
+    public static <K, V, V2> Map<K, V2> map(Map<K, V> original, Function<V, V2> mapper) {
+        HashMap<K, V2> result = new HashMap<>();
+        original.forEach((k, v) -> result.put(k, mapper.apply(v)));
+        return result;
+    }
+
+    public static String pickFirst(String... strings) {
+        for (String s : strings) {
+            if (!s.isEmpty()) return s;
+        }
+
+        return "";
+    }
+
+    public static PlayerData newPlayerData(UserInfo info, UUID uuid) {
+        List<Model> hats = info.getHats();
+        Optional<ShoulderBuddies> shoulderBuddies = info.getShoulderBuddies();
+        Optional<Model> backBling = info.getBackBling();
+        Optional<Cape> cloak = info.getCape();
+        String icon = info.getIcon();
+        boolean isSelf = uuid.equals(Minecraft.getInstance().getUser().getProfileId());
+
+        Optional<Model> leftShoulderBuddy = shoulderBuddies.isEmpty() ? Optional.empty() : shoulderBuddies.get().getLeft();
+        Optional<Model> rightShoulderBuddy = shoulderBuddies.isEmpty() ? Optional.empty() : shoulderBuddies.get().getRight();
+
+        return new PlayerData(
+                info.getLore(),
+                info.isUpsideDown(),
+                icon.isEmpty() ? null : CosmeticaSkinManager.processIcon(icon),
+                info.isOnline() || isSelf, // we are always online ourselves. we are literally using the mod
+                info.getPrefix(),
+                info.getSuffix(),
+                hats.stream().map(Models::createBakableModel).collect(Collectors.toList()),
+                cloak.isPresent() ? new CapeData(
+                        CosmeticaSkinManager.processCape(cloak.get()),
+                        pickFirst(cloak.get().getName(), cloak.get().getOrigin() + " Cape"),
+                        cloak.get().getId(),
+                        !cloak.get().isCosmeticaAlternative() && !(cloak.get() instanceof CustomCape),
+                        cloak.get().getOrigin()
+                ) : CapeData.NO_CAPE,
+                leftShoulderBuddy.isEmpty() ? null : Models.createBakableModel(leftShoulderBuddy.get()),
+                rightShoulderBuddy.isEmpty() ? null : Models.createBakableModel(rightShoulderBuddy.get()),
+                backBling.isEmpty() ? null : Models.createBakableModel(backBling.get()),
+                CosmeticaSkinManager.processSkin(info.getSkin(), uuid),
+                info.isSlim()
+        );
+    }
+
+    /**
+     * In order to take the load off the servers (and avoid rate limits), we forward the mojang api response used in
+     * game instead of using a network of workers. This is a more long-term sustainable approach to fetching username
+     * and texture data.
+     * This is perfectly secure on both ends. No sensitive data is exposed to the server, and the server can verify
+     * via the signature that the info hasn't been tampered.
+     * This should be called offthread.
+     * @param profile the game profile.
+     */
+    public static void forwardPublicUserInfoToNametag(GameProfile profile) {
+        final Property textureProperty = Iterables.getFirst(profile.getProperties().get("textures"), null);
+
+        // only send signed data
+        if (textureProperty != null && textureProperty.hasSignature()) {
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectionRequestTimeout(20 * 1000)
+                    .setConnectTimeout(20 * 1000)
+                    .setSocketTimeout(20 * 1000)
+                    .build();
+
+            try (CloseableHttpClient client = HttpClients.custom()
+                    .setDefaultRequestConfig(requestConfig)
+                    .build()) {
+
+                final HttpPut put = new HttpPut("https://ingest.namet.ag/");
+
+                String request = String.format(
+                        "{\"value\": \"%s\", \"signature\": \"%s\"}",
+                        textureProperty.value(),
+                        textureProperty.signature());
+
+                put.setEntity(new StringEntity(request, ContentType.APPLICATION_JSON));
+
+                try (CloseableHttpResponse response = client.execute(put)) {
+                    HttpEntity entity = response.getEntity();
+                    String responseBody = EntityUtils.toString(entity);
+                }
+            } catch (IOException e) {
+                LOGGER.error("Error submitting to namet.ag", e);
+            }
+        }
+    }
+
+    public static void renderLore(EntityRenderDispatcher entityRenderDispatcher, Entity entity, PlayerModel<AbstractClientPlayer> playerModel, PoseStack stack, MultiBufferSource multiBufferSource, Font font, int packedLight) {
+        if (entity instanceof Player player) {
+            UUID lookupId = player.getUUID();
+
+            if (lookupId != null) {
+                double squaredDistance = entityRenderDispatcher.distanceToSqr(entity);
+                PlayerData data = PlayerData.get(player);
+
+                if (squaredDistance <= 4096.0D) {
+                    renderLore(
+                            stack,
+                            entityRenderDispatcher.cameraOrientation(),
+                            font,
+                            multiBufferSource,
+                            data.lore(),
+                            Hats.OVERRIDDEN.getList(data::hats),
+                            player.hasItemInSlot(EquipmentSlot.HEAD),
+                            !player.isSleeping(), // doNametagShift
+                            entity.isDiscrete(),
+                            data.upsideDown(),
+                            entity.getBbHeight(),
+                            playerModel.head.xRot,
+                            packedLight,
+                            false);
+                }
+            }
+        }
+    }
+
+    public static void renderLore(PoseStack stack, Quaternionf cameraOrientation, Font font, MultiBufferSource multiBufferSource, String lore, List<BakableModel> hats, boolean wearingHelmet, boolean doNametagShift, boolean discrete, boolean upsideDown, float playerHeight, float xRotHead, int packedLight, boolean isFake) {
+        // how much do we need to shift up nametags?
+
+        // upside down players don't need nametags shifted up
+        if (!upsideDown) {
+            float hatTopY = 0;
+            float torsoFixedHatTopY = 0;
+
+            if (doNametagShift) {
+                for (BakableModel hat : hats) {
+
+                }
+            }
+
+            if (hatTopY > 0 || torsoFixedHatTopY > 0) {
+                float normalizedAngleMultiplier = (float) -(Math.abs(xRotHead) / 1.57 - 1);
+                float lookAngleMultiplier;
+
+                if (normalizedAngleMultiplier == 0.49974638F) { // Gliding with elytra, swimming, or crouching
+                    lookAngleMultiplier = 0;
+                } else {
+                    lookAngleMultiplier = normalizedAngleMultiplier;
+                }
+
+                stack.translate(0, Math.max(hatTopY * lookAngleMultiplier, torsoFixedHatTopY)/ 16, 0);
+            }
+        }
+
+        // render lore
+        if (!lore.isEmpty()) {
+            Component component = TextComponents.literal(lore);
+
+            boolean fullyRender = !discrete;
+
+            float height = playerHeight + 0.25F;
+
+            Quaternionf fixedCameraOrientation = new Quaternionf(cameraOrientation);
+
+            stack.translate(0, 0.1, 0);
+
+            stack.pushPose();
+            stack.translate(0.0D, height, 0.0D);
+            if (!isFake) fixedCameraOrientation.rotateY(Mth.DEG_TO_RAD * 180);
+            stack.mulPose(fixedCameraOrientation);
+            stack.scale(-0.025F, -0.025F, 0.025F);
+            stack.scale(0.75F, 0.75F, 0.75F);
+            Matrix4f textModel = stack.last().pose();
+
+            float backgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            int alphaARGB = (int) (backgroundOpacity * 255.0F) << 24;
+
+            float xOffset = (float) (-font.width(component) / 2);
+
+            font.drawInBatch(component, xOffset, 0, 553648127, false, textModel, multiBufferSource, fullyRender ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, alphaARGB, packedLight);
+
+            if (fullyRender) {
+                font.drawInBatch(component, xOffset, 0, -1, false, textModel, multiBufferSource, Font.DisplayMode.NORMAL, 0, packedLight);
+            }
+
+            stack.popPose();
+        }
+    }
+
+    public static void renderTabIcon(PoseStack stack, int x, int y, UUID playerUUID, String name) {
+        PlayerData data = PlayerData.get(playerUUID, name, false);
+        @Nullable ResourceLocation iconTexture = data.icon();
+
+        if (iconTexture != null) {
+            // don't do discrete in tab. That could be classified as cheating, as you'd know if anyone online is sneaking.
+            // I'm sure there's some minigame out there where that's important
+            RenderSystem.enableBlend();
+            renderTexture(stack.last().pose(), iconTexture, x + 1, x + 1 + 8, y, y + 8, 0, data.online() ? 1.0f : 0.5f);
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    public static void renderIcon(PoseStack poseStack, MultiBufferSource bufferSource, Playerish player, Font font, int packedLight, Component component) {
+        PlayerData playerData = player.getCosmeticaPlayerData();
+        @Nullable ResourceLocation iconTexture = playerData.icon();
+
+        if (iconTexture != null) {
+            float xOffset = -font.width(component) / 2.0f;
+
+            poseStack.pushPose();
+            poseStack.translate(xOffset + 1, 0, 0);
+            renderTextureLikeText(poseStack.last().pose(), bufferSource, iconTexture, -1, 9, -1, 9, 0, packedLight, playerData.online() ? 1.0f : 0.5f, player.renderDiscreteNametag());
+
+            poseStack.popPose();
+        }
+    }
+
+    private static Vector3f rotateVertex(Vector3f vertex, Vector3f origin, Direction.Axis axis, float angle) {
+        vertex.sub(origin);
+        if (axis == Direction.Axis.X) {
+            return new Vector3f(vertex.x() + origin.x(), (float) (vertex.y() * Math.cos(angle) - vertex.z() * Math.sin(angle)) + origin.y(), (float) (vertex.z() * Math.cos(angle) + vertex.y() * Math.sin(angle)) + origin.z());
+        } else if (axis == Direction.Axis.Y) {
+            return new Vector3f((float) (vertex.x() * Math.cos(angle) + vertex.z() * Math.sin(angle)) + origin.x(), vertex.y() + origin.y(), (float) (vertex.z() * Math.cos(angle) - vertex.x() * Math.sin(angle)) + origin.z());
+        } else if (axis == Direction.Axis.Z) {
+            return new Vector3f((float) (vertex.x() * Math.cos(angle) - vertex.y() * Math.sin(angle)) + origin.x(), (float) (vertex.y() * Math.cos(angle) + vertex.x() * Math.sin(angle)) + origin.y(), vertex.z() + origin.z());
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    public static void renderTexture(Matrix4f matrix4f, ResourceLocation texture, int x0, int x1, int y0, int y1, int z, float transparency) {
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, texture);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+
+        bufferBuilder.addVertex(matrix4f, (float)x0, (float)y1, (float)z).setUv(0, 1).setColor(1.0f, 1.0f, 1.0f, transparency);
+        bufferBuilder.addVertex(matrix4f, (float)x1, (float)y1, (float)z).setUv(1, 1).setColor(1.0f, 1.0f, 1.0f, transparency);
+        bufferBuilder.addVertex(matrix4f, (float)x1, (float)y0, (float)z).setUv(1, 0).setColor(1.0f, 1.0f, 1.0f, transparency);
+        bufferBuilder.addVertex(matrix4f, (float)x0, (float)y0, (float)z).setUv(0, 0).setColor(1.0f, 1.0f, 1.0f, transparency);
+
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+    }
+
+    private static int getMaxLight() {
+        return (0xF << 20) | (0xF << 4);
+    }
+
+    public static void renderTextureLikeText(Matrix4f matrix4f, MultiBufferSource bufferSource, ResourceLocation texture, int x0, int x1, int y0, int y1, int z, int packedLight, float alpha, boolean discrete) {
+        // Background
+        // ==========
+        if (!discrete) {
+            RenderSystem.enableBlend();
+            RenderSystem.disableDepthTest();
+
+            int skylight = (packedLight >> 20) & 0xF;
+            int blocklight = (packedLight >> 4) & 0xF;
+            float shaderColour = Math.max(skylight, blocklight) / 15.0f;
+
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.setShaderColor(shaderColour, shaderColour, shaderColour, 0.25f * alpha);
+
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+
+            bufferBuilder.addVertex(matrix4f, (float) x0, (float) y1, (float) z).setUv(0, 1);
+            bufferBuilder.addVertex(matrix4f, (float) x1, (float) y1, (float) z).setUv(1, 1);
+            bufferBuilder.addVertex(matrix4f, (float) x1, (float) y0, (float) z).setUv(1, 0);
+            bufferBuilder.addVertex(matrix4f, (float) x0, (float) y0, (float) z).setUv(0, 0);
+
+            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+        }
+
+        // Regular Text Rendering
+        // ======================
+
+        float mainRenderAlpha = (discrete ? 0.3f : 1.0f) * alpha;
+
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.text(texture));
+
+        vertexConsumer.addVertex(matrix4f, (float) x0, (float) y1, (float) z).setColor(1.0f, 1.0f, 1.0f, mainRenderAlpha).setUv(0, 1).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, (float) x1, (float) y1, (float) z).setColor(1.0f, 1.0f, 1.0f, mainRenderAlpha).setUv(1, 1).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, (float) x1, (float) y0, (float) z).setColor(1.0f, 1.0f, 1.0f, mainRenderAlpha).setUv(1, 0).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, (float) x0, (float) y0, (float) z).setColor(1.0f, 1.0f, 1.0f, mainRenderAlpha).setUv(0, 0).setLight(packedLight);
+    }
+
+    public static void clearAllCaches() {
+        PlayerData.clearCaches();
+        Models.resetCaches();
+        CosmeticaSkinManager.clearCaches();
+        System.gc(); // force jvm to garbage collect our unused data
+    }
+
+    public static Consumer<RuntimeException> logErr(String message) {
+        return e -> LOGGER.error(message + ": ", e);
+    }
+
+    public static Consumer<RuntimeException> logErr(String message, Predicate<RuntimeException> predicate) {
+        return e -> {
+            if (predicate.test(e)) {
+                LOGGER.error(message + ": ", e);
+            }
+        };
+    }
+}

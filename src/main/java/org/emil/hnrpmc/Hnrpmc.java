@@ -84,10 +84,8 @@ public class Hnrpmc {
 
     @SubscribeEvent
     public void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        // Erstellt einen Registrar für den Namespace "bungeecord"
         final PayloadRegistrar registrar = event.registrar("bungeecord");
 
-        // Wir registrieren das Paket für die "Play"-Phase in Richtung Client/Proxy
         registrar.playToClient(
                 BungeePayload.TYPE,
                 BungeePayload.CODEC,
@@ -101,7 +99,6 @@ public class Hnrpmc {
         }
 
         try {
-            // Dieser Aufruf funktioniert erst, wenn LP die "setup" Phase beendet hat
             return LuckPermsProvider.get();
         } catch (IllegalStateException e) {
             return null;

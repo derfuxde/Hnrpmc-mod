@@ -1,0 +1,100 @@
+package org.emil.hnrpmc.hnessentials.menu;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.screens.Screen;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
+
+abstract class Selection<T extends Selection.Entry<T>> extends ObjectSelectionList<T> {
+    Selection(Minecraft minecraft, Screen parent, Font font, int floorOffset, int ceilOffset, int elementHeight, Consumer<String> onSelect) {
+        // width, height, y, elementHeight, (x=0)
+        super(minecraft, parent.width, parent.height - floorOffset - 32 - ceilOffset, 32 + ceilOffset, elementHeight);
+
+        this.parent = parent;
+        this.font = font;
+        this.onSelect = onSelect;
+    }
+
+    final Screen parent;
+    protected final Font font;
+    private final Consumer<String> onSelect;
+    private boolean setThisFrame; // remove duplicates from double setFocused and mouseClicked calling setSelected
+
+    @Override
+    public void setSelected(@Nullable T entry) {
+        super.setSelected(entry);
+
+        if (!this.setThisFrame) {
+            this.setThisFrame = true;
+            this.onSelect.accept(entry == null ? "" : entry.item);
+        }
+    }
+
+    public void recenter() {
+        if (this.getSelected() != null) {
+            this.centerScrollOn(this.getSelected());
+        }
+    }
+
+    public void matchSelected(Selection<T> other) {
+        T select = other.getSelected();
+        if (select == null) return;
+        select = this.findEntry(select); // switch to *our* one
+        super.setSelected(select);
+        this.centerScrollOn(select);
+    }
+
+    protected abstract T findEntry(T key);
+
+    @Override
+    protected int getScrollbarPosition() {
+        return super.getScrollbarPosition() + 20;
+    }
+
+    @Override
+    public int getRowWidth() {
+        return super.getRowWidth() + 50;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return this.parent.getFocused() == this;
+    }
+
+    @Override
+    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.setThisFrame = false;
+        super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public abstract static class Entry<E extends Selection.Entry<E>> extends ObjectSelectionList.Entry<E> {
+        final String item;
+        protected final Selection selection;
+
+        public Entry(Selection selection, String item) {
+            this.selection = selection;
+            this.item = item;
+        }
+
+        @Override
+        public boolean mouseClicked(double d, double e, int i) {
+            if (i == 0) {
+                this.select();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private void select() {
+            this.selection.setSelected(this);
+        }
+    }
+}

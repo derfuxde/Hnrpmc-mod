@@ -49,7 +49,7 @@ public final class PermissionsManager {
         }
 
         if (lp == null) {
-            return false;//player.hasPermissions(4);
+            return player.hasPermissions(4);
         }
 
         User user = lp.getUserManager().getUser(player.getUUID());

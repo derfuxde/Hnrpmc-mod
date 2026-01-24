@@ -17,7 +17,7 @@ license = "All Rights Reserved"
 # The modid of the mod
 modId = "hnrpmc" #mandatory
 # The version number of the mod
-version = "0.1.1" #mandatory
+version = "0.1.2" #mandatory
 # A display name for the mod
 displayName = "hnRP-MC" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.neoforge.net/docs/misc/updatechecker/
@@ -35,8 +35,8 @@ authors = "Emil" #optional
 description = '''Der Minecraft Mod für den Hannover RP Minecraft server'''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
-#[[mixins]]
-#config="hnrpmc.mixins.json"
+[[mixins]]
+config="mixins.json"
 
 # The [[accessTransformers]] block allows you to declare where your AT file is.
 # If this block is omitted, a fallback attempt will be made to load an AT from META-INF/accesstransformer.cfg

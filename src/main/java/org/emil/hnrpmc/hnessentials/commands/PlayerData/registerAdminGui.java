@@ -9,6 +9,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.emil.hnrpmc.hnessentials.CosmeticSlot;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.network.OpenAdminScreenPayload;
@@ -18,6 +19,7 @@ import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.emil.hnrpmc.simpleclans.managers.StorageManager;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 
 public class registerAdminGui extends ClanSBaseCommand {
@@ -52,18 +54,29 @@ public class registerAdminGui extends ClanSBaseCommand {
                             ServerPlayer admin = context.getSource().getPlayerOrException();
                             ServerPlayer target = EntityArgument.getPlayer(context, "target");
 
-                            // Daten vom Server-Speicher holen
-                            String data = new Gson().toJson(HNessentials.getInstance().getStorageManager().getOrCreatePlayerData(target.getUUID()));
+                            HNPlayerData fullData = HNessentials.getInstance().getStorageManager().getOrCreatePlayerData(target.getUUID()); //380df991-f603-344c-a090-369bad2a924a
 
-                            // Paket an den Admin senden, um das UI zu öffnen
-                            // Wir senden: UUID, Name und die aktuellen Daten
+                            // Erstelle eine "saubere" Kopie ohne Client-Klassen
+                            AdminSyncData safeData = new AdminSyncData(
+                                    fullData.getMoney(),
+                                    fullData.prefix(),
+                                    fullData.suffix(),
+                                    fullData.hats(), // Methode die nur String-IDs liefert
+                                    fullData.isJailed()
+                            );
+
+                            // DIESES Objekt kann Gson gefahrlos in JSON verwandeln
+                            String dataJson = new Gson().toJson(fullData);
+
                             PacketDistributor.sendToPlayer(admin, new OpenAdminScreenPayload(
                                     target.getUUID(),
-                                    target.getName().getString(),
-                                    data // Das Objekt muss serialisierbar sein!
+                                    target.getScoreboardName(),
+                                    dataJson
                             ));
 
                             return 1;
-                        }));
+                        })
+                );
     }
 }
+
