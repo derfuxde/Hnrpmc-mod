@@ -52,6 +52,7 @@ public final class TpaCommands extends ClanSBaseCommand {
         dispatcher.register(tpa("tpa"));
         dispatcher.register(tpahere("tpahere"));
         dispatcher.register(tpaccept("tpaccept"));
+        //dispatcher.register(tpahere("tpadeny"));
 
         dispatcher.register(tpa("hnrpmc:tpa"));
         dispatcher.register(tpahere("hnrpmc:tpahere"));
