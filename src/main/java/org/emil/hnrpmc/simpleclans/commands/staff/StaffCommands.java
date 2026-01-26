@@ -95,7 +95,7 @@ public final class StaffCommands extends ClanSBaseCommand {
         return Commands.literal("place")
                 .requires(src -> has(src, "simpleclans.mod.place"))
                 .then(Commands.argument("player", StringArgumentType.word())
-                        .suggests(Suggestions.allPlayers(plugin))
+                        .suggests(Suggestions.allPlayers(plugin, false))
                         .then(Commands.argument("clan", StringArgumentType.word())
                                 .suggests(Suggestions.Allclans(plugin))
                                 .executes(this::execPlace)));
@@ -530,6 +530,7 @@ public final class StaffCommands extends ClanSBaseCommand {
 
         for (Clan clan : cm.getClans()) {
             permissions.updateClanPermissions(clan);
+            plugin.getChatManager().getDiscordHook(plugin).updaterolePerms(clan);
         }
 
         NeoForge.EVENT_BUS.post(new ReloadEvent(sender.createCommandSourceStack()));
@@ -604,7 +605,7 @@ public final class StaffCommands extends ClanSBaseCommand {
 
         clan.addBb(sender.getName().getString(), lang("promoted.to.leader", sender, clanPlayer.getName()));
         clan.promote(uuid);
-        storage.updateClan(clan);
+        plugin.getStorageManager().updateClan(clan);
         ChatBlock.sendMessage(src, ChatFormatting.AQUA + lang("player.successfully.promoted", sender));
         return 1;
     }

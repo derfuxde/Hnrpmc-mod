@@ -287,81 +287,6 @@ public interface CosmeticaAPI {
     ///////////////////////////
 
     /**
-     * Get the login info from the authentication's token exchange, if it was done to create this instance.
-     * @return the login info as an optional
-     */
-    Optional<LoginInfo> getLoginInfo();
-
-    /**
-     * Pass a consumer to be invoked with the URL whenever a URL is contacted. This can be useful for debug logging purposes.
-     * @param logger the logger to pass.
-     */
-    void setUrlLogger(@Nullable Consumer<String> logger);
-
-    /**
-     * Sets the request timeout for this API instance. Default is 20 seconds.
-     * @param timeout the request timeout, in milliseconds.
-     */
-    void setRequestTimeout(int timeout);
-
-    /**
-     * Sets whether this instance of {@linkplain CosmeticaAPI} will require https for all connections.
-     * When set, this instance will ignore the default value set in {@link CosmeticaAPI#setDefaultForceHttps(boolean)} and instead use the value given.
-     * This is off by default. However, Cosmetica API will ALWAYS use HTTPS for sensitive data
-     * transactions regardless of this setting (anything that uses your master token). The kind of
-     * endpoints this will affect the HTTPS status of are non-information-sensitive ones such as getting
-     * another player's cosmetics.
-     * @param forceHttps whether to force https for all connections.
-     */
-    void setForceHttps(boolean forceHttps);
-
-    /**
-     * @return whether this cosmetica api instance has a master API token.
-     */
-    boolean isFullyAuthenticated();
-
-    /**
-     * @return whether this cosmetica api instance has any API token (master or limited).
-     */
-    boolean isAuthenticated();
-
-    /**
-     * Gets whether this instance of {@linkplain CosmeticaAPI} will require https for all connections.
-     * This is off by default. However, Cosmetica API will ALWAYS use HTTPS for sensitive data
-     * transactions regardless of this setting (anything that uses your master token). The kind of
-     * endpoints this will affect the HTTPS status of are non-information-sensitive ones such as getting
-     * another player's cosmetics.
-     * @return whether HTTPS connections for all connections are forced.
-     */
-    boolean isHttpsForced();
-
-    /**
-     * Gets whether instances of {@linkplain CosmeticaAPI} will require https by default for all connections.
-     * Individual instances {@linkplain CosmeticaAPI#setForceHttps(boolean) can override this}.
-     * This is off by default. However, Cosmetica API will ALWAYS use HTTPS for sensitive data
-     * transactions regardless of this setting (anything that uses your master token). The kind of
-     * endpoints this will affect the HTTPS status of are non-information-sensitive ones such as getting
-     * another player's cosmetics.
-     * @return whether HTTPS connections for all connections are forced.
-     */
-    static boolean isHttpsForcedByDefault() {
-        return CosmeticaWebAPI.getDefaultForceHttps();
-    }
-
-    /**
-     * Sets whether instances of {@linkplain CosmeticaAPI} will require https by default for all connections.
-     * Individual instances {@linkplain CosmeticaAPI#setForceHttps(boolean) can override this}.
-     * This is off by default. However, Cosmetica API will ALWAYS use HTTPS for sensitive data
-     * transactions regardless of this setting (anything that uses your master token). The kind of
-     * endpoints this will affect the HTTPS status of are non-information-sensitive ones such as getting
-     * another player's cosmetics.
-     * @return whether HTTPS connections for all connections are forced.
-     */
-    static void setDefaultForceHttps(boolean forceHttps) {
-        CosmeticaWebAPI.setDefaultForceHttps(forceHttps);
-    }
-
-    /**
      * Create an instance with which to access the cosmetica web api via one token. Cannot accept a temporary token. To use a cosmetica temporary authentication token, see {@link CosmeticaAPI#fromTemporaryToken(String, UUID)}.
      * @param token a cosmetica token. Can be a master token, or a token.
      * @return an instance of the cosmetica web api, configured with the given token. The instance will behave in the following way for each case:<br>
@@ -372,6 +297,7 @@ public interface CosmeticaAPI {
      * @throws IllegalStateException if an api instance cannot be retrieved.
      * @throws IllegalArgumentException if the token given does not match the format for any of the 3 token types.
      */
+    @Deprecated
     static CosmeticaAPI fromToken(String token) throws IllegalStateException, IllegalArgumentException {
         switch (token.charAt(0)) {
             case 'm':

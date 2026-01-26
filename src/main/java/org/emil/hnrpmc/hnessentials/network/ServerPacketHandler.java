@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.emil.hnrpmc.hnessentials.Cosmetic;
@@ -46,6 +48,14 @@ public class ServerPacketHandler {
         if (playerDatas != null) {
             String jsonString = gson.toJson(playerDatas);
             PacketDistributor.sendToPlayer(sp, new responsePlayerData(jsonString));
+        }
+    }
+
+    public static void syncEntityData(LivingEntity entity) {
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            EntityNBTPayload payload = new EntityNBTPayload(entity.getId(), entity.getPersistentData());
+
+            PacketDistributor.sendToPlayersTrackingEntity(entity, payload);
         }
     }
 

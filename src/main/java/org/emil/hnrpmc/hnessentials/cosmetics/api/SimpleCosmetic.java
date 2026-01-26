@@ -19,11 +19,8 @@ public class SimpleCosmetic implements CustomCosmetic {
         this.name = name;
         this.type = type;
 
-        // ResourceLocation ist Server-sicher
         ResourceLocation modelRl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/" + id);
 
-        // Wir übergeben 'null' für das BakableModel, da der Server es nicht braucht.
-        // Der Client lädt das echte Modell später über die ResourceLocation.
         this.internalCosmetic = new Cosmetic(id, slot, modelRl, Component.literal(name), null);
     }
 

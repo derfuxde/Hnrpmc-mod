@@ -3,10 +3,14 @@ package org.emil.hnrpmc.hnessentials;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -15,8 +19,10 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.hnessentials.commands.HNECommandManager;
+import org.emil.hnrpmc.hnessentials.cosmetics.ConfigCosmetic;
 import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.SyncCosmeticPayload;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.*;
@@ -86,6 +92,22 @@ public class HNessentials {
         this.homeManager = new HomeManager(this);
 
         storageManager.loadAllPlayerDatas();
+
+        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/longhat/longhat");
+
+        GeneralDefaultData GDD = getStorageManager().getGeneralData();
+
+        Map<String, CosmeticType<?>> cosmeticTypeMap = Map.of("hat", CosmeticType.HAT, "cape", CosmeticType.CAPE, "backbling", CosmeticType.BACK_BLING);
+
+        for (ConfigCosmetic CC : GDD.getCosmetics()) {
+            CosmeticType<Model> CT = (CosmeticType<Model>) cosmeticTypeMap.get(CC.getType().toLowerCase());
+
+            CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot()));
+        }
+
+        getStorageManager().saveGeneralData();
+
+
         registerEvents();
     }
 
@@ -116,9 +138,34 @@ public class HNessentials {
                         data.setPetSelectedTextureForPet(payload.skinint(), petUuid);
                         storage.save(player.getUUID());
 
+                        Entity entity = getServer().overworld().getEntity(petUuid);
+                        if (entity != null) {
+                            entity.getPersistentData().putInt("skinIndex", payload.skinint());
+                            if (entity instanceof LivingEntity LE) {
+                                ServerPacketHandler.syncEntityData(LE);
+                            }
+                        }
+
+
+
                         context.reply(new PlayerDataResponsePayload(payload.PetUUID(), payload.skinint()));
                     }
                 })
+        );
+
+        registrar.playToClient(
+                EntityNBTPayload.TYPE,
+                EntityNBTPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    // Logik auf dem Client
+                    context.enqueueWork(() -> {
+                        Entity entity = Minecraft.getInstance().level.getEntity(payload.entityId());
+                        if (entity != null) {
+                            // Hier schreiben wir die Daten in das lokale NBT des Clients
+                            entity.getPersistentData().merge(payload.nbt());
+                        }
+                    });
+                }
         );
 
         // --- CLIENT -> SERVER ---
@@ -161,20 +208,23 @@ public class HNessentials {
         registrar.playToClient(
                 PlayerDataResponsePayload.TYPE,
                 PlayerDataResponsePayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() -> {
-                    UUID petUuid = UUID.fromString(payload.PetUUID());
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        UUID petUuid = UUID.fromString(payload.PetUUID());
 
-                    clientPetSkins.put(petUuid, payload.selected());
+                        clientPetSkins.put(petUuid, payload.selected());
 
-                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-                    if (mc.screen instanceof PetMorphScreen morphScreen) {
-                        morphScreen.updateSelectedSkin(payload.selected());
-                    }
 
-                    if (payload.selected() >= 0 && payload.selected() < skins.size()) {
-                        PetMorphScreen.currentSkinName = skins.get(payload.selected());
-                    }
-                })
+                        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                        if (mc.screen instanceof PetMorphScreen morphScreen) {
+                            morphScreen.updateSelectedSkin(payload.selected());
+                        }
+
+                        if (payload.selected() >= 0 && payload.selected() < skins.size()) {
+                            PetMorphScreen.currentSkinName = skins.get(payload.selected());
+                        }
+                    });
+                }
         );
 
         // SERVER -> CLIENT
@@ -305,12 +355,9 @@ public class HNessentials {
                 }
         );
 
-        ResourceLocation rl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/longhat/longhat");
-
-        CosmeticRegistry.register(LONG_HAT);
-        CosmeticRegistry.register(WITCH_HAT);
-        CosmeticRegistry.register(MASK);
-        CosmeticRegistry.register(WASSER_MELONE);
+        //CosmeticRegistry.register(WITCH_HAT);
+        //CosmeticRegistry.register(MASK);
+        //CosmeticRegistry.register(WASSER_MELONE);
     }
 
     public static final CustomCosmetic LONG_HAT = create("longhat", "Long Hat", CosmeticType.HAT, CosmeticSlot.HAT);

@@ -228,35 +228,24 @@ public final class ClanManager {
      * Create a new clan
      */
     public void createClan(ServerPlayer player, String colorTag, String name) {
-        // 1. ClanPlayer holen oder erstellen (UUID bleibt gleich)
+
         ClanPlayer cp = getCreateClanPlayer(player.getUUID());
 
-        // 2. Verification-Logik (PermissionsManager muss auf NeoForge angepasst sein)
-        boolean verified = !plugin.getSettingsManager().is(REQUIRE_VERIFICATION)
-                || plugin.getPermissionsManager().has(player, "simpleclans.mod.verify");
+        boolean verified = !plugin.getSettingsManager().is(REQUIRE_VERIFICATION) || plugin.getPermissionsManager().has(player, "simpleclans.mod.verify");
 
-        // 3. Clan-Objekt initialisieren
         Clan clan = new Clan(colorTag, name, verified);
+        importClan(clan);
         clan.addPlayerToClan(cp);
         cp.setLeader(true);
         clan.getRanks().addAll(plugin.getSettingsManager().getStarterRanks());
 
-        // Starter Ranks aus Config laden
-        //clan.getRanks().addAll(plugin.getSettingsManager().getStarterRanks());
-
-        // 4. Datenbank-Operationen (Bleiben meist gleich, da SQL unabhängig ist)
         plugin.getStorageManager().insertClan(clan);
-        importClan(clan); // Registriert den Clan im Manager-Cache
         plugin.getStorageManager().updateClanPlayer(cp);
 
-        // 5. Einladungen ablehnen
         plugin.getRequestManager().deny(cp);
 
-        // 6. Permissions aktualisieren (LuckPerms o.ä.)
         SimpleClans.getInstance().getPermissionsManager().updateClanPermissions(clan);
 
-        // 7. Event-Handling (Der NeoForge Weg)
-        // Anstatt PluginManager nutzen wir den NeoForge.EVENT_BUS
         NeoForge.EVENT_BUS.post(new CreateClanEvent(clan));
     }
 

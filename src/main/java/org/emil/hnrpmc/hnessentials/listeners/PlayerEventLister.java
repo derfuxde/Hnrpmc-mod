@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
@@ -18,18 +19,12 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import org.emil.hnrpmc.hnessentials.CosmeticSlot;
-import org.emil.hnrpmc.hnessentials.HNPlayerData;
-import org.emil.hnrpmc.hnessentials.HNessentials;
-import org.emil.hnrpmc.hnessentials.Home;
+import org.emil.hnrpmc.hnessentials.*;
 import org.emil.hnrpmc.hnessentials.cosmetics.SyncCosmeticPayload;
 import org.emil.hnrpmc.hnessentials.network.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class PlayerEventLister {
     private static HNessentials plugin;
@@ -68,13 +63,9 @@ public class PlayerEventLister {
 
     @SubscribeEvent
     public void onLivingTarget(LivingChangeTargetEvent event) {
-        // Prüfen, ob die angreifende Entity ein Wolf ist
         if (event.getEntity() instanceof Wolf wolf) {
-            // Nur wenn der Wolf gezähmt ist
             if (wolf.isTame()) {
-                // Prüfen, ob das neue Ziel ein Spieler ist
                 if (event.getTargetType() instanceof Player) {
-                    // Den Angriff abbrechen
                     event.setCanceled(true);
                 }
             }
@@ -86,6 +77,14 @@ public class PlayerEventLister {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         plugin.getStorageManager().loadPlayerData(player.getUUID());
         HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
+
+        plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+        GeneralDefaultData GGD = plugin.getStorageManager().getGeneralData();
+        Map<UUID, String> players = GGD.getPlayerCache();
+        players.put(player.getUUID(), player.getName().getString());
+        GGD.setPlayerCache(players);
+        plugin.getStorageManager().updateGeneralData(GGD);
+        plugin.getStorageManager().saveGeneralData();
 
         List<Home> homes = playerData.getPlayerHomes();
 
@@ -125,6 +124,15 @@ public class PlayerEventLister {
         }
         int score = getPlayerScore(player, "VIPs");
 
+        Vec3 center = player.position();
+        AABB area = new AABB(center, center).inflate(100.0);
+
+        List<LivingEntity> entities = player.level().getEntitiesOfClass(LivingEntity.class, area);
+
+        for (LivingEntity target : entities) {
+            ServerPacketHandler.syncEntityData(target);
+        }
+
         player.connection.send(new ScoreSyncPayload(score));
     }
 
@@ -146,6 +154,12 @@ public class PlayerEventLister {
         playerData.setLogoutLocation(logoutLocation);
 
         plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+        GeneralDefaultData GGD = plugin.getStorageManager().getGeneralData();
+        Map<UUID, String> players = GGD.getPlayerCache();
+        players.put(player.getUUID(), player.getName().getString());
+        GGD.setPlayerCache(players);
+        plugin.getStorageManager().updateGeneralData(GGD);
+        plugin.getStorageManager().saveGeneralData();
     }
 
     public static int getPlayerScore(ServerPlayer player, String objectiveName) {

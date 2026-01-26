@@ -11,6 +11,9 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -38,6 +41,8 @@ public class PetSkinLayer<T extends LivingEntity, M extends EntityModel<T>> exte
         super(parent);
     }
 
+    private Integer oldSkinId = null;
+
     @Override
     public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
 
@@ -55,14 +60,17 @@ public class PetSkinLayer<T extends LivingEntity, M extends EntityModel<T>> exte
         }
 
         // Skin aus deinem Cache holen
-        Integer skinIndex = HNessentials.clientPetSkins.get(entity.getUUID());
-        if (skinIndex == null) return;
+        int skinIndex = entity.getPersistentData().getInt("skinIndex");//HNessentials.clientPetSkins.get(entity.getUUID());
+        //if (skinIndex == null) return;
+
+        if (oldSkinId == null) {
+            oldSkinId = skinIndex;
+        }
 
         List<String> skins = HNessentials.getInstance().getSkins();
         if (skinIndex >= 0 && skinIndex < skins.size()) {
             String texname = skins.get(skinIndex);
 
-            // Die Textur des aktuellen Modells holen (damit es für jedes Tier passt)
             ResourceLocation currentTexture = this.getTextureLocation(entity);
 
             if (texname.equals("Gold")) {

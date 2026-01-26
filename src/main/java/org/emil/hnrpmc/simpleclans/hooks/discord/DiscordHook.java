@@ -1,5 +1,6 @@
 package org.emil.hnrpmc.simpleclans.hooks.discord;
 
+import com.google.gson.reflect.TypeToken;
 import com.hypherionmc.craterlib.core.event.annot.CraterEventListener;
 import com.hypherionmc.craterlib.nojang.authlib.BridgedGameProfile;
 import com.hypherionmc.sdlink.api.accounts.DiscordUser;
@@ -21,12 +22,15 @@ import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.exceptions.ErrorResponseExc
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.managers.channel.concrete.CategoryManager;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.requests.Response;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.requests.RestAction;
+import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import com.hypherionmc.sdlink.util.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import org.checkerframework.checker.units.qual.C;
 import org.emil.hnrpmc.Hnrpmc;
+import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.simpleclans.hooks.discord.exceptions.ChannelExistsException;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.emil.hnrpmc.simpleclans.Clan;
@@ -41,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -197,6 +202,8 @@ public final class DiscordHook {
             return;
         }
 
+
+        updaterolePerms(clan);
         updateClanRoleAll(clan.getTag());
         updateViewPermission(member, clan, ADD);
     }
@@ -242,6 +249,42 @@ public final class DiscordHook {
 
         updateViewPermission(member, clan, ADD);
         updateLeaderRole(member, clanPlayer, ADD);
+    }
+
+    public void updatename() {
+        List<Clan> clans = plugin.getClanManager().getClans();
+        for (Clan clan : clans) {
+            Map<ClanPlayer, Member> discordclan = getDiscordPlayers(clan);
+
+            for (Map.Entry<ClanPlayer, Member> clanPlayerMemberEntry : discordclan.entrySet()) {
+                Member discordclanmember =  clanPlayerMemberEntry.getValue();
+                String formatedname = "[" + clan.getColorTag() + "] " + clanPlayerMemberEntry.getKey().getName();
+                if (!Objects.equals(discordclanmember.getNickname(), formatedname)) {
+                    if (!canBotChangeNickname(discordclanmember)) continue;
+                    discordclanmember.modifyNickname(formatedname).queue();
+                }
+            }
+            updateClanRoleAll(clan.getTag());
+        }
+    }
+
+    public boolean canBotChangeNickname(Member targetMember) {
+        Guild guild = targetMember.getGuild();
+        Member selfMember = guild.getSelfMember();
+
+        if (!selfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
+            return false;
+        }
+
+        if (!selfMember.canInteract(targetMember)) {
+            return false;
+        }
+
+        if (targetMember.isOwner()) {
+            return false;
+        }
+
+        return true;
     }
 
     @CraterEventListener(priority = 100)
@@ -487,18 +530,15 @@ public final class DiscordHook {
     }
 
     public void updateClanRole(UUID playerUUID, String clanTag, boolean add) {
-        // 1. Suche den Discord-Account des Spielers (SDLink API)
         BridgedGameProfile bgp = BridgedGameProfile.of(plugin.getServer().getProfileCache().get(playerUUID).get());
         Optional<MinecraftAccount> account = Optional.of(MinecraftAccount.of(bgp));
 
         account.ifPresent(acc -> {
             long discordId = acc.getDiscordUser().getUserId();
-            // Hole die Guild (Server) von deinem Bot
             Guild guild = getGuild();
             if (guild == null) return;
 
             guild.retrieveMemberById(discordId).queue(member -> {
-                // Suche die Rolle für den Clan (z.B. Name des Clans oder eine generische Clan-Rolle)
                 Role clanRole = guild.getRolesByName(clanTag, true).stream().findFirst().orElse(null);
 
                 if (clanRole != null) {
@@ -513,33 +553,35 @@ public final class DiscordHook {
     }
 
     public void updateClanRoleAll(String clanTag) {
-        Clan targetClan = plugin.getClanManager().getClan(clanTag);
-        Map<ClanPlayer, Member> discordClanPlayers = getDiscordPlayers(targetClan);
-        Map<String, String> allRoles = new HashMap<>();
-        Object raw = settingsManager.getMap(DISCORDCHAT_ROLE_LIST);
-        if (raw instanceof Map) {
-            allRoles.putAll((Map<String, String>) raw);
-        }
-        if (!allRoles.containsKey(targetClan.getTag())) return;
+        List<Member> members = getGuild().getMembers();
 
-        Role role = getGuild().getRoleById(allRoles.get(targetClan.getTag()));
-        discordClanPlayers.values().forEach(member -> {
-            getGuild().addRoleToMember(member, role).queue();
-        });
-
-        for (ClanPlayer cp : clanManager.getAllClanPlayers()) {
-            Member member = getMember(cp);
-            if (member == null) {
-                if (plugin.getServer().getPlayerList().getPlayers().contains(cp.toPlayer())) return;
-                cp.toPlayer().connection.disconnect(Component.literal("Discord nicht gefunden"));
-
+        for (Member member : members) {
+            MinecraftAccount MCA = MinecraftAccount.fromDiscordId(member.getId());
+            if (MCA == null) {
+                member.modifyNickname(member.getUser().getName()).queue();
                 return;
             }
-            if (!member.getRoles().contains(role)) return;
-            if (discordClanPlayers.containsValue(member)) return;
-            if (cp.getClan() != null && Objects.equals(cp.getClan().getTag(), clanTag)) {
-                getGuild().removeRoleFromMember(member, role).queue();
+            ClanPlayer cp = clanManager.getClanPlayer(MCA.toGameProfile().getId());
+            if (cp.getClan() == null) {
+                Clan clan = clanManager.getClan(clanTag);
+                Role clanRole = getClanRole(clan.getStringName());
+
+                if (clanRole != null) {
+                    if (cp.getClan().getTag().equals(clanTag)) {
+                        getGuild().addRoleToMember(member, clanRole).queue();
+                    } else {
+                        getGuild().removeRoleFromMember(member, clanRole).queue();
+                    }
+                }
             }
+            String formatedname = "[" + cp.getClan().getColorTag() + "] " + MCA.getUsername();
+
+            if (member.getNickname().contains("[")) {
+                if (cp.getClan() == null) {
+                    member.modifyNickname(MCA.getUsername()).queue();
+                }
+            }
+
         }
     }
 
@@ -735,6 +777,10 @@ public final class DiscordHook {
      */
     public Optional<TextChannel> getChannel(@NotNull String channelName) {
         return getChannels().stream().filter(textChannel -> textChannel.getName().equals(channelName)).findAny();
+    }
+
+    public Optional<Category> getCat(@NotNull String channelName) {
+        return getGuild().getCategories().stream().filter(cat -> cat.getName().toLowerCase().equals(channelName.toUpperCase())).findAny();
     }
 
     /**
@@ -968,10 +1014,61 @@ public final class DiscordHook {
 
     void updateViewPermission(@NotNull Member member, @NotNull Clan clan, DiscordAction action) {
         String tag = clan.getTag();
-        Optional<TextChannel> channel = getChannel(tag);
+        updaterolePerms(clan);
+        Optional<Category> channel = getCat(tag);
         if (channel.isPresent()) {
-            TextChannel textChannel = channel.get();
-            updateViewPermission(member, textChannel, action);
+            Category Cate = channel.get();
+            for (GuildChannel GC : Cate.getChannels()) {
+                updateViewPermission(member, GC, action);
+            }
+        }
+    }
+
+    Category getClanCategory(String Clanname) {
+        Object rawChannels = settingsManager.getMap(DISCORDCHAT_CATEGORYS_AND_CHANNELS); // {"BROS:{"12345677898":{"54321111111111", "38752852397852975"}}}"
+
+        Type type = new TypeToken<Map<String, Map<String, List<String>>>>(){}.getType();
+
+        Map<String, Map<String, List<String>>> channelmap = plugin.getGSON().fromJson(rawChannels.toString(), type);// {"BROS:{"12345677898":{"54321111111111", "38752852397852975"}}}"
+
+        if (channelmap.containsKey(Clanname)){
+            Map<String, List<String>> category = channelmap.get(Clanname);
+
+            List<String> ss = category.keySet().stream().toList();
+            if (ss.isEmpty()) return null;
+            return getGuild().getCategoryById(ss.getFirst());
+        }
+        return null;
+    }
+
+    Role getClanRole(String Clanname) {
+        Object rawRoles = settingsManager.getMap(DISCORDCHAT_ROLE_LIST);
+        if (rawRoles instanceof Map<?, ?> roleMap) {
+            Map<String, Object> editableRoles = new HashMap<>((Map<String, Object>) roleMap);
+            System.out.println("wir haben als obj " + editableRoles.entrySet() + " und name ist '" + Clanname + "' und versuchter get ist " + editableRoles.getOrDefault(Clanname, "nix") + " aber " + (editableRoles.containsKey(Clanname) ? "list hat clan" : "list hat keinen clan"));
+
+            if (editableRoles.containsKey(Clanname)) {
+                if (editableRoles.get(Clanname) != null) {
+                    long intedRoleid = Long.parseLong(editableRoles.get(Clanname).toString());
+                    return getGuild().getRoleById(intedRoleid);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updaterolePerms(@NotNull Clan clan) {
+        Role clanRole = getClanRole(clan.getTag());
+        if (clanRole == null) return;
+        Category category = getClanCategory(clan.getTag());
+        if (category != null) {
+            Category Cate = category;
+            PermissionOverrideAction CatPOA = Cate.getPermissionContainer().upsertPermissionOverride(clanRole);
+            CatPOA.setPermissions(List.of(VIEW_CHANNEL, MESSAGE_SEND, VOICE_SPEAK), Collections.emptyList()).queue();
+            for (GuildChannel GC : Cate.getChannels()) {
+                PermissionOverrideAction POA = GC.getPermissionContainer().upsertPermissionOverride(clanRole);
+                POA.setPermissions(List.of(VIEW_CHANNEL, MESSAGE_SEND, VOICE_SPEAK), Collections.emptyList()).queue();
+            }
         }
     }
 

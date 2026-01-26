@@ -112,15 +112,15 @@ public final class Suggestions {
     }
 
     public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin) {
-        boolean hhideme = true;
+        boolean hhideme = false;
         return allPlayers(plugin, hhideme);
     }
 
     public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin, boolean hhideme) {
         //boolean hhideme = true;
-        return (ctx, b) -> suggest(
+        /*return (ctx, b) -> suggest(
                 plugin.getClanManager().getAllClanPlayers().stream()
-                        .map(cp -> cp.toPlayer().getName().getString())
+                        .map(ClanPlayer::getName)
                         .filter(name -> {
                             if (hhideme && ctx.getSource().getPlayer() != null) {
                                 // Filtere den eigenen Namen heraus, wenn hhideme true ist
@@ -129,7 +129,14 @@ public final class Suggestions {
                             return true;
                         })
                         .toList(),
-                b);
+                b);*/
+        return (ctx, b) -> suggest(HNessentials.getInstance().getStorageManager().getGeneralData().getPlayerCache().values().stream().filter(pn -> {
+
+            if (hhideme && ctx.getSource().getPlayer() != null) {
+                return !pn.equals(ctx.getSource().getPlayer().getName().getString());
+            }
+            return false;
+        }), b);
     }
 
     public static SuggestionProvider<CommandSourceStack> allPlayerNameFromHomes(HNessentials plugin) {

@@ -69,21 +69,19 @@ public class CreateClanNamePrompt extends ClanStringPrompt {
 
     private void processClanCreation(@NotNull SimpleClans plugin, @NotNull ServerPlayer player, @NotNull String tag,
                                      @NotNull String name) {
-        if (plugin.getClanManager().purchaseCreation(player)) {
-            plugin.getClanManager().createClan(player, tag, name);
+        plugin.getClanManager().createClan(player, tag, name);
 
-            Clan clan = plugin.getClanManager().getClan(tag);
-            clan.addBb(player.getName().getString(), lang("clan.created", player.getUUID(), name));
-            plugin.getStorageManager().updateClan(clan);
-            // Nutze getStarterRanks(), da diese Methode bereits Rank-Objekte zurückgibt
+        Clan clan = plugin.getClanManager().getClan(tag);
+        clan.addBb(player.getName().getString(), lang("clan.created", player.getUUID(), name));
+        plugin.getStorageManager().updateClan(clan);
+        // Nutze getStarterRanks(), da diese Methode bereits Rank-Objekte zurückgibt
 
-            if (plugin.getSettingsManager().is(REQUIRE_VERIFICATION)) {
-                // Wenn er die Permission hat, gilt er als "automatisch verifiziert"
-                boolean canVerify = plugin.getPermissionsManager().has(player, "simpleclans.mod.verify");
+        if (plugin.getSettingsManager().is(REQUIRE_VERIFICATION)) {
+            // Wenn er die Permission hat, gilt er als "automatisch verifiziert"
+            boolean canVerify = plugin.getPermissionsManager().has(player, "simpleclans.mod.verify");
 
-                if (!canVerify) {
-                    ChatBlock.sendMessage(player.createCommandSourceStack(), lang("get.your.clan.verified.to.access.advanced.features", player));
-                }
+            if (!canVerify) {
+                ChatBlock.sendMessage(player.createCommandSourceStack(), lang("get.your.clan.verified.to.access.advanced.features", player));
             }
         }
     }

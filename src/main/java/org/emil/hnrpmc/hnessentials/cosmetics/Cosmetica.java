@@ -254,7 +254,7 @@ public class Cosmetica {
     private static int africaFails = 0;
 
     public static void safari(InetSocketAddress prideRock, boolean yourFirstRodeo, boolean ignoreSelf) {
-        if (api != null && api.isAuthenticated()) {
+        if (api != null) {
 
             api.everyThirtySecondsInAfricaHalfAMinutePasses(prideRock, yourFirstRodeo || !Cosmetica.toto.isPresent() ? 0 : Cosmetica.toto.getAsLong())
                     .ifSuccessfulOrElse(theLionSleepsTonight -> {

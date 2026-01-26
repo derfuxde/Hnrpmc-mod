@@ -76,6 +76,14 @@ public final class TeleportManager {
         if (tpManager.tickCounter % 20 == 0) {
             tpManager.processQueue(event.getServer());
         }
+
+        if (tpManager.tickCounter % 1200 == 0) {
+
+            if (ChatManager.isDiscordHookEnabled(plugin)) {
+                plugin.getChatManager().getDiscordHook(plugin).updatename();
+            }
+        }
+
     }
 
     private void processQueue(net.minecraft.server.MinecraftServer server) {

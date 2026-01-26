@@ -6,8 +6,10 @@ import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import org.emil.hnrpmc.hnclaim.HNClaims;
+import org.emil.hnrpmc.hnessentials.GeneralDefaultData;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
+import org.emil.hnrpmc.hnessentials.cosmetics.ConfigCosmetic;
 import org.emil.hnrpmc.simpleclans.Helper;
 
 import java.io.*;
@@ -15,12 +17,13 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class StorageManager {
     private final HNessentials plugin;
     private final File file;
     private Map<String, HNPlayerData> data = new TreeMap<>();
-    private Map<String, Object> generalData = new TreeMap<>();
+    private GeneralDefaultData generalData = null;
 
     private final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
@@ -30,15 +33,68 @@ public class StorageManager {
     public StorageManager(HNessentials plugin) {
         this.plugin = plugin;
         Path worldRoot = plugin.getServer().getWorldPath(LevelResource.ROOT);
-        // Pfad: world/HNessentials/players.json
         Path dbPath = worldRoot.resolve("clans").resolve("general.json");
 
         try {
             Files.createDirectories(dbPath.getParent());
         } catch (IOException e) {
+            System.err.println("Es geb ein fehler Beim erstellen der General Datei: " + e);
             e.printStackTrace();
         }
         this.file = dbPath.toFile();
+    }
+
+    private GeneralDefaultData DefaultGeneralData() {
+        ConfigCosmetic LONG_HAT = new ConfigCosmetic("Lang Hut", "longhat", "hat");
+        ConfigCosmetic WITCH_HAT = new ConfigCosmetic("Hexen Hut", "witchhat", "hat");
+        ConfigCosmetic WASSER_MELONE = new ConfigCosmetic("Wassermelonen Hut", "wassermelone", "hat");
+        ConfigCosmetic MASK = new ConfigCosmetic("Player Mask", "mask", "hat");
+
+        List<ConfigCosmetic> LCC = List.of(LONG_HAT, WITCH_HAT, WASSER_MELONE, MASK);
+
+        GeneralDefaultData GDD = new GeneralDefaultData(plugin);
+        GDD.setCosmetics(LCC);
+        return GDD;
+    }
+
+    public void loadGeneralData() {
+        if (!file.exists() && generalData == null) {
+            this.generalData = DefaultGeneralData();
+            saveGeneralData();
+        }
+        try (Reader reader = new FileReader(file)) {
+            GeneralDefaultData GDD = gson.fromJson(reader, GeneralDefaultData.class);
+            if (GDD == null) return;
+            this.generalData = GDD;
+        } catch (IOException e) {
+            System.err.println("Fehler beim Laden der Spielerdaten!");
+            e.printStackTrace();
+        }
+    }
+
+    public GeneralDefaultData getGeneralData() {
+        loadGeneralData();
+        return generalData;
+    }
+
+    public void updateGeneralData(GeneralDefaultData GDD) {
+        this.generalData = GDD;
+    }
+
+    public void saveGeneralData() {
+        List<ServerPlayer> listPlayers = plugin.getServer().getPlayerList().getPlayers();
+        Map<UUID, String> currentPlayers = new HashMap<>(listPlayers.stream().collect(Collectors.toMap(ServerPlayer::getUUID, sp -> sp.getName().getString())));
+        loadGeneralData();
+        generalData.setPlayerCache(currentPlayers);
+        try (Writer writer = new FileWriter(file)) {
+            if (generalData == null) {
+                this.generalData = DefaultGeneralData();
+            }
+            gson.toJson(generalData, writer);
+        } catch (IOException e) {
+            System.err.println("Fehler beim Speichern der Generaldaten");
+            e.printStackTrace();
+        }
     }
 
     public void loadAllPlayerDatas() {
@@ -48,7 +104,7 @@ public class StorageManager {
             File playerFile = myPath.toFile();
             if (!playerFile.exists()) return;
 
-            try (Reader reader = new FileReader(file)) {
+            try (Reader reader = new FileReader(playerFile)) {
                 // Definiert den Typ Map<String, HNPlayerData> für GSON
                 Type type = new TypeToken<TreeMap<String, HNPlayerData>>(){}.getType();
                 HNPlayerData singleData = gson.fromJson(reader, HNPlayerData.class);

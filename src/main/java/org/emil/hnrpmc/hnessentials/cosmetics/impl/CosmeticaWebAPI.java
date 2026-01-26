@@ -63,11 +63,6 @@ public class CosmeticaWebAPI implements CosmeticaAPI {
     }
 
     @Override
-    public Optional<LoginInfo> getLoginInfo() {
-        return this.loginInfo;
-    }
-
-    @Override
     public ServerResponse<VersionInfo> checkVersion(String minecraftVersion, String cosmeticaVersion) {
         SafeURL versionCheck = new SafeURL("versionCheck", "versionCheck");
 
@@ -301,7 +296,7 @@ public class CosmeticaWebAPI implements CosmeticaAPI {
 
             List<User> users = new ArrayList<>();
 
-            return new ServerResponse<>(new CosmeticsUpdates(notifications, users, 1L), awimbawe);
+            return new ServerResponse<>(new CosmeticsUpdates(notifications, users, timestamp), awimbawe);
         } catch (RuntimeException e) {
             return new ServerResponse<>(e, awimbawe);
         }
@@ -407,36 +402,6 @@ public class CosmeticaWebAPI implements CosmeticaAPI {
             return new ServerResponse<>(e, target);
         }
     }*/
-
-    @Override
-    public void setUrlLogger(Consumer<String> urlLogger) {
-        this.urlLogger = urlLogger;
-    }
-
-    @Override
-    public void setRequestTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    @Override
-    public void setForceHttps(boolean forceHttps) {
-        //this.apiHostProvider.setForceHttps(forceHttps);
-    }
-
-    @Override
-    public boolean isFullyAuthenticated() {
-        return true;//return this.masterToken != null;
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return true;//this.isFullyAuthenticated() || this.limitedToken != null;
-    }
-
-    @Override
-    public boolean isHttpsForced() {
-        return false;//this.forceHttps();
-    }
 
     /**
      * Use this method if you're cringe.<br/>

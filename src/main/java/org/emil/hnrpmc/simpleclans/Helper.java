@@ -320,7 +320,7 @@ public final class Helper {
      * @return
      */
     public static String cleanTag(String tag) {
-        return stripColors(tag).toLowerCase();
+        return stripColors(tag);//.toLowerCase();
     }
 
     /**
