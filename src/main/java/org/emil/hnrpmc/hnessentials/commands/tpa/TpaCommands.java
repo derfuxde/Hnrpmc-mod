@@ -52,7 +52,6 @@ public final class TpaCommands extends ClanSBaseCommand {
         dispatcher.register(tpa("tpa"));
         dispatcher.register(tpahere("tpahere"));
         dispatcher.register(tpaccept("tpaccept"));
-        dispatcher.register(tpadeny("tpadeny"));
 
         dispatcher.register(tpa("hnrpmc:tpa"));
         dispatcher.register(tpahere("hnrpmc:tpahere"));
@@ -135,19 +134,11 @@ public final class TpaCommands extends ClanSBaseCommand {
         return Commands.literal(command)
                 .then(Commands.argument("Spieler", EntityArgument.player())
                         .suggests(Suggestions.getRequests(plugin))
-                        .executes(ctx -> acceptLogic(ctx, EntityArgument.getPlayer(ctx, "Spieler"),false)))
-                .executes(ctx -> acceptLogic(ctx, null,false)); // Ohne ID -> Neueste Anfrage
+                        .executes(ctx -> acceptLogic(ctx, EntityArgument.getPlayer(ctx, "Spieler"))))
+                .executes(ctx -> acceptLogic(ctx, null)); // Ohne ID -> Neueste Anfrage
     }
 
-    private LiteralArgumentBuilder<CommandSourceStack> tpadeny(String command) {
-        return Commands.literal(command)
-                .then(Commands.argument("Spieler", EntityArgument.player())
-                        .suggests(Suggestions.getRequests(plugin))
-                        .executes(ctx -> acceptLogic(ctx, EntityArgument.getPlayer(ctx, "Spieler"), true)))
-                .executes(ctx -> acceptLogic(ctx, null, true));
-    }
-
-    private int acceptLogic(CommandContext<CommandSourceStack> ctx, @Nullable Player id, boolean deny) {
+    private int acceptLogic(CommandContext<CommandSourceStack> ctx, @Nullable Player id) {
         ServerPlayer receiver = ctx.getSource().getPlayer();
         List<Tpa> requests = plugin.getTpaRequester().getRequests(receiver.getUUID());
 
@@ -168,18 +159,13 @@ public final class TpaCommands extends ClanSBaseCommand {
 
         ServerPlayer requester = targetRequest.getRequester();
         if (requester != null && !requester.hasDisconnected()) {
-            if (deny) {
-                receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §cabgelehnt§7.", requester.getName().getString())));
+            if (!targetRequest.isHere()) {
+                requester.teleportTo(receiver.serverLevel(), receiver.getX(), receiver.getY(), receiver.getZ(), receiver.getYRot(), receiver.getXRot());
+                receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
             } else {
-                if (!targetRequest.isHere()) {
-                    requester.teleportTo(receiver.serverLevel(), receiver.getX(), receiver.getY(), receiver.getZ(), receiver.getYRot(), receiver.getXRot());
-                    receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
-                } else {
-                    receiver.teleportTo(receiver.serverLevel(), targetRequest.getSendPos().x, targetRequest.getSendPos().y, targetRequest.getSendPos().z, receiver.getYRot(), receiver.getXRot());
-                    receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
-                }
+                receiver.teleportTo(receiver.serverLevel(), targetRequest.getSendPos().x, targetRequest.getSendPos().y, targetRequest.getSendPos().z, receiver.getYRot(), receiver.getXRot());
+                receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
             }
-
         }
 
         plugin.getTpaRequester().removeRequest(targetRequest);
