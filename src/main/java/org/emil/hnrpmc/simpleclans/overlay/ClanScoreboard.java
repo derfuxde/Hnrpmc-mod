@@ -152,6 +152,7 @@ public final class ClanScoreboard {
 
         String clanName = hasClan ? clan.getStringName() : "";
         String clanTag = hasClan ? clan.getTag() : "";
+        String clanColorTag = hasClan ? clan.getColorTag() : "";
         String clanColor = clan != null ? (clan.getClanColor() != null && !Objects.equals(clan.getClanColor(), "") ? clan.getClanColor() : "§b") : "§b";
         String clanmembers = String.valueOf(hasClan ? clan.getMembers().size() : 0);
 
@@ -273,6 +274,7 @@ public final class ClanScoreboard {
                 .replace("%clan_name%", clanName)
                 .replace("%clan_tag%", clanTag)
                 .replace("%clan_color%", clanColor)
+                .replace("%clan_colored_tag%", clanColorTag)
                 .replace("%clan_rank_name%", clanRankName)
                 .replace("%clan_rank_id%", clanRankId)
                 .replace("%isinclan%", isinclan)
