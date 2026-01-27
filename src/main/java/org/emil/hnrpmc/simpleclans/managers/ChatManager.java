@@ -69,7 +69,7 @@ public final class ChatManager {
         // Prüft zusätzlich deine interne Config-Einstellung
         boolean isEnabledInConfig = tplugin.getSettingsManager().is(SettingsManager.ConfigField.DISCORDCHAT_ENABLE);
 
-        tplugin.getLogger().info("discord ist {} und in der ocnfig {}", isModLoaded ? "geladen" : "nicht geladen", isEnabledInConfig ? "aktiv" : "nicht aktiv");
+        //tplugin.getLogger().info("discord ist {} und in der ocnfig {}", isModLoaded ? "geladen" : "nicht geladen", isEnabledInConfig ? "aktiv" : "nicht aktiv");
 
         return isModLoaded && isEnabledInConfig;
     }

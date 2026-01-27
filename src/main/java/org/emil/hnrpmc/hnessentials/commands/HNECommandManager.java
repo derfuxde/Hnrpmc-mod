@@ -16,6 +16,9 @@ import org.emil.hnrpmc.hnessentials.commands.PlayerData.registerAdminGui;
 import org.emil.hnrpmc.hnessentials.commands.home.*;
 import org.emil.hnrpmc.hnessentials.commands.tpa.TpaCommands;
 import org.emil.hnrpmc.hnessentials.commands.tpa.TpoCommand;
+import org.emil.hnrpmc.hnessentials.commands.warps.WarpCommand;
+import org.emil.hnrpmc.hnessentials.commands.warps.delWarpCommand;
+import org.emil.hnrpmc.hnessentials.commands.warps.setWarpCommand;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
@@ -57,6 +60,9 @@ public final class HNECommandManager {
         commands.add(new registerAdminGui(plugin));
         commands.add(new SpawnCommand(plugin));
         commands.add(new TpoCommand(plugin));
+        commands.add(new setWarpCommand(plugin));
+        commands.add(new WarpCommand(plugin));
+        commands.add(new delWarpCommand(plugin));
 
         for (ClanSBaseCommand command : commands) {
             String sprimarycommand = command.primarycommand();

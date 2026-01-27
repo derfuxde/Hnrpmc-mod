@@ -26,6 +26,7 @@ public class StorageManager {
     private GeneralDefaultData generalData = null;
 
     private final Gson gson = new GsonBuilder()
+            .serializeNulls()
             .setPrettyPrinting()
             .disableHtmlEscaping()
             .create();
@@ -84,7 +85,7 @@ public class StorageManager {
     public void saveGeneralData() {
         List<ServerPlayer> listPlayers = plugin.getServer().getPlayerList().getPlayers();
         Map<UUID, String> currentPlayers = new HashMap<>(listPlayers.stream().collect(Collectors.toMap(ServerPlayer::getUUID, sp -> sp.getName().getString())));
-        loadGeneralData();
+        //loadGeneralData();
         generalData.setPlayerCache(currentPlayers);
         try (Writer writer = new FileWriter(file)) {
             if (generalData == null) {

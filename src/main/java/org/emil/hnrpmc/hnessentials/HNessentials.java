@@ -13,13 +13,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.logging.log4j.core.jmx.Server;
+import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockConfig;
+import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockData;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.hnessentials.commands.HNECommandManager;
 import org.emil.hnrpmc.hnessentials.cosmetics.ConfigCosmetic;
@@ -42,6 +49,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class HNessentials {
     private StorageManager storageManager;
@@ -59,9 +67,27 @@ public class HNessentials {
 
     private static HNessentials instance;
 
-    public HNessentials(IEventBus modEventBus) {
+
+    public static final String MODID = "simpleblocklock";
+
+    // Registrierung des AttachmentTypes (ersetzt Capabilities)
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
+            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MODID);
+
+    public static final Supplier<AttachmentType<LockData>> LOCK_DATA = ATTACHMENT_TYPES.register(
+            "lock_data", () -> AttachmentType.builder(() -> (LockData) null)
+                    .serialize(LockData.CODEC)
+                    .copyOnDeath()
+                    .build()
+    );
+
+    public HNessentials(IEventBus modEventBus, ModContainer modContainer) {
         instance = this;
         //SCCommandManager.init(this);
+
+
+        ATTACHMENT_TYPES.register(modEventBus);
+        modContainer.registerConfig(ModConfig.Type.COMMON, LockConfig.SPEC);
 
         // WICHTIG: Mod-Phasen Events (Setup)
         modEventBus.addListener(this::startsetup);

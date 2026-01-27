@@ -20,6 +20,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -116,7 +117,8 @@ public class Hnrpmc {
         modEventBus.addListener(this::onRegisterPayloads);
         new org.emil.hnrpmc.simpleclans.SimpleClans(modEventBus);
         new org.emil.hnrpmc.hnclaim.HNClaims(modEventBus);
-        new org.emil.hnrpmc.hnessentials.HNessentials(modEventBus);
+        ModContainer container = ModLoadingContext.get().getActiveContainer();
+        new org.emil.hnrpmc.hnessentials.HNessentials(modEventBus, container);
 
 
     }

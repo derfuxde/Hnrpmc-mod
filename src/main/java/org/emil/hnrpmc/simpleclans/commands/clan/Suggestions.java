@@ -116,6 +116,11 @@ public final class Suggestions {
         return allPlayers(plugin, hhideme);
     }
 
+    public static SuggestionProvider<CommandSourceStack> allWarps(HNessentials plugin) {
+        boolean hhideme = false;
+        return (ctx, b) -> suggest(plugin.getStorageManager().getGeneralData().getWarps().keySet().stream().toList(), b);
+    }
+
     public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin, boolean hhideme) {
         //boolean hhideme = true;
         /*return (ctx, b) -> suggest(
