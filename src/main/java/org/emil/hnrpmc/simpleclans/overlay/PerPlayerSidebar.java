@@ -12,6 +12,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
+import org.emil.hnrpmc.simpleclans.utils.ChatUtils;
 
 import java.util.*;
 
@@ -63,6 +64,25 @@ public final class PerPlayerSidebar {
         }
     }
 
+    public static void TabListUpdate(SimpleClans plugin, ServerPlayer player, String header,  String footer) {
+        String formatedheader = ChatUtils.parseColors(ClanScoreboard.formatplaceholder(SimpleClans.getInstance(), header, player));
+        String formatedfooter = ChatUtils.parseColors(ClanScoreboard.formatplaceholder(SimpleClans.getInstance(), footer, player));
+        player.setTabListHeaderFooter(Component.literal(plugin.getSettingsManager().parseConditionalMessage(player, formatedheader)),Component.literal(plugin.getSettingsManager().parseConditionalMessage(player, formatedfooter)) );
+    }
+    String tablistgead = """
+                    
+                    &0&m                                                &7
+                    &r&3&lSurvival
+                    &r&7&l>> Willkommen&3 &l%playername%&7&l! &7&l<<
+                    &r&7Aktive Spieler: &f%server_players%
+                    
+                    """;
+
+    String tablistfoot = """
+                    %ani_time%
+                    
+                    &0&m                                                &7
+                    """;
     public static void forceUpdate(ServerPlayer p) {
         STATES.remove(p.getUUID());
     }

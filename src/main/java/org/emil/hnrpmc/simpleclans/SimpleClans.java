@@ -14,6 +14,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.simpleclans.commands.SCCommandManager;
 import org.emil.hnrpmc.simpleclans.commands.staff.NoVanishService;
 import org.emil.hnrpmc.simpleclans.commands.staff.VanishService;
@@ -54,7 +55,7 @@ import static javax.swing.UIManager.get;
 import static javax.swing.UIManager.getString;
 import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.*;
 
-public class SimpleClans {
+public class SimpleClans extends Hnrpmod {
 
     private static SimpleClans instance;
     public static final Logger LOGGER = LogUtils.getLogger();

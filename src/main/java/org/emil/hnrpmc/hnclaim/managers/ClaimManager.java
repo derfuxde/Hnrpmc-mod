@@ -1,56 +1,36 @@
 package org.emil.hnrpmc.hnclaim.managers;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import net.minecraft.ChatFormatting;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
-import org.emil.hnrpmc.hnclaim.claimperms;
 import org.emil.hnrpmc.hnclaim.events.CreateClaimEvent;
-import org.emil.hnrpmc.simpleclans.Clan;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
-import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
-import org.emil.hnrpmc.simpleclans.overlay.Tablist;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.minecraft.ChatFormatting.AQUA;
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
 import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.*;
-import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 enum AXIS{
     X("X"),

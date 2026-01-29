@@ -44,22 +44,24 @@ public final class ServerTickNamesHandler {
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
-        // By using ServerTickEvent.Post, we ensure the code only runs ONCE per tick
-        // after the server has finished its logic.
 
         if (plugin == null) {
             plugin = SimpleClans.getInstance();
         }
 
         counter++;
-        if (counter < 100) return; // ~5 seconds
+        if (counter < 20) return; // ~5 seconds
         counter = 0;
+
+        //PerPlayerSidebar.TabListUpdate(event.getServer());
 
         int seccounter = 0;
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
             ClanConfig.Board config = null;
+            ClanConfig.Tablist tab_config = null;
             var root = ClanConfig.get(player.server);
             List<ClanConfig.Board> boards = root.boards();
+            List<ClanConfig.Tablist> tablists = root.tablists();
 
             for (ClanConfig.Board o : boards) {
                 String cons = ClanScoreboard.formatplaceholder(plugin, o.conditions(), player);
@@ -69,10 +71,41 @@ public final class ServerTickNamesHandler {
                 }
             }
 
+            if (tablists == null) {
+                tablists = List.of(
+                        new ClanConfig.Tablist("tab", "true",
+                                        """
+                                        &0&m                                                &7
+                                        &r&3&lSurvival
+                                        &r&7&l>> Willkommen&3 &l%playername%&7&l! &7&l<<
+                                        &r&7Aktive Spieler: &f%server_players%
+                                        
+                                        """,
+                                        """
+                                        %hnph_ani_time%
+                                        
+                                        &0&m                                                &7
+                                        """
+                        )
+            );}
+
+            for (ClanConfig.Tablist o : tablists) {
+                String cons = ClanScoreboard.formatplaceholder(plugin, o.conditions(), player);
+                if (ClanScoreboard.checkconditions(cons, player)) {
+                    tab_config = o;
+                    break;
+                }
+            }
+
             if (config == null) return;
 
             List<String> configLines = config.lines();
             PerPlayerSidebar.update(plugin, player, config.title(), configLines);
+            NameDisplayService.update(plugin, player);
+            seccounter++;
+
+            String tab_configLines = tab_config.footer();
+            PerPlayerSidebar.TabListUpdate(plugin, player, tab_config.header(), tab_configLines);
             NameDisplayService.update(plugin, player);
             seccounter++;
         }
@@ -85,17 +118,13 @@ public final class ServerTickNamesHandler {
             plugin = SimpleClans.getInstance();
         }
         if (event.getEntity() instanceof ServerPlayer player) {
-            // Wir setzen den Status für diesen Spieler zurück, damit PerPlayerSidebar
-            // weiß, dass das Objective neu erstellt werden muss (CREATE-Paket)
             PerPlayerSidebar.forceUpdate(player);
+            //PerPlayerSidebar.TabListUpdate(plugin, player);
 
-            // Sofortige Anzeige triggern, nicht auf den 100-Tick-Counter warten
             updatePlayerScoreboard(player);
         }
     }
 
-    // Lagere die Update-Logik in eine eigene Methode aus, damit du sie
-    // sowohl vom Tick als auch vom Join aufrufen kannst
     private static void updatePlayerScoreboard(ServerPlayer player) {
         if (plugin == null) {
             plugin = SimpleClans.getInstance();

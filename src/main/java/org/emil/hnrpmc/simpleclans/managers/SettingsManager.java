@@ -1,6 +1,7 @@
 package org.emil.hnrpmc.simpleclans.managers;
 
 import com.electronwill.nightconfig.core.Config;
+import com.google.gson.reflect.TypeToken;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -18,6 +19,7 @@ import org.emil.hnrpmc.simpleclans.utils.ChatUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,8 +29,13 @@ import java.util.regex.Pattern;
 // In diesem Beispiel gehen wir davon aus, dass wir einen einfachen Wrapper haben.
 import org.emil.hnrpmc.simpleclans.utils.YamlConfig;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.*;
 import static org.emil.hnrpmc.simpleclans.utils.RankingNumberResolver.RankingType;
+import static org.openjdk.nashorn.internal.runtime.JSType.remExact;
 import static org.openjdk.nashorn.internal.runtime.JSType.toDouble;
 
 public final class SettingsManager {
@@ -241,24 +248,25 @@ public final class SettingsManager {
 
                 String placeholderValue = ClanScoreboard.formatplaceholder(plugin, setting.getPlaceholder(), player);
 
-                double value;
+                String cleanValue;
                 try {
-                    String cleanValue = ChatUtils.parseColors(placeholderValue).trim();
-                    value = Double.parseDouble(cleanValue);
+                    cleanValue = ChatUtils.parseColors(placeholderValue).trim();
+                    //value = Double.parseDouble(cleanValue);
                 } catch (NumberFormatException e) {
                     output = output.replace(fullMatch, rulesFromConfig.get(rulesFromConfig.size() - 1));
                     continue;
                 }
 
-                // 3. Regeln prüfen
                 String resultMessage = rulesFromConfig.get(rulesFromConfig.size() - 1);
-                for (String rawRule : rulesFromConfig) {
+
+                resultMessage = ClanScoreboard.formatplaceholder(plugin, getFormattedName(cleanValue, setting.getRules()), player);
+                /*for (String rawRule : rulesFromConfig) {
                     ConditionRule rule = new ConditionRule(rawRule);
                     if (rule.matches(value)) {
                         resultMessage = rule.getMessage();
                         break;
                     }
-                }
+                }*/
 
                 output = output.replace(fullMatch, resultMessage);
             }
@@ -266,6 +274,40 @@ public final class SettingsManager {
 
         return output;
     }
+
+    public static <T> String getFormattedName(T value, List<String> rules) {
+        ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine engine = manager.getEngineByName("JavaScript");
+
+        for (String rule : rules) {
+            if (!rule.contains(";")) continue;
+
+            String[] parts = rule.split(";");
+            String condition = parts[0].replace("#>", ";");
+            if (!condition.contains("val")){
+                condition = "val" + condition;
+            }
+            String resultText = parts[1];
+
+            try {
+                engine.put("val", value);
+
+                Object result = engine.eval(condition);
+
+                if (result instanceof Boolean && (Boolean) result) {
+                    return resultText;
+                }
+            } catch (ScriptException e) {
+            }
+        }
+
+        // Standard-Rückgabe (hallo)
+        return rules.stream()
+                .filter(rule -> !rule.contains(";"))
+                .findFirst()
+                .orElse("");
+    }
+
 
     public List<String> getStarterRankIds() {
         List<String> list = config.getStringList("ranks.starter");

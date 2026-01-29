@@ -182,7 +182,7 @@ public class PlayerEventLister {
                 return scoreInfo.value();
             }
         }
-        return 0; // Standardwert, falls kein Score existiert
+        return 0;
     }
 
     public static int getPlayerScore(Player player, String objectiveName) {
@@ -195,7 +195,7 @@ public class PlayerEventLister {
                 return scoreInfo.value();
             }
         }
-        return 0; // Standardwert, falls kein Score existiert
+        return 0;
     }
 
     @SubscribeEvent
@@ -228,38 +228,32 @@ public class PlayerEventLister {
         BlockEntity be = event.getLevel().getBlockEntity(event.getPos());
         if (be == null) return;
 
-        // 1. Wenn Block gesperrt ist
         if (be.hasData(HNessentials.LOCK_DATA)) {
             LockData data = be.getData(HNessentials.LOCK_DATA);
             ServerPlayer player = (ServerPlayer) event.getEntity();
 
-            // Wenn Owner sneakt -> MENÜ ÖFFNEN
             if (player.isShiftKeyDown() && data.owner().equals(player.getUUID()) || player.isShiftKeyDown() && SimpleClans.getInstance().getPermissionsManager().has(event.getEntity(), "hnrpmc.chestlock.admin")) {
-                event.setCanceled(true); // Block nicht öffnen/platzieren
+                event.setCanceled(true);
                 LockMenuHandler.openMainMenu(player, be);
                 return;
             }
 
-            // Zugangsprüfung
             if (!data.canAccess(player.getUUID())) {
                 event.setCanceled(true);
                 player.displayClientMessage(Component.literal("§cGesichert!"), true);
             }
         }
-        // 2. Wenn Block NICHT gesperrt ist und Spieler sneakt mit leerer Hand (zum Sperren)
         else if (event.getEntity().isShiftKeyDown() && event.getItemStack().isEmpty()) {
-            // Check Config & Claims
+
             if (LockConfig.isLockable(be.getBlockState().getBlock())) {
                 ServerPlayer player = (ServerPlayer) event.getEntity();
 
-                // CLAIM CHECK HIER
                 if (HNClaims.getInstance().getClaimManager().getClaimbyPos(event.getPos().getCenter(), player.level().dimension().location().toString()) != null && !HNClaims.getInstance().getClaimManager().getClaimbyPos(event.getPos().getCenter(), player.level().dimension().location().toString()).getownerUUID().equals(player.getUUID())) {
                     player.displayClientMessage(Component.literal("§cDu kannst hier nicht sperren (fremder Claim)!"), true);
                     event.setCanceled(true);
                     return;
                 }
 
-                // Sperren
                 be.setData(HNessentials.LOCK_DATA, new LockData(player.getUUID(), new ArrayList<>()));
                 player.displayClientMessage(Component.literal("§aGesichert! (Sneak+Rechtsklick für Menü)"), true);
                 event.setCanceled(true);

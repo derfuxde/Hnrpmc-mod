@@ -61,7 +61,7 @@ public final class ChatNameHandler {
 
     private static Component createPlayerHover(ServerPlayer sender, ServerChatEvent event, String formated) {
 
-        String[] parts = formated.split("%message%", 2);
+        String[] parts = plugin.getSettingsManager().parseConditionalMessage(sender, formated).split("%message%", 2);
         String prefixText = parts[0];
         String suffixText = parts.length > 1 ? parts[1] : "";
 
@@ -121,7 +121,7 @@ public final class ChatNameHandler {
                 try {
                     String displayname = ClanScoreboard.formatplaceholder(plugin, rule.format(), p);
 
-                    DiscordAuthor author = DiscordAuthor.of(displayname, p.getStringUUID(), p.getGameProfile().getName());
+                    DiscordAuthor author = DiscordAuthor.of(plugin.getSettingsManager().parseConditionalMessage(p,displayname), p.getStringUUID(), p.getGameProfile().getName());
                     DiscordMessage message1 = new DiscordMessageBuilder(MessageType.CHAT)
                             .message(event.getMessage().getString())
                             .author(author)

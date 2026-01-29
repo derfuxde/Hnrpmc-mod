@@ -35,8 +35,8 @@ public class delWarpCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "delWarp";
+    public @Nullable List<String> primarycommand() {
+        return List.of("delWarp");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

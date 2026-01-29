@@ -14,7 +14,6 @@ import org.emil.hnrpmc.hnessentials.Home;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +33,8 @@ public class SetHomeCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "sethome";
+    public List<String> primarycommand() {
+        return List.of("sethome");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

@@ -33,8 +33,8 @@ public class registerAdminGui extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "playerdata";
+    public @Nullable List<String> primarycommand() {
+        return List.of("playerdata");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

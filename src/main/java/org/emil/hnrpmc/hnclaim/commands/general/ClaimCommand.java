@@ -40,15 +40,15 @@ public final class ClaimCommand extends ClanSBaseCommand {
     private final HNClaims plugin;
     private final ClaimManager claimManager;
 
-    public ClaimCommand(SimpleClans SC, HNClaims plugin) {
-        super(SC);
+    public ClaimCommand(HNClaims plugin) {
+        super(plugin);
         this.plugin = plugin;
         this.claimManager = plugin.getClaimManager();
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "claim";
+    public @Nullable List<String> primarycommand() {
+        return List.of("claim");
     }
 
     @Override

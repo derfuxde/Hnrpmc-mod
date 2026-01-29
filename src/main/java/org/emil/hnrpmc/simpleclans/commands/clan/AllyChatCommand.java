@@ -16,6 +16,9 @@ import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.emil.hnrpmc.simpleclans.managers.ChatManager;
 import org.emil.hnrpmc.simpleclans.managers.PermissionsManager;
 import org.emil.hnrpmc.simpleclans.managers.StorageManager;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.ALLY;
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.NONE;
@@ -29,8 +32,8 @@ public final class AllyChatCommand extends ClanSBaseCommand {
     private StorageManager storageManager;
     private final PermissionsManager permissions;
 
-    public String primarycommand() {
-        return "ally";
+    public @Nullable List<String> primarycommand() {
+        return List.of("ally");
     }
 
 

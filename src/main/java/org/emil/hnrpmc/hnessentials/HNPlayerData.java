@@ -22,6 +22,7 @@ public class HNPlayerData {
     private boolean godMode = false;
     private boolean muted = false;
     private boolean jailed = false;
+    private boolean afk = false;
 
     private Map<CosmeticSlot, String> equippedCosmetics = new HashMap<>();
     //private transient UserInfoImpl userInfo;
@@ -37,7 +38,6 @@ public class HNPlayerData {
         return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/slim/steve.png");
     }
 
-    // Leerer Konstruktor für GSON
     public HNPlayerData(ServerPlayer player) {
         initDefaults();
         playerName = player.getName().getString();
@@ -113,6 +113,7 @@ public class HNPlayerData {
 
     public void setLogoutLocation(Map<String, Object> logoutLocation) {
         this.logoutLocation = logoutLocation;
+        this.lastLocation = new Vec3(Double.parseDouble(logoutLocation.get("x").toString()), Double.parseDouble(logoutLocation.get("y").toString()), Double.parseDouble(logoutLocation.get("z").toString()));
     }
 
     public void updateLastLocation(Vec3 lastLocation) {
@@ -158,6 +159,14 @@ public class HNPlayerData {
         return teleportAuto;
     }
 
+    public void setTeleportAuto(boolean teleportAuto) {
+        this.teleportAuto = teleportAuto;
+    }
+
+    public void setTeleportEnabled(boolean teleportEnabled) {
+        this.teleportEnabled = teleportEnabled;
+    }
+
     public boolean isTeleportEnabled() {
         return teleportEnabled;
     }
@@ -168,10 +177,6 @@ public class HNPlayerData {
 
     public Map<String, Object> getLogoutLocation() {
         return logoutLocation;
-    }
-
-    public String getIp_adress() {
-        return ip_adress;
     }
 
     public Vec3 getLastLocation() {
@@ -229,6 +234,15 @@ public class HNPlayerData {
 
     public void setGodMode(boolean godMode) {
         this.godMode = godMode;
+    }
+
+
+    public boolean isAfk() {
+        return afk;
+    }
+
+    public void setAfk(boolean afk) {
+        this.afk = afk;
     }
 
     public void setIp_adress(String ip_adress) {

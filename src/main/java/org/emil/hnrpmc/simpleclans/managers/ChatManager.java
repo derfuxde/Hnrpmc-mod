@@ -147,7 +147,7 @@ public final class ChatManager {
         parsedFormat = parseWithPapi(message.getSender(), parsedFormat)
                 .replace("%message%", message.getContent());
 
-        return parsedFormat;
+        return plugin.getSettingsManager().parseConditionalMessage(sender.toPlayer(), parsedFormat);
     }
 
     private String parseWithPapi(ClanPlayer cp, String message) {

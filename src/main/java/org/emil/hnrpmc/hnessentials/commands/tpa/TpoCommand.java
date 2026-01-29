@@ -37,8 +37,8 @@ public class TpoCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "tpo";
+    public @Nullable List<String> primarycommand() {
+        return List.of("tpo");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

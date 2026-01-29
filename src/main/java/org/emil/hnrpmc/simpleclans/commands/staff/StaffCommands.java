@@ -28,6 +28,7 @@ import org.emil.hnrpmc.simpleclans.language.LanguageResource;
 import org.emil.hnrpmc.simpleclans.managers.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +38,7 @@ import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.G
 
 public final class StaffCommands extends ClanSBaseCommand {
 
-    private final SimpleClans plugin;
+    private SimpleClans plugin;
     private final ClanManager cm;
     private final PermissionsManager permissions;
     private final SettingsManager settings;
@@ -53,8 +54,8 @@ public final class StaffCommands extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
     @Override
@@ -521,6 +522,10 @@ public final class StaffCommands extends ClanSBaseCommand {
         CommandSourceStack src = ctx.getSource();
         ServerPlayer sender = src.getPlayerOrException();
 
+        if (plugin == null) {
+            plugin = SimpleClans.getInstance();
+        }
+
         plugin.getStorageManager().saveModified();
         plugin.getSettingsManager().load();
         plugin.getStorageManager().importFromDatabase();
@@ -534,7 +539,10 @@ public final class StaffCommands extends ClanSBaseCommand {
 
         for (Clan clan : cm.getClans()) {
             permissions.updateClanPermissions(clan);
-            plugin.getChatManager().getDiscordHook(plugin).updaterolePerms(clan);
+            if (plugin.getChatManager().getDiscordHook(plugin) != null) {
+                plugin.getChatManager().getDiscordHook(plugin).updaterolePerms(clan);
+            }
+
         }
 
         NeoForge.EVENT_BUS.post(new ReloadEvent(sender.createCommandSourceStack()));

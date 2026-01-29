@@ -18,6 +18,8 @@ import org.emil.hnrpmc.simpleclans.managers.ClanManager;
 import org.emil.hnrpmc.simpleclans.managers.StorageManager;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.CLAN;
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.NONE;
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
@@ -39,13 +41,13 @@ public final class ChatCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("clan", ".");
     }
 
     @Override
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {
-        dispatcher.register(root(dispatcher, rootLiteral));
+        dispatcher.register(rootLiteral.equals(".") ? root2(dispatcher, rootLiteral) : root(dispatcher, rootLiteral));
         return dispatcher.getRoot();
     }
 
@@ -53,6 +55,39 @@ public final class ChatCommand extends ClanSBaseCommand {
         return Commands.literal(root)
                 .requires(src -> Conditions.clan(src.getPlayer()) != null )
                 .then(chat());
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> root2(CommandDispatcher<CommandSourceStack> dispatcher, String root) {
+        return Commands.literal(root)
+                .requires(src -> Conditions.clan(src.getPlayer()) != null )
+                .executes(ctx -> {
+                    // wie ACF @Default ohne message -> typischerweise Usage anzeigen
+                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                    if (!basicConditions(player, ctx.getSource())) return 0;
+                    if (!hasPerm(player, "simpleclans.member.chat")) return 0;
+                    if (!clanMember(player, ctx.getSource())) return 0;
+                    if (!canChat(player, ctx.getSource(), CLAN)) return 0;
+
+                    ChatBlock.sendMessage(ctx.getSource(), ChatFormatting.RED + "Usage: /. <message>");
+                    return 0;
+                })
+                .then(Commands.argument("message", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                            String message = StringArgumentType.getString(ctx, "message");
+
+                            if (!basicConditions(player, ctx.getSource())) return 0;
+                            if (!hasPerm(player, "simpleclans.member.chat")) return 0;
+                            ClanPlayer cp = mustClanPlayer(player, ctx.getSource());
+                            if (cp == null) return 0;
+                            if (!canChat(player, ctx.getSource(), CLAN)) return 0;
+
+                            chatManager.processChat(SERVER, CLAN, cp, message);
+                            return 1;
+                        }))
+                .then(join())
+                .then(leave())
+                .then(mute());
     }
 
     /**

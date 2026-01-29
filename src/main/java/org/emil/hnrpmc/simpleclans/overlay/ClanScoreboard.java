@@ -15,6 +15,8 @@ import org.emil.hnrpmc.simpleclans.ClanPlayer;
 import org.emil.hnrpmc.simpleclans.Rank;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.managers.ClanManager;
+import org.emil.hnrpmc.simpleclans.utils.ChatUtils;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,7 +30,6 @@ public final class ClanScoreboard {
     private static final String OBJECTIVE_ID = "clan_ui";
 
     public static void update(SimpleClans plugin, ServerPlayer player, int OBJ_ID) {
-        // Eindeutige ID pro Spieler, damit sie sich nicht gegenseitig überschreiben
         String finalid = OBJECTIVE_ID + "_" + OBJ_ID;
 
         Scoreboard board = player.getScoreboard();
@@ -42,13 +43,12 @@ public final class ClanScoreboard {
             String cons = formatplaceholder(plugin, o.conditions(), player);
             if (checkconditions(cons, player)) {
                 config = o;
-                break; // Wichtig: Nimm das erste passende Board
+                break;
             }
         }
 
         if (config == null) return;
 
-        // 1. Objective erstellen/holen
         if (obj == null) {
             obj = board.addObjective(finalid, ObjectiveCriteria.DUMMY,
                     Component.literal(config.title()), ObjectiveCriteria.RenderType.INTEGER, true, null);
@@ -56,11 +56,8 @@ public final class ClanScoreboard {
             obj.setDisplayName(Component.literal(config.title()));
         }
 
-        // 2. Sidebar-Slot NUR für diesen Spieler setzen via Paket
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, obj));
 
-        // 3. WICHTIG: Scores auf dem echten Board zurücksetzen
-        // Da wir eine Player-eindeutige finalid haben, stören wir andere nicht.
         for (ScoreHolder holder : board.getTrackedPlayers()) {
             board.resetAllPlayerScores(holder);
         }
@@ -78,7 +75,6 @@ public final class ClanScoreboard {
         cons = cons.trim();
         if (cons.isEmpty()) return false;
 
-        // OR hat die niedrigere Priorität → zuerst splitten
         String[] orParts = cons.split("\\s*\\|\\|\\s*");
         if (orParts.length > 1) {
             for (String part : orParts) {
@@ -256,6 +252,8 @@ public final class ClanScoreboard {
             player_armor_boots_durability = String.valueOf((b.getMaxDamage() - b.getDamageValue()));
         }
 
+        String tick_count = String.valueOf(plugin.getServer().getTickCount());
+
         String plhealth = String.valueOf(player.getHealth());
 
         return currentString
@@ -283,6 +281,7 @@ public final class ClanScoreboard {
                 .replace("%server_players%", serverplayercount)
                 .replace("%player_ping_colored%", coloredping)
                 .replace("%player_ping%", ping)
+                .replace("%server_tick_count%", tick_count)
                 .replace("%server_maxplayers%", servermaxplayers);
     }
 

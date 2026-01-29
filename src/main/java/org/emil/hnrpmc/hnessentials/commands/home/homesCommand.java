@@ -35,8 +35,8 @@ public class homesCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "homes";
+    public @Nullable List<String> primarycommand() {
+        return List.of("homes");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

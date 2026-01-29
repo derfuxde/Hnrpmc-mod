@@ -16,6 +16,8 @@ import org.emil.hnrpmc.simpleclans.commands.data.*;
 import org.emil.hnrpmc.simpleclans.utils.VanishUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
 
 public final class DataCommands extends ClanSBaseCommand {
@@ -28,8 +30,8 @@ public final class DataCommands extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
     @Override

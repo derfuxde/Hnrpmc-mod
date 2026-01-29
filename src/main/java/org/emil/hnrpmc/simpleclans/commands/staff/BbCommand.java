@@ -23,6 +23,8 @@ import org.emil.hnrpmc.simpleclans.managers.StorageManager;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
 
 public class BbCommand extends ClanSBaseCommand {
@@ -43,8 +45,8 @@ public class BbCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
 

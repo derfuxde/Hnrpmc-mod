@@ -46,8 +46,8 @@ public final class HomeCommands extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

@@ -16,6 +16,8 @@ import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
 import org.emil.hnrpmc.simpleclans.managers.StorageManager;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
 
 public final class BbCommand extends ClanSBaseCommand {
@@ -36,8 +38,8 @@ public final class BbCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "clan";
+    public @Nullable List<String> primarycommand() {
+        return List.of("clan");
     }
 
     @Override

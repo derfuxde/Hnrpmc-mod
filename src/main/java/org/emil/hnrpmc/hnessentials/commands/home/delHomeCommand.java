@@ -32,8 +32,8 @@ public class delHomeCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "delhome";
+    public @Nullable List<String> primarycommand() {
+        return List.of("delhome");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

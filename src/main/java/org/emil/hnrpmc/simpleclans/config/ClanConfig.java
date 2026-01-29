@@ -14,8 +14,9 @@ public final class ClanConfig {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    public record Root(List<Board> boards) {}
+    public record Root(List<Board> boards, List<Tablist> tablists) {}
     public record Board(String id, String conditions, String title, List<String> lines) {}
+    public record Tablist(String id, String conditions, String header, String footer) {}
 
     private static Root cached;
 
@@ -64,7 +65,21 @@ public final class ClanConfig {
                         "§8----------------",
                         "§fClan: §a%clan_name%",
                         "§fRang: §b%clan_rank%"
-                ))
+                ))), List.of(
+                new Tablist("tab", "true",
+                             """
+                             &0&m                                                &7
+                             &r&3&lSurvival
+                             &r&7&l>> Willkommen&3 &l%playername%&7&l! &7&l<<
+                             &r&7Aktive Spieler: &f%server_players%
+                             
+                             """,
+                        """
+                        %hnph_ani_time%
+                        
+                        &0&m                                                &7
+                        """
+                )
         ));
     }
 }

@@ -20,8 +20,6 @@ public class ServerChatHandler implements ChatHandler {
           TODO: Make it async, change Type to Channel in 3.0
         */
         plugin.getServer().execute(() -> {
-            // 1. Event erstellen und werfen
-            // In NeoForge nutzt man den NeoForge.EVENT_BUS anstelle von getPluginManager().callEvent()
             ChatEvent event = new ChatEvent(
                     message.getContent(),
                     message.getSender(),
@@ -31,27 +29,21 @@ public class ServerChatHandler implements ChatHandler {
 
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
 
-            if (event.isCanceled()) { // NeoForge nutzt isCanceled() statt isCancelled()
+            if (event.isCanceled()) {
                 return;
             }
 
-            // 2. Nachricht verarbeiten
             message.setContent(stripColorsAndFormatsPerPermission(message.getSender(), event.getMessage()));
 
-            // Format aus der Config laden
             String configKey = String.format("%sCHAT_FORMAT",
                     message.getSource() == org.emil.hnrpmc.simpleclans.chat.SCMessage.Source.DISCORD ? "DISCORD" : message.getChannel());
 
-            // Annahme: Dein SettingsManager hat eine Methode, um via String-Key zuzugreifen
             String format = settingsManager.getString(org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.valueOf(configKey));
             String formattedMessage = chatManager.parseChatFormat(format, message, event.getPlaceholders());
 
-            // 3. Logging (SLF4J Logger von NeoForge)
             plugin.getLogger().info(ChatUtils.stripColors(formattedMessage));
 
-            // 4. Nachricht an alle Empfänger senden
             for (ClanPlayer cp : message.getReceivers()) {
-                // ChatBlock.sendMessage muss für NeoForge angepasst sein (nutzt intern player.sendSystemMessage)
                 ChatBlock.sendMessage(cp, formattedMessage);
             }
         });

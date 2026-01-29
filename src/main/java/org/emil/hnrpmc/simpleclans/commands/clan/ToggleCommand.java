@@ -17,6 +17,7 @@ import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.emil.hnrpmc.simpleclans.managers.StorageManager;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
@@ -33,8 +34,8 @@ public final class ToggleCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
     @Override

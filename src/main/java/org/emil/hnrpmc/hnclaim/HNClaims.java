@@ -14,6 +14,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.hnclaim.commands.ClaimCommandManager;
 import org.emil.hnrpmc.hnclaim.listeners.ClaimEventHandler;
 import org.emil.hnrpmc.hnclaim.listeners.ClaimPlayerListener;
@@ -54,7 +55,7 @@ import static javax.swing.UIManager.getString;
 import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.DEBUG;
 import static org.emil.hnrpmc.simpleclans.managers.SettingsManager.ConfigField.PERFORMANCE_SAVE_PERIODICALLY;
 
-public class HNClaims {
+public class HNClaims extends Hnrpmod {
 
     private static HNClaims instance;
     public static final Logger LOGGER = LogUtils.getLogger();

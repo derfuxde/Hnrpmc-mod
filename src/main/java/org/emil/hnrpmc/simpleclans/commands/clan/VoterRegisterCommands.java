@@ -14,6 +14,8 @@ import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.managers.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class VoterRegisterCommands extends ClanSBaseCommand {
 
     private final SimpleClans plugin;
@@ -34,14 +36,17 @@ public class VoterRegisterCommands extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return java.util.List.of("accept", "deny");
     }
 
     @Override
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {
-        dispatcher.register(root(dispatcher, "accept"));
-        dispatcher.register(root2(dispatcher, "deny"));
+        if (rootLiteral.equals("accept")) {
+            dispatcher.register(root(dispatcher, rootLiteral));
+        }else if (rootLiteral.equals("deny")) {
+            dispatcher.register(root2(dispatcher, "deny"));
+        }
         return dispatcher.getRoot();
     }
 

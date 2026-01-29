@@ -35,8 +35,8 @@ public class SpawnCommand extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "spawn";
+    public @Nullable List<String> primarycommand() {
+        return List.of("spawn");
     }
 
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {

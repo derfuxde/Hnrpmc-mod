@@ -61,22 +61,25 @@ public final class SCCommandManager {
         commands.add(new LeaderCommands(plugin));
 
         for (ClanSBaseCommand command : commands) {
-            String sprimarycommand = command.primarycommand();
-            String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "clan";
-            CommandNode<CommandSourceStack> rootNode =
-                    command.register(dispatcher, "hnrpmc:" + commandname);
+            List<String> sprimarycommands = command.primarycommand();
+            for (String sprimarycommand : sprimarycommands) {
+                String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "clan";
+                CommandNode<CommandSourceStack> rootNode =
+                        command.register(dispatcher, "hnrpmc:" + commandname);
 
-            CommandNode<CommandSourceStack> rootNode2 =
-                    command.register(dispatcher, commandname);
-            if (allcommandstarts.contains(commandname)) {
-                allcommandstarts.add(commandname);
+                CommandNode<CommandSourceStack> rootNode2 =
+                        command.register(dispatcher, commandname);
+                if (allcommandstarts.contains(commandname)) {
+                    allcommandstarts.add(commandname);
+                }
+
+
+                for (int i = 1; i < aliases.size(); i++) {
+                    dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
+                    dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode2));
+                }
             }
 
-
-            for (int i = 1; i < aliases.size(); i++) {
-                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
-                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode2));
-            }
         }
 
         plugin.getLogger().info("here all commands {}", allcommandstarts);

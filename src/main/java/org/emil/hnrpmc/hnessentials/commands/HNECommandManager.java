@@ -65,22 +65,25 @@ public final class HNECommandManager {
         commands.add(new delWarpCommand(plugin));
 
         for (ClanSBaseCommand command : commands) {
-            String sprimarycommand = command.primarycommand();
-            String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "essentials";
-            String commandname2 = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? "hnrpmc:" +sprimarycommand : "hnrpmc:essentials";
-            CommandNode<CommandSourceStack> rootNode =
-                    command.register(dispatcher,  commandname);
-            CommandNode<CommandSourceStack> rootNode2 =
-                    command.register(dispatcher,  commandname2);
+            List<String> sprimarycommands = command.primarycommand();
+            for (String sprimarycommand : sprimarycommands) {
+                String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "essentials";
+                String commandname2 = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? "hnrpmc:" +sprimarycommand : "hnrpmc:essentials";
+                CommandNode<CommandSourceStack> rootNode =
+                        command.register(dispatcher,  commandname);
+                CommandNode<CommandSourceStack> rootNode2 =
+                        command.register(dispatcher,  commandname2);
 
-            if (allcommandstarts.contains(commandname)) {
-                allcommandstarts.add(commandname);
+                if (allcommandstarts.contains(commandname)) {
+                    allcommandstarts.add(commandname);
+                }
+
+                for (int i = 1; i < aliases.size(); i++) {
+                    dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
+                    dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode2));
+                }
             }
 
-            for (int i = 1; i < aliases.size(); i++) {
-                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
-                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode2));
-            }
         }
 
         plugin.getLogger().info("here all commands {}", allcommandstarts);

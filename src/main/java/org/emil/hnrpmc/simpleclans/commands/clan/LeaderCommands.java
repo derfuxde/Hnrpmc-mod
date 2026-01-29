@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static net.minecraft.ChatFormatting.RED;
 
+import java.util.List;
 import java.util.Objects;
 
 import static org.emil.hnrpmc.simpleclans.SimpleClans.lang;
@@ -49,8 +50,8 @@ public class LeaderCommands extends ClanSBaseCommand {
     }
 
     @Override
-    public @Nullable String primarycommand() {
-        return "";
+    public @Nullable List<String> primarycommand() {
+        return List.of("");
     }
 
     @Override

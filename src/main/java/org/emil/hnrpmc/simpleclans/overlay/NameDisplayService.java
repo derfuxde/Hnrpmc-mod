@@ -20,8 +20,7 @@ public final class NameDisplayService {
 
         String formatted = ClanScoreboard.formatplaceholder(plugin, tabOrHeadRule.format(), p);
 
-        // Für Spieler: Tablist + Head -> Team Prefix/Suffix
-        applyTeamName(p, formatted);
+        applyTeamName(p, plugin.getSettingsManager().parseConditionalMessage(p, formatted));
     }
 
 

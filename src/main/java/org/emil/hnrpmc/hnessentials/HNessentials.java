@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -25,6 +26,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.logging.log4j.core.jmx.Server;
+import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockConfig;
 import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockData;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
@@ -51,7 +53,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class HNessentials {
+public class HNessentials extends Hnrpmod {
     private StorageManager storageManager;
     private MinecraftServer server;
     private TpaManager tpaRequester;
@@ -138,6 +140,18 @@ public class HNessentials {
     }
 
     private void onServerStopping(ServerStoppingEvent event) {
+        for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
+            HNPlayerData pd = storageManager.getOrCreatePlayerData(sp.getUUID());
+            Vec3 playerpos = sp.getPosition(0);
+            Map<String, Object> logoutLocation = new HashMap<>();
+            logoutLocation.put("world-name", "");
+            logoutLocation.put("x", playerpos.x);
+            logoutLocation.put("y", playerpos.y);
+            logoutLocation.put("z", playerpos.z);
+            logoutLocation.put("yaw", sp.getYRot());
+            logoutLocation.put("pitch", sp.getXRot());
+            pd.setLogoutLocation(logoutLocation);
+        }
         this.server = null;
     }
 

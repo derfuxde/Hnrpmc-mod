@@ -49,22 +49,30 @@ public final class ClaimCommandManager {
         String primarycommand = aliases.get(0);
 
         List<ClanSBaseCommand> commands = new ArrayList<>();
-        commands.add(new ClaimCommand(SC, plugin));
+        commands.add(new ClaimCommand(plugin));
 
         for (ClanSBaseCommand command : commands) {
-            String sprimarycommand = command.primarycommand();
-            String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "claim";
-            CommandNode<CommandSourceStack> rootNode =
-                    command.register(dispatcher, commandname);
-
-            if (allcommandstarts.contains(commandname)) {
-                allcommandstarts.add(commandname);
+            List<String> sprimarycommands = command.primarycommand();
+            if (sprimarycommands == null || sprimarycommands.isEmpty()) {
+                sprimarycommands = new ArrayList<>();
+                sprimarycommands.add("claim");
             }
 
+            for (String sprimarycommand : sprimarycommands) {
+                String commandname = sprimarycommand != null && !Objects.equals(sprimarycommand, "") ? sprimarycommand : "claim";
+                CommandNode<CommandSourceStack> rootNode =
+                        command.register(dispatcher, commandname);
 
-            for (int i = 1; i < aliases.size(); i++) {
-                dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
+                if (allcommandstarts.contains(commandname)) {
+                    allcommandstarts.add(commandname);
+                }
+
+
+                for (int i = 1; i < aliases.size(); i++) {
+                    dispatcher.register(Commands.literal(aliases.get(i)).redirect(rootNode));
+                }
             }
+
         }
 
         plugin.getLogger().info("here all commands {}", allcommandstarts);
