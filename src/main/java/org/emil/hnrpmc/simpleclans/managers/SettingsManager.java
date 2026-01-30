@@ -275,8 +275,10 @@ public final class SettingsManager {
         return output;
     }
 
+
+    static ScriptEngineManager manager = new ScriptEngineManager();
+
     public static <T> String getFormattedName(T value, List<String> rules) {
-        ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("JavaScript");
 
         for (String rule : rules) {
@@ -502,8 +504,13 @@ public final class SettingsManager {
                     String placeholder = String.valueOf(map.get("placeholder"));
 
                     List<String> rules = new ArrayList<>();
-                    if (map.get("rules") instanceof List<?> ruleList) {
-                        rules = ruleList.stream().map(Object::toString).toList();
+                    if (map != null && map.get("rules") instanceof List<?> ruleList) {
+                        rules = ruleList.stream()
+                                .filter(Objects::nonNull)
+                                .map(Object::toString)
+                                .toList();
+                    } else {
+                        rules = new ArrayList<>();
                     }
 
                     loadedSettings.put(name, new ConditionalSetting(name, placeholder, rules));

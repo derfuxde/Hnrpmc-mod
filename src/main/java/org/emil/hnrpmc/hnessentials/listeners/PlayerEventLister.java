@@ -3,6 +3,8 @@ package org.emil.hnrpmc.hnessentials.listeners;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -257,6 +259,52 @@ public class PlayerEventLister {
                 be.setData(HNessentials.LOCK_DATA, new LockData(player.getUUID(), new ArrayList<>()));
                 player.displayClientMessage(Component.literal("§aGesichert! (Sneak+Rechtsklick für Menü)"), true);
                 event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (event.getLevel().isClientSide) return;
+
+        Entity target = event.getTarget();
+        ServerPlayer player = (ServerPlayer) event.getEntity();
+
+        if (target.hasData(HNessentials.LOCK_DATA)) {
+            LockData data = target.getData(HNessentials.LOCK_DATA);
+
+            boolean isAdmin = SimpleClans.getInstance().getPermissionsManager().has(player, "hnrpmc.chestlock.admin");
+            if (player.isShiftKeyDown() && (data.owner().equals(player.getUUID()) || isAdmin)) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+
+                LockMenuHandler.openMainMenu(player, target);
+                return;
+            }
+
+            if (!data.canAccess(player.getUUID())) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+                player.displayClientMessage(Component.literal("§cDiese Entity ist gesichert!"), true);
+                return;
+            }
+        }
+        else if (player.isShiftKeyDown() && event.getItemStack().isEmpty()) {
+
+            if (LockConfig.isLockableEntity(target.getType())) {
+
+                var claim = HNClaims.getInstance().getClaimManager().getClaimbyPos(target.position(), player.level().dimension().location().toString());
+                if (claim != null && !claim.getownerUUID().equals(player.getUUID())) {
+                    player.displayClientMessage(Component.literal("§cDu kannst hier nicht sperren (fremder Claim)!"), true);
+                    event.setCanceled(true);
+                    return;
+                }
+
+                target.setData(HNessentials.LOCK_DATA, new LockData(player.getUUID(), new ArrayList<>()));
+                player.displayClientMessage(Component.literal("§aEntity gesichert! (Sneak+Rechtsklick für Menü)"), true);
+
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
             }
         }
     }

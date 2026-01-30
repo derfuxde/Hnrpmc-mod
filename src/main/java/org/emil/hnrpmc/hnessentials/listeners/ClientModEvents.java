@@ -1,11 +1,13 @@
 package org.emil.hnrpmc.hnessentials.listeners;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.TamableAnimal;
@@ -36,6 +38,7 @@ import org.emil.hnrpmc.hnessentials.network.requestPlayerData;
 import java.io.File;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.UUID;
 
 @EventBusSubscriber(modid = "hnrpmc", value = Dist.CLIENT)
 public class ClientModEvents {
@@ -83,8 +86,7 @@ public class ClientModEvents {
 
 
 
-
-
+    static Player secPlayer = null;
 
     @SubscribeEvent
     public static void onPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {

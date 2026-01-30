@@ -40,6 +40,7 @@ import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
 import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerDataRequestPayload;
 import org.emil.hnrpmc.hnessentials.listeners.PlayerEventLister;
+import org.emil.hnrpmc.hnessentials.managers.DatabaseManager;
 import org.emil.hnrpmc.hnessentials.managers.HomeManager;
 import org.emil.hnrpmc.hnessentials.managers.StorageManager;
 import org.emil.hnrpmc.hnessentials.managers.TpaManager;
@@ -54,10 +55,11 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class HNessentials extends Hnrpmod {
-    private StorageManager storageManager;
+    private static StorageManager storageManager;
     private MinecraftServer server;
-    private TpaManager tpaRequester;
-    private HomeManager homeManager;
+    private static TpaManager tpaRequester;
+    private static HomeManager homeManager;
+    private static DatabaseManager databaseManager;
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final List<String> skins = List.of("Standard", "Shadow", "Gold", "Diamond", "Rainbow");
     public static final Map<UUID, Integer> clientPetSkins = new HashMap<>();
@@ -111,13 +113,14 @@ public class HNessentials extends Hnrpmod {
 
     private void setup(final ServerStartingEvent event) {
         this.server = event.getServer();
-        this.tpaRequester = new TpaManager();
+        tpaRequester = new TpaManager();
         serverStartup(server);
     }
 
     public void serverStartup(MinecraftServer eventserver) {
-        this.storageManager = new StorageManager(this);
-        this.homeManager = new HomeManager(this);
+        storageManager = new StorageManager(this);
+        homeManager = new HomeManager(this);
+        databaseManager = new DatabaseManager(this);
 
         storageManager.loadAllPlayerDatas();
 
@@ -449,5 +452,9 @@ public class HNessentials extends Hnrpmod {
 
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }

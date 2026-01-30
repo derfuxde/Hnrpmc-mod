@@ -180,9 +180,6 @@ public class Clan implements Serializable, Comparable<Clan> {
 
         this.balance = event.getNewBalance();
         if (cause != ClanBalanceUpdateEvent.Cause.LOADING) {
-            if (operation == SET) {
-                SimpleClans.getInstance().getBankLogger().log(new BankLog(operator, this, response, SET, cause, balance));
-            }
             SimpleClans.getInstance().getStorageManager().updateClan(this);
         }
         return response;

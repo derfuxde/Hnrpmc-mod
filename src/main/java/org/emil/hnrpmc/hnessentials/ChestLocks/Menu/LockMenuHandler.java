@@ -1,11 +1,11 @@
 package org.emil.hnrpmc.hnessentials.ChestLocks.Menu;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.attachment.AttachmentHolder;
 import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 
@@ -40,7 +41,7 @@ public class LockMenuHandler {
     }
 
     // --- 1. HAUPTMENÜ ---
-    public static void openMainMenu(ServerPlayer player, BlockEntity be) {
+    public static void openMainMenu(ServerPlayer player, AttachmentHolder be) {
         if (!be.hasData(HNessentials.LOCK_DATA)) return;
         LockData data = be.getData(HNessentials.LOCK_DATA);
 
@@ -63,13 +64,21 @@ public class LockMenuHandler {
                         player.displayClientMessage(Component.literal("§aSperre entfernt!"), true);
                     }
                 }
-                @Override public boolean stillValid(Player p) { return !be.isRemoved(); }
+                @Override public boolean stillValid(Player p) {
+                    boolean isR = false;
+                    if (be instanceof BlockEntity blockEntity) {
+                        isR =  !blockEntity.isRemoved();
+                    } else if (be instanceof Entity entity) {
+                        isR = !entity.isRemoved();
+                    }
+                    return isR;
+                }
             };
         }, Component.literal("Schloss-Verwaltung")));
     }
 
     // --- 2. LISTE DER VERTRAUTEN SPIELER ---
-    private static void openTrustedListMenu(ServerPlayer player, BlockEntity be) {
+    private static void openTrustedListMenu(ServerPlayer player, AttachmentHolder be) {
         LockData data = be.getData(HNessentials.LOCK_DATA);
 
         player.openMenu(new SimpleMenuProvider((id, inv, p) -> {
@@ -103,13 +112,20 @@ public class LockMenuHandler {
                         openTrustedListMenu((ServerPlayer) player, be); // Refresh
                     }
                 }
-                @Override public boolean stillValid(Player p) { return !be.isRemoved(); }
-            };
+                @Override public boolean stillValid(Player p) {
+                    boolean isR = false;
+                    if (be instanceof BlockEntity blockEntity) {
+                        isR =  !blockEntity.isRemoved();
+                    } else if (be instanceof Entity entity) {
+                        isR = !entity.isRemoved();
+                    }
+                    return isR;
+                }            };
         }, Component.literal("Vertraute Spieler")));
     }
 
     // --- 3. ONLINE-SPIELER HINZUFÜGEN ---
-    private static void openAddPlayerMenu(ServerPlayer player, BlockEntity be) {
+    private static void openAddPlayerMenu(ServerPlayer player, AttachmentHolder be) {
         LockData data = be.getData(HNessentials.LOCK_DATA);
         List<ServerPlayer> onlinePlayers = player.getServer().getPlayerList().getPlayers();
 
@@ -142,7 +158,15 @@ public class LockMenuHandler {
                         openTrustedListMenu((ServerPlayer) player, be); // Zurück zur Liste
                     }
                 }
-                @Override public boolean stillValid(Player p) { return !be.isRemoved(); }
+                @Override public boolean stillValid(Player p) {
+                    boolean isR = false;
+                    if (be instanceof BlockEntity blockEntity) {
+                        isR =  !blockEntity.isRemoved();
+                    } else if (be instanceof Entity entity) {
+                        isR = !entity.isRemoved();
+                    }
+                    return isR;
+                }
             };
         }, Component.literal("Spieler auswählen")));
     }

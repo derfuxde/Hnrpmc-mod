@@ -37,6 +37,7 @@ public final class PerPlayerSidebar {
         for (int i = 0; i < n; i++) {
             String entry = entryKey(st.objectiveId(), i);
             String text = ClanScoreboard.formatplaceholder(plugin, lines.get(i), p);
+            text = plugin.getSettingsManager().parseConditionalMessage(p, text);
 
             String prev = st.lastLines().get(i);
             if (!Objects.equals(prev, text)) {

@@ -13,6 +13,8 @@ import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.commands.PlayerData.registerAdminGui;
+import org.emil.hnrpmc.hnessentials.commands.blocklogger.LoggerCommands;
+import org.emil.hnrpmc.hnessentials.commands.common.commonCommands;
 import org.emil.hnrpmc.hnessentials.commands.home.*;
 import org.emil.hnrpmc.hnessentials.commands.tpa.TpaCommands;
 import org.emil.hnrpmc.hnessentials.commands.tpa.TpoCommand;
@@ -63,6 +65,8 @@ public final class HNECommandManager {
         commands.add(new setWarpCommand(plugin));
         commands.add(new WarpCommand(plugin));
         commands.add(new delWarpCommand(plugin));
+        commands.add(new commonCommands(plugin));
+        commands.add(new LoggerCommands(plugin));
 
         for (ClanSBaseCommand command : commands) {
             List<String> sprimarycommands = command.primarycommand();

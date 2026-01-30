@@ -31,7 +31,7 @@ public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer
 
     @Override
     public void render(PoseStack stack, MultiBufferSource multiBufferSource, int packedLight, T player, float f, float g, float pitch, float j, float k, float l) {
-        //if (player.isInvisible()) return;
+        if (player.isInvisible()) return;
 
         boolean canOverridePlayerCosmetics = this.canOverridePlayerCosmetics(player);
 

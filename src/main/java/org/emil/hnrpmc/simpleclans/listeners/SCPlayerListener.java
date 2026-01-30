@@ -21,6 +21,7 @@ import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.*;
 
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.CLAN;
 import static org.emil.hnrpmc.simpleclans.ClanPlayer.Channel.NONE;
@@ -36,50 +37,6 @@ public class SCPlayerListener {
     public SCPlayerListener(@NotNull SimpleClans plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
-    }
-
-    @SubscribeEvent
-    public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-
-        if (isBlacklistedWorld(player)) return;
-
-        ClanPlayer cp = plugin.getClanManager().getCreateClanPlayer(player.getUUID());
-
-        //updatePlayerName(player);
-        plugin.getClanManager().updateLastSeen(player);
-        //plugin.getClanManager().updateDisplayName(player);
-
-        plugin.getPermissionsManager().addPlayerPermissions(cp);
-
-        if (settingsManager.is(BB_SHOW_ON_LOGIN) && cp.isBbEnabled() && cp.getClan() != null) {
-            cp.getClan().displayBb(player, settingsManager.getInt(BB_LOGIN_SIZE));
-            plugin.getLogger().info("showing bb");
-        }
-
-        plugin.getPermissionsManager().addClanPermissions(cp);
-    }
-
-    @SubscribeEvent
-    public void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-
-        ClanPlayer cp = plugin.getClanManager().getClanPlayer(player.getUUID());
-        for (ClanPlayer clanPlayer : plugin.getClanManager().getAllClanPlayers()) {
-            plugin.getStorageManager().updateClanPlayer(clanPlayer);
-        }
-        if (cp != null && cp.getClan() != null) {
-            Clan clan = cp.getClan();
-            // Sicherstellen, dass getProtectionManager() in SimpleClans existiert
-            if (clan.getOnlineMembers().size() <= 1) {
-            }
-        }
-
-        if (cp != null) {
-            plugin.getPermissionsManager().removeClanPlayerPermissions(cp);
-        }
-        plugin.getClanManager().updateLastSeen(player);
-        plugin.getRequestManager().endPendingRequest(player.getName().getString());
     }
 
     @SubscribeEvent

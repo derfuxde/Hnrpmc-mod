@@ -73,7 +73,6 @@ public class SimpleClans extends Hnrpmod {
     private PermissionsManager permissionsManager;
     private TeleportManager teleportManager;
     private ChatManager chatManager;
-    private BankLogger bankLogger;
     private TagValidator tagValidator;
     private ProxyManager proxyManager;
     private VanishService vanishService;
@@ -145,8 +144,6 @@ public class SimpleClans extends Hnrpmod {
 
         registerEvents();
 
-        bankLogger = new CSVBankLogger(this);
-
         LOGGER.info("SimpleClans für NeoForge wurde geladen!");
 
         startTasks();
@@ -157,11 +154,13 @@ public class SimpleClans extends Hnrpmod {
         CraterEventBus.INSTANCE.registerEventListener(chatManager);
         bus.register(new PlayerDeath(this));
         bus.register(new SCPlayerListener(this));
+        new SCStaticPlayerListener(this);
+        NeoForge.EVENT_BUS.register(SCStaticPlayerListener.class);
         bus.register(InventoryController.class);
         bus.register(new TamableMobsSharing(this));
         bus.register(new PvPOnlyInWar(this));
         bus.register(new FriendlyFire(this));
-        if (chatManager.isDiscordHookEnabled(this)){
+        if (ChatManager.isDiscordHookEnabled(this)){
             bus.register(chatManager.getDiscordHook(this));
             CraterEventBus.INSTANCE.registerEventListener(chatManager.getDiscordHook(this));
         }
@@ -205,10 +204,6 @@ public class SimpleClans extends Hnrpmod {
 
     public VanishService getVanishService() {
         return this.vanishService;
-    }
-
-    public BankLogger getBankLogger() {
-        return bankLogger;
     }
 
     /**

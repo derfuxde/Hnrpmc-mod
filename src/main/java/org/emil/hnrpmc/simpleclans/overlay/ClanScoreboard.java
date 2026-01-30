@@ -16,10 +16,14 @@ import org.emil.hnrpmc.simpleclans.Rank;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.managers.ClanManager;
 import org.emil.hnrpmc.simpleclans.utils.ChatUtils;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -256,8 +260,12 @@ public final class ClanScoreboard {
 
         String plhealth = String.valueOf(player.getHealth());
 
+        currentString = foramtDateTimePlaceholder(currentString);
+
         return currentString
                 .replace("%playername%", player.getGameProfile().getName())
+                .replace("%date%", player.getGameProfile().getName())
+                .replace("%time%", player.getGameProfile().getName())
                 .replace("%player_allow_flight%", allowflying)
                 .replace("%playtime%", formatPlaytime(player))
                 .replace("%player_armor_helmet_name%", player_armor_helmet_name)
@@ -283,6 +291,39 @@ public final class ClanScoreboard {
                 .replace("%player_ping%", ping)
                 .replace("%server_tick_count%", tick_count)
                 .replace("%server_maxplayers%", servermaxplayers);
+    }
+
+    private static String foramtDateTimePlaceholder(String input) {
+        if (input == null || input.isEmpty()) return input;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Pattern pattern = Pattern.compile("%date_time_([^%]+)%");
+        Matcher matcher = pattern.matcher(input);
+
+        StringBuilder sb = new StringBuilder();
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            sb.append(input, lastEnd, matcher.start());
+
+            String rawformat = matcher.group(1);
+
+            String format = rawformat.replaceAll("(§.)", "'$1'");
+
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.GERMANY);
+                sb.append(now.format(formatter));
+            } catch (IllegalArgumentException e) {
+                sb.append(matcher.group(0));
+            }
+
+            lastEnd = matcher.end();
+        }
+
+        sb.append(input.substring(lastEnd));
+
+        return sb.toString();
     }
 
     private static void add(ServerPlayer player, Scoreboard board, Objective obj, int score, String text) {

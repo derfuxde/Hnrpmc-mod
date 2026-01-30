@@ -5,10 +5,12 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
 import org.emil.hnrpmc.hnclaim.claimperms;
@@ -111,7 +113,7 @@ public final class Suggestions {
         };
     }
 
-    public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin) {
+    public static SuggestionProvider<CommandSourceStack> allPlayers(Hnrpmod plugin) {
         boolean hhideme = false;
         return allPlayers(plugin, hhideme);
     }
@@ -121,7 +123,7 @@ public final class Suggestions {
         return (ctx, b) -> suggest(plugin.getStorageManager().getGeneralData().getWarps().keySet().stream().toList(), b);
     }
 
-    public static SuggestionProvider<CommandSourceStack> allPlayers(SimpleClans plugin, boolean hhideme) {
+    public static SuggestionProvider<CommandSourceStack> allPlayers(Hnrpmod plugin, boolean hhideme) {
         //boolean hhideme = true;
         /*return (ctx, b) -> suggest(
                 plugin.getClanManager().getAllClanPlayers().stream()
@@ -259,4 +261,96 @@ public final class Suggestions {
     public static SuggestionProvider<CommandSourceStack> clanMembersHideMe(SimpleClans plugin) {
         return (ctx, b) -> suggest(plugin.getClanManager().getClanByPlayerName(ctx.getSource().getPlayer().getName().getString()).getMembers().stream().filter(cp -> cp.getName() != ctx.getSource().getPlayer().getName().getString()).map(ClanPlayer::getName), b);
     }
+
+    public static SuggestionProvider<CommandSourceStack> lookupsugests(Hnrpmod plugin) {
+        return (ctx, b) -> {
+            String input = b.getInput().toLowerCase();
+            String remaining = b.getRemaining().toLowerCase();
+            String[] args = b.getRemaining().toLowerCase().split("(?= )");
+            List<String> argslist = Arrays.stream(args).toList();
+
+
+            List<String> allKeys = List.of("time:", "radius:", "player:", "action:");
+            List<String> allactions = List.of("BLOCK_BREAK", "BLOCK_PLACE", "ITEM_PICKUP", "ITEM_DROP", "KILL", "CHAT");
+
+            List<String> timeformats = List.of("m", "h", "d", "w");
+            List<String> timenumbers = List.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+
+
+            String lastarg = "";
+            String beforelastarg = "";
+            if (argslist != null && !argslist.isEmpty()) {
+                lastarg = argslist.getLast();
+                if (argslist.size() >= 2) {
+                    beforelastarg = argslist.get(argslist.size() - 2);
+                }
+            }
+
+            String keyPart = lastarg.equals(" ") || lastarg.isEmpty() ? "" : allKeys.stream().filter(lastarg::startsWith).toList().getFirst();
+
+            SuggestionsBuilder subBuilder = remaining.endsWith(" ") ? b.createOffset(b.getStart() + keyPart.length()) : b;
+
+            for (String key : allKeys) {
+                if (lastarg.isEmpty()) {
+                    b.suggest(key);
+                } else {
+                    if (allKeys.stream().noneMatch(lastarg::endsWith) && argslist.getLast().equals(" ")) { // wenn list allkey keine ding mit der endung von lastarg hat
+                        if (allKeys.stream().noneMatch(beforelastarg::endsWith)) {
+                            if (argslist.stream().noneMatch(s -> s.startsWith(key))) {
+                                subBuilder.suggest(key);
+                            }
+                        }
+                    }
+                }
+
+
+                //if (!input.contains(key) && key.startsWith(remaining)) {
+                /*if (argslist.stream().noneMatch(s -> s.startsWith(key)) && Character.toString(remaining.charAt(remaining.length() - 1)).equals(" ")) {
+                    b.suggest(key);
+                }*/
+            }
+
+            if (lastarg.replace(" ", "").startsWith("time:") || allKeys.stream().noneMatch(lastarg::endsWith) && beforelastarg.replace(" ", "").startsWith("time:")) {
+                List<String> spaceargs = new ArrayList<>();
+                argslist.forEach(str -> spaceargs.add(argslist.getFirst().equals(str) ? removeLastTwo(str) : " " + str));
+                int plus = (spaceargs.getLast().equals(" ") || spaceargs.getLast().isEmpty() ? 0 : 2);
+                subBuilder = spaceargs.getLast().length() <= 2 || spaceargs.getLast().isEmpty() ? b.createOffset(b.getStart() + remaining.length()) : b.createOffset(b.getStart() + remaining.length() - (spaceargs.getLast().length() + plus ));
+                if (remaining.matches(".*[0-9]")) {
+                    for (String timeformat : timeformats) {
+                        subBuilder.suggest((lastarg + timeformat).replace(" ", ""));
+                    }
+                } else if (timeformats.stream().noneMatch(lastarg::endsWith) && lastarg.matches(".*[^0-9]") && input.matches(".*:[ ]?")) {
+                    for (String number : timenumbers) {
+                        subBuilder.suggest((lastarg + number).replace(" ", ""));
+                    }
+                }
+            } else if (lastarg.equals("radius:") || beforelastarg.equals("radius:")) {
+                if (remaining.matches(".*[^0-9]")) {
+                    for (String number : timenumbers) {
+                        subBuilder.suggest((lastarg + number).replace(" ", ""));
+                    }
+                }
+            } else if (lastarg.equals("player:")) {
+                List<String> playerstring = HNessentials.getInstance().getStorageManager().getGeneralData().getPlayerCache().values().stream().toList();
+                for (String playername : playerstring) {
+                    subBuilder.suggest((lastarg + playername).replace(" ", ""));
+                }
+            } else if (lastarg.equals("action:")) {
+                for (String aktion : allactions) {
+                    subBuilder.suggest((lastarg + aktion).replace(" ", ""));
+                }
+            }
+
+            return subBuilder.buildFuture();
+        };
+    }
+
+    public static String removeLastTwo(String str) {
+        if (str == null || str.length() < 2) {
+            return str;
+        }
+        return str.substring(0, str.length() - 2);
+    }
+
 }
+
