@@ -8,8 +8,11 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import org.emil.hnrpmc.Hnrpmc;
 import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
@@ -352,5 +355,14 @@ public final class Suggestions {
         return str.substring(0, str.length() - 2);
     }
 
+    public static SuggestionProvider<CommandSourceStack> allDims(Hnrpmod plugin) {
+        return (ctx, b) -> {
+            List<String> dimens = new ArrayList<>();
+            for (ResourceKey<Level> key : Hnrpmc.hnessentials.getServer().levelKeys()) {
+                dimens.add(key.location().toString());
+            }
+            return suggest(dimens, b);
+        };
+    }
 }
 

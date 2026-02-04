@@ -34,6 +34,7 @@ import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayerRenderer;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.LinearAlgebra;
+import org.emil.hnrpmc.hnessentials.mixin.Flattener;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 
@@ -42,16 +43,16 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
+public class SkinEffEntry extends ObjectSelectionList.Entry<SkinEffEntry> {
     private final Component text;
     private final Minecraft minecraft;
-    public final CustomCosmetic cosmetic;
-    private final CosmeticEntryList parent;
+    public final String skinEffect;
+    private final SkinEffEntryList parent;
 
-    public CosmeticEntry(Component text, CustomCosmetic cosmetic, Minecraft minecraft, CosmeticEntryList parent) {
+    public SkinEffEntry(Component text, String skinEffect, Minecraft minecraft, SkinEffEntryList parent) {
         this.text = text;
         this.minecraft = minecraft;
-        this.cosmetic = cosmetic;
+        this.skinEffect = skinEffect;
         this.parent = parent;
     }
 
@@ -74,14 +75,7 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
 
         if (player == null) return;
 
-        List<BakableModel> hatbakableModels = new ArrayList<>();
-        Model hatmodel = CosmeticFetcher.getModel((CosmeticType<Model>) cosmetic.getType(), cosmetic.getId());
-        if (hatmodel != null) {
-            BakableModel hatbm = Models.createBakableModel(hatmodel);
-            if (hatbm != null) {
-                hatbakableModels.add(hatbm);
-            }
-        }
+
 
         PlayerSkin skin = Minecraft.getInstance().getSkinManager().getInsecureSkin(player.getGameProfile());
 
@@ -90,17 +84,17 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
         boolean isSlim = skin.model() == PlayerSkin.Model.SLIM;
 
         //CapeData CD = new CapeData(skin.capeTexture(), "mycape", "mycape", true, );
-        PlayerData playerData = new PlayerData("", false, null, true, "", "", hatbakableModels, CapeData.NO_CAPE, null, null, null, texture, isSlim);
+        PlayerData playerData = new PlayerData("", false, null, true, "", "", new ArrayList<>(), CapeData.NO_CAPE, null, null, null, texture, isSlim);
 
         guiGraphics.enableScissor(left, top, left + 10 + width, top + height);
         FakePlayer newFaker = new FakePlayer(this.minecraft, player.getUUID(), player.getDisplayName().getString(), playerData);
         newFaker.renderNametag = false;
-        renderFakePlayerInMenu(left + 20, top + 55, 10.0f, (float) left - mouseX, (float)(top - 90) - mouseY, newFaker);
+        renderFakePlayerInMenu(left + 20, top + 55, 10.0f, (float) left - mouseX, (float)(top - 90) - mouseY, newFaker, skinEffect);
         //guiGraphics.blit(this.image, left, top, 0, 0, 20, 20, 20, 20);
         guiGraphics.disableScissor();
     }
 
-    public static void renderFakePlayerInMenu(int left, int top, float extraScale, float lookX, float lookY, FakePlayer fakePlayer) {
+    public static void renderFakePlayerInMenu(int left, int top, float extraScale, float lookX, float lookY, FakePlayer fakePlayer, String skinEffect) {
         float h = (float)Math.atan(lookX / 40.0F);
         float l = (float)Math.atan(lookY / 40.0F);
         Matrix4fStack stack = RenderSystem.getModelViewStack();
@@ -133,6 +127,7 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
 
         RenderSystem.runAsFancy(() -> {
             if (fakePlayer.verifyModel(Minecraft.getInstance())) {
+                Flattener.prepareToyRendering(0.0F, 0.0D, 0.0D, viewStack, fakePlayer, skinEffect);
                 FakePlayerRenderer.render(viewStack, fakePlayer, bufferSource, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, 15728880);
             }
         });
@@ -149,8 +144,8 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
     @Override
     public boolean mouseClicked(double p_331676_, double p_330254_, int p_331536_) {
         parent.setSelected(this);
-        parent.currentcosmetic = this.cosmetic.getId();
-        parent.setCurrentcosmetic(cosmetic.getId());
+        parent.currentcosmetic = this.skinEffect;
+        parent.setCurrentcosmetic(skinEffect);
         return super.mouseClicked(p_331676_, p_330254_, p_331536_);
     }
 

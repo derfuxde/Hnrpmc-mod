@@ -221,7 +221,7 @@ public class ClaimEventHandler {
 
         List<BlockPos> affectedBlocks = event.getAffectedBlocks();
 
-        if (affectedEntitys.isEmpty()) {
+        if (!affectedEntitys.isEmpty()) {
             Iterator<Entity> Entityiterator = affectedEntitys.iterator();
             while (Entityiterator.hasNext()) {
                 Entity pos = Entityiterator.next();
@@ -269,6 +269,10 @@ public class ClaimEventHandler {
         }
         else if ((source instanceof PrimedTnt || source instanceof MinecartTNT)) {
             if (source instanceof PrimedTnt tnt) {
+                if (tnt.getOwner() == null) {
+                    event.setCanceled(true);
+                    return;
+                }
                 ServerPlayer sp = claimManager.getServerPlayer(tnt.getOwner().getUUID());
                 if (!plugin.getPermissionsManager().has(null, claimperms.EXPLODE_BLOCKS, Optional.of(true), source)) {
                     if (sp != null) {

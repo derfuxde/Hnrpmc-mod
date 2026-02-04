@@ -101,7 +101,7 @@ public final class RankCommand extends ClanSBaseCommand {
     }
 
     // ------------------------------------------------------------
-    // /clan rank assign <member> <rank>
+    // /clan rank assign <rank> <member>
     // ------------------------------------------------------------
 
     private LiteralArgumentBuilder<CommandSourceStack> assign() {
@@ -109,7 +109,7 @@ public final class RankCommand extends ClanSBaseCommand {
                 .then(Commands.argument("rank", StringArgumentType.word())
                         .suggests(Suggestions.getAllRanks(plugin))
                         // ...dann den Member
-                        .then(Commands.argument("member", EntityArgument.player())
+                        .then(Commands.argument("member", StringArgumentType.string())
                                 // Jetzt kannst du das "rank" Argument für die Suggestions nutzen!
                                 .suggests(Suggestions.notsamerank(plugin))
                                 .executes(this::execAssign)));

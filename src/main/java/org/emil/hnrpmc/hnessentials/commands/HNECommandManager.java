@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,6 +25,7 @@ import org.emil.hnrpmc.hnessentials.commands.warps.setWarpCommand;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
+import org.emil.hnrpmc.world.WorldProtCommands;
 
 import java.util.*;
 
@@ -67,6 +69,7 @@ public final class HNECommandManager {
         commands.add(new delWarpCommand(plugin));
         commands.add(new commonCommands(plugin));
         commands.add(new LoggerCommands(plugin));
+        commands.add(new WorldProtCommands(plugin));
 
         for (ClanSBaseCommand command : commands) {
             List<String> sprimarycommands = command.primarycommand();
@@ -98,11 +101,15 @@ public final class HNECommandManager {
         String command = event.getParseResults().getReader().getString();
         CommandSourceStack source = event.getParseResults().getContext().getSource();
 
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
-
         if (allcommandstarts.contains(command.split(" ")[0])) {
+            if (!(source.getEntity() instanceof ServerPlayer player)) {
+                if (command.split(" ")[0].equals("restart")) {
+                    return;
+                }
+                event.setCanceled(true);
+                source.sendFailure(Component.literal("Dieser Command kann nur auf einem Client ausgeführt werden"));
+                return;
+            }
             refreshPlayerCommands(source.getPlayer());
         }
     }

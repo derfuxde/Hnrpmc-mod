@@ -114,63 +114,65 @@ public final class PermissionsManager {
     }
 
     public boolean has(@Nullable ServerPlayer player, claimperms permission, Optional<Boolean> check, @Nullable Entity entity) {
+        // 1. Basis-Checks
         if (player == null && entity == null) return false;
-        if (SimpleClans.getInstance().getPermissionsManager().has(player, "hnclaims.bypass")) return true;
         if (permission == null) return false;
 
-        boolean hasRankPermission = false;
-        boolean ignoreowner = check.orElse(false);
-
-        @Nullable Claim claim;
-        if (player != null) {
-            claim = plugin.getClaimManager().getClaimbyPlayerPos(player);
-            if (plugin.getClaimManager().getClaimbyPlayerPos(player) == null && entity != null) {
-                claim = plugin.getClaimManager().getClaimbyPos(entity.getPosition(0), entity.level().dimension().location().toString());
-            }
-        } else {
-            claim = plugin.getClaimManager().getClaimbyPos(entity.getPosition(0), entity.level().dimension().location().toString());
-        }
-        if (claim != null) {
-            if (!claim.getPerms().contains(permission)) {
-                if (player != null) {
-                    if (!ignoreowner && player.getUUID().equals(claim.getownerUUID())) return true;
-                    List<claimperms> playeroverride = claim.getPlayerPerms(player.getUUID());
-                    Clan playerscaln = SimpleClans.getInstance().getClanManager().getClanByPlayerUniqueId(player.getUUID());
-                    List<claimperms> clanoverride = playerscaln != null ? claim.getClaimPerms(playerscaln.getStringName()) : null;
-                    if (playeroverride != null || clanoverride != null) {
-                        if (playeroverride == null) {
-                            hasRankPermission = clanoverride.contains(permission);
-                        }
-
-                        if (clanoverride == null) {
-                            hasRankPermission = playeroverride.contains(permission);
-                        }
-                        //hasRankPermission = playeroverride.contains(permission) || clanoverride.contains(permission);
-                    }
-                } else if (entity != null && entity instanceof ServerPlayer sp) {
-                    if (!ignoreowner && sp.getUUID().equals(claim.getownerUUID())) return true;
-                    List<claimperms> playeroverride = claim.getPlayerPerms(sp.getUUID());
-                    Clan playerscaln = SimpleClans.getInstance().getClanManager().getClanByPlayerUniqueId(sp.getUUID());
-                    List<claimperms> clanoverride = playerscaln != null ? claim.getClaimPerms(playerscaln.getStringName()) : null;
-                    if (playeroverride != null || clanoverride != null) {
-                        if (playeroverride == null) {
-                            hasRankPermission = clanoverride.contains(permission);
-                        }
-
-                        if (clanoverride == null) {
-                            hasRankPermission = playeroverride.contains(permission);
-                        }
-                        //hasRankPermission = playeroverride.contains(permission) || clanoverride.contains(permission);
-                    }
-                }
-            } else if (claim.getPerms().contains(permission)) {
-                hasRankPermission = true;
-            }
-        } else if (claim == null) {
+        // 2. Bypass Check (Admins)
+        if (player != null && SimpleClans.getInstance().getPermissionsManager().has(player, "hnclaims.bypass")) {
             return true;
         }
 
-        return hasRankPermission;
+        boolean ignoreOwner = check.orElse(false);
+
+        // 3. Den handelnden Akteur bestimmen (Player oder Entity als Player)
+        ServerPlayer actor = (player != null) ? player : (entity instanceof ServerPlayer sp ? sp : null);
+
+        // 4. Claim bestimmen
+        Claim claim = null;
+        if (player != null) {
+            claim = plugin.getClaimManager().getClaimbyPlayerPos(player);
+        }
+
+        // Falls kein Claim bei Player-Pos, checke Entity-Pos
+        if (claim == null && entity != null) {
+            claim = plugin.getClaimManager().getClaimbyPos(entity.position(), entity.level().dimension().location().toString());
+        }
+
+        // 5. Permission Logik
+        if (claim == null) {
+            return true; // Wildnis: Alles erlaubt
+        }
+
+        // A: Globale Claim-Berechtigung (Jeder darf das hier)
+        if (claim.getPerms().contains(permission)) {
+            return true;
+        }
+
+        // B: Spezifische Berechtigungen für den Spieler/Akteur
+        if (actor != null) {
+            // Besitzer-Check
+            if (!ignoreOwner && actor.getUUID().equals(claim.getownerUUID())) {
+                return true;
+            }
+
+            // Spieler-spezifische Overrides
+            List<claimperms> playerOverrides = claim.getPlayerPerms(actor.getUUID());
+            if (playerOverrides != null && playerOverrides.contains(permission)) {
+                return true;
+            }
+
+            // Clan-spezifische Overrides
+            Clan clan = SimpleClans.getInstance().getClanManager().getClanByPlayerUniqueId(actor.getUUID());
+            if (clan != null) {
+                List<claimperms> clanOverrides = claim.getClaimPerms(clan.getStringName());
+                if (clanOverrides != null && clanOverrides.contains(permission)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public boolean has(@Nullable Player player, claimperms permission, Optional<Boolean> check, @Nullable Entity entity) {

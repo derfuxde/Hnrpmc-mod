@@ -1,7 +1,12 @@
 package org.emil.hnrpmc.hnessentials.listeners;
 
+import com.google.gson.Gson;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -10,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -23,6 +29,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.emil.hnrpmc.hnclaim.HNClaims;
@@ -43,34 +50,6 @@ public class PlayerEventLister {
 
     public PlayerEventLister(@NotNull HNessentials plugin) {
         this.plugin = plugin;
-    }
-
-    @SubscribeEvent
-    public void onSpawnPointSet(PlayerSetSpawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            BlockPos pos = event.getNewSpawn();
-            boolean isForced = event.isForced(); // true bei /spawnpoint, false bei Bett
-
-
-            if (pos == null) return;
-
-            HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
-            List<Home> homes = playerData.getPlayerHomes();
-
-            for (Home home : homes) {
-                if (Objects.equals(home.getHomename(), "bed")) {
-                    homes.remove(home);
-                }
-            }
-
-            Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
-
-            homes.add(bedhome);
-            playerData.setPlayerHomes(homes);
-
-            plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
-            plugin.getStorageManager().save(player.getUUID());
-        }
     }
 
     @SubscribeEvent
@@ -98,42 +77,9 @@ public class PlayerEventLister {
         plugin.getStorageManager().updateGeneralData(GGD);
         plugin.getStorageManager().saveGeneralData();
 
-        List<Home> homes = playerData.getPlayerHomes();
-
         ServerPacketHandler.sendData(player.getUUID());
+        PacketDistributor.sendToAllPlayers(new SendCosmeticRegister(new Gson().toJson(HNessentials.getInstance().getStorageManager().getGeneralData().getCosmetics())));
 
-        BlockPos pos = player.getRespawnPosition();
-
-        if (homes != null && !homes.isEmpty()){
-            List<Home> bedhomes = homes.stream().filter(home -> home.getHomename().equals("bed")).toList();
-            if (bedhomes == null || bedhomes.isEmpty()) {
-                if (pos == null) return;
-                Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
-                homes.add(bedhome);
-                playerData.setPlayerHomes(homes);
-
-                plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
-                plugin.getStorageManager().save(player.getUUID());
-            } else {
-                Home oldbedhome = bedhomes.getFirst();
-                if (pos != null) {
-                    homes.removeIf(home -> Objects.equals(home.getHomename(), "bed"));
-                    Home bedhome = new Home(player.getUUID(), new Vec3(pos.getX(), pos.getY(), pos.getZ()), "bed", player.level().dimension().location().toString());
-                    homes.add(bedhome);
-                    playerData.setPlayerHomes(homes);
-
-                    plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
-                    plugin.getStorageManager().save(player.getUUID());
-                } else if (pos == null && oldbedhome==null) {
-                    Home bedhome = new Home(player.getUUID(), new Vec3(0, -1000, 0), "bed", player.level().dimension().location().toString());
-                    homes.add(bedhome);
-                    playerData.setPlayerHomes(homes);
-
-                    plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
-                    plugin.getStorageManager().save(player.getUUID());
-                }
-            }
-        }
         int score = getPlayerScore(player, "VIPs");
 
         Vec3 center = player.position();

@@ -1,6 +1,9 @@
 package org.emil.hnrpmc.hnessentials.managers;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -39,7 +42,22 @@ public class HomeManager {
         storageManager.loadAllPlayerDatas();
         HNPlayerData playerData = storageManager.getOrCreatePlayerData(ownerUUID);
         if (playerData == null) return new ArrayList<>();
-        homeList.put(ownerUUID, playerData.getPlayerHomes());
+        List<Home> playerHomes = playerData.getPlayerHomes();
+        ServerPlayer player = plugin.getServerPlayer(ownerUUID);
+        if (player != null) {
+            BlockPos bedPos = player.getRespawnPosition();
+            playerHomes.removeIf(home -> home.getHomename().equals("bed"));
+            if (bedPos != null) {
+                ResourceKey<Level> bedDimension = player.getRespawnDimension();
+                ServerLevel level = player.getServer().getLevel(bedDimension);
+                if (level != null) {
+                    Home bedHome = new Home(ownerUUID, new Vec3(bedPos.getX() + 0.5, bedPos.getY() + 1.0, bedPos.getZ() + 0.5), "bed", bedDimension.location().toString());
+                    playerHomes.add(bedHome);
+                }
+            }
+        }
+
+        homeList.put(ownerUUID, playerHomes);
         return homeList.get(ownerUUID);
     }
 

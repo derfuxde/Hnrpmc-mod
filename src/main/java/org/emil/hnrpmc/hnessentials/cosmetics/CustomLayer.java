@@ -29,10 +29,19 @@ public abstract class CustomLayer<T extends Player, P extends HumanoidModel<T>> 
     }
 
     public void doCoolRenderThings(BakableModel bakableModel, ModelPart modelPart, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, float x, float y, float z) {
-        this.doCoolRenderThings(bakableModel, modelPart, stack, multiBufferSource, packedLightProbably, x, y, z, false);
+        this.doCoolRenderThings(bakableModel, modelPart, stack, multiBufferSource, packedLightProbably, x, y, z, false, 1.0f);
+    }
+
+    public void doCoolRenderThings(BakableModel bakableModel, ModelPart modelPart, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, float x, float y, float z, float alpha) {
+        this.doCoolRenderThings(bakableModel, modelPart, stack, multiBufferSource, packedLightProbably, x, y, z, false, alpha);
     }
 
     public void doCoolRenderThings(BakableModel bakableModel, ModelPart modelPart, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, float x, float y, float z, boolean mirror) {
+        this.doCoolRenderThings(bakableModel, modelPart, stack, multiBufferSource, packedLightProbably, x, y, z, mirror, 1.0f);
+    }
+
+
+    public void doCoolRenderThings(BakableModel bakableModel, ModelPart modelPart, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, float x, float y, float z, boolean mirror, float alpha) {
         BakedModel model = Models.getBakedModel(bakableModel);
         if (model == null) return; // if it has errors with the baked model or cannot render it for another reason will return null
         stack.pushPose();
@@ -47,7 +56,7 @@ public abstract class CustomLayer<T extends Player, P extends HumanoidModel<T>> 
                 stack,
                 multiBufferSource,
                 bakableModel.image(),
-                packedLightProbably);
+                packedLightProbably, alpha);
 
         stack.popPose();
     }

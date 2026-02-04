@@ -568,7 +568,7 @@ public final class ClanCommands extends ClanSBaseCommand {
                                 return 0;
                             }
 
-                            clan.addBb(sender.getName().getString(), SimpleClans.lang("has.been.kicked.by", targetCp.toPlayer(), sender.getName().getString(), sender));
+                            clan.addBb(sender.getName().getString(), SimpleClans.lang("has.been.kicked.by", targetCp.toPlayer(), targetCp.toPlayer().getName().getString(), sender.getName().getString()));
                             clan.removePlayerFromClan(targetCp.getUniqueId());
                             return 1;
                         }));

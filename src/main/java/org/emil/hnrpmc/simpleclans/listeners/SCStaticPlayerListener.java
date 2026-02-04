@@ -37,7 +37,10 @@ public class SCStaticPlayerListener {
         plugin.getClanManager().updateLastSeen(player);
         //plugin.getClanManager().updateDisplayName(player);
 
+        if (cp.getClan() == null) return;
+
         plugin.getPermissionsManager().addPlayerPermissions(cp);
+
 
         cp.getClan().displayBb(player, settingsManager.getInt(BB_LOGIN_SIZE));
         plugin.getLogger().info("showing bb");

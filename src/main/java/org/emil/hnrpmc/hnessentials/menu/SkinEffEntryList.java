@@ -7,10 +7,10 @@ import net.minecraft.client.gui.screens.Screen;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.jetbrains.annotations.NotNull;
 
-public class CosmeticEntryList extends ObjectSelectionList<CosmeticEntry> {
+public class SkinEffEntryList extends ObjectSelectionList<SkinEffEntry> {
     public String currentcosmetic = "none";
     private Screen parened;
-    public CosmeticEntryList(Minecraft minecraft, int width, int height, int top, int itemHeight, String currentcosmetic, Screen parened) {
+    public SkinEffEntryList(Minecraft minecraft, int width, int height, int top, int itemHeight, String currentcosmetic, Screen parened) {
         super(minecraft, width, height, top, itemHeight);
         this.parened = parened;
         this.currentcosmetic = currentcosmetic;
@@ -31,9 +31,9 @@ public class CosmeticEntryList extends ObjectSelectionList<CosmeticEntry> {
         }
     }
 
-    public int addEntry(@NotNull CosmeticEntry entry) {
+    public int addEntry(@NotNull SkinEffEntry entry) {
         super.addEntry(entry);
-        if (entry.cosmetic.getId().equals(currentcosmetic)) {
+        if (entry.skinEffect.equals(currentcosmetic)) {
             this.setSelected(entry);
         }
         return 1;

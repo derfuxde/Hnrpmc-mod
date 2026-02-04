@@ -18,6 +18,7 @@ import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.clan.Suggestions;
+import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -52,6 +53,7 @@ public class TpoCommand extends ClanSBaseCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> homes(String root) {
         return Commands.literal(root)
+                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.admin.tpo"))
                 .then(Commands.argument("Spieler", StringArgumentType.string())
                         .suggests(Suggestions.allPlayerNameFromHomes(plugin))
                         .executes(this::executetpo)
@@ -71,7 +73,7 @@ public class TpoCommand extends ClanSBaseCommand {
                 UUID uuid = plugin.getServer().getProfileCache().get(playername).get().getId();
                 if (uuid != null) {
 
-                    if (!SimpleClans.getInstance().getPermissionsManager().has(player, "essentials.admin") && !uuid.equals(player.getUUID())) {
+                    if (!SimpleClans.getInstance().getPermissionsManager().has(player, "essentials.admin.tpo") && !uuid.equals(player.getUUID())) {
                         String msg = commandHelper.formatMessage("§cDu bist nicht berechtigt dich zu offline spieler zu telepotieren");
 
                         player.sendSystemMessage(Component.literal(msg));

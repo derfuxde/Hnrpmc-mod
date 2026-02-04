@@ -50,7 +50,7 @@ public class setWarpCommand extends ClanSBaseCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> setWarp(String root) {
         return Commands.literal(root)
-                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "hnrpmc.essentials.warp.set"))
+                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.warp.set"))
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             ServerPlayer player = ctx.getSource().getPlayerOrException();

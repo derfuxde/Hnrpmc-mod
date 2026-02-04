@@ -23,6 +23,7 @@ public class HNPlayerData {
     private boolean muted = false;
     private boolean jailed = false;
     private boolean afk = false;
+    private String selectedskineffect = "none";
 
     private Map<CosmeticSlot, String> equippedCosmetics = new HashMap<>();
     //private transient UserInfoImpl userInfo;
@@ -380,5 +381,14 @@ public class HNPlayerData {
 
     public static void clearCaches() {
         playerDataCache = new HashMap<>();
+    }
+
+    public String getSelectedskineffect() {
+        if (selectedskineffect == null) return "none";
+        return selectedskineffect;
+    }
+
+    public void setSelectedskineffect(String selectedskineffect) {
+        this.selectedskineffect = selectedskineffect;
     }
 }

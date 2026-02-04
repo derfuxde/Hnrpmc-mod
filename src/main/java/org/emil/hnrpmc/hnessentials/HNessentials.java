@@ -2,15 +2,20 @@ package org.emil.hnrpmc.hnessentials;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -21,6 +26,7 @@ import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -49,6 +55,22 @@ import org.emil.hnrpmc.hnessentials.network.*;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.managers.SettingsManager;
 import org.slf4j.Logger;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -117,6 +139,9 @@ public class HNessentials extends Hnrpmod {
         serverStartup(server);
     }
 
+    Map<String, CosmeticType<?>> cosmeticTypeMap = Map.of("hat", CosmeticType.HAT, "cape", CosmeticType.CAPE, "backbling", CosmeticType.BACK_BLING);
+
+
     public void serverStartup(MinecraftServer eventserver) {
         storageManager = new StorageManager(this);
         homeManager = new HomeManager(this);
@@ -128,7 +153,6 @@ public class HNessentials extends Hnrpmod {
 
         GeneralDefaultData GDD = getStorageManager().getGeneralData();
 
-        Map<String, CosmeticType<?>> cosmeticTypeMap = Map.of("hat", CosmeticType.HAT, "cape", CosmeticType.CAPE, "backbling", CosmeticType.BACK_BLING);
 
         for (ConfigCosmetic CC : GDD.getCosmetics()) {
             CosmeticType<Model> CT = (CosmeticType<Model>) cosmeticTypeMap.get(CC.getType().toLowerCase());
@@ -247,6 +271,24 @@ public class HNessentials extends Hnrpmod {
                 })
         );
 
+        // --- CLIENT --> SERVER ---
+        registrar.playToClient(
+                RequestScoreData.TYPE,
+                RequestScoreData.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    ServerPlayer player = (ServerPlayer) context.player();
+
+                    if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                        var storage = this.getStorageManager();
+                        if (storage == null) return;
+
+                        int vipScore = PlayerEventLister.getPlayerScore(player, "VIPs");
+                        context.reply(new ScoreSyncPayload(vipScore));
+                    }
+                })
+        );
+
+
         // --- SERVER -> CLIENT ---
         registrar.playToClient(
                 PlayerDataResponsePayload.TYPE,
@@ -276,8 +318,33 @@ public class HNessentials extends Hnrpmod {
                 OpenAdminScreenPayload.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
                     ClientPacketHandler.handleAdminGuiOpen(payload, context);
+                })
+        );
+
+        // CLIENT -> SERVER
+        registrar.playToServer(
+                AskOpenVIPMenuRequest.TYPE,
+                AskOpenVIPMenuRequest.STREAM_CODEC,
+                (payload, context) -> {
+                    ServerPlayer admin = getServerPlayer(context.player().getUUID());
+                    ServerPlayer target = getServerPlayer(payload.playerUUID());
+
+                    HNPlayerData fullData = getStorageManager().getOrCreatePlayerData(target.getUUID()); //380df991-f603-344c-a090-369bad2a924a
+
+
+                    String dataJson = new Gson().toJson(fullData);
+
+                    PacketDistributor.sendToAllPlayers(new SendCosmeticRegister(new Gson().toJson(getStorageManager().getGeneralData().getCosmetics())));
+
+                    PacketDistributor.sendToPlayer(admin, new OpenAdminScreenPayload(
+                            target.getUUID(),
+                            target.getScoreboardName(),
+                            dataJson,
+                            true
+                    ));
                 }
-        ));
+        );
+
 
         // CLIENT -> SERVER
         registrar.playToServer(
@@ -292,7 +359,7 @@ public class HNessentials extends Hnrpmod {
                 requestPlayerData.TYPE,
                 requestPlayerData.STREAM_CODEC,
                 (payload, context) -> context.enqueueWork(() -> {
-                    ServerPacketHandler.sendData(payload.target());
+                        ServerPacketHandler.sendData(payload.target());
                 }
         ));
 
@@ -303,30 +370,45 @@ public class HNessentials extends Hnrpmod {
                 (payload, context) -> ClientPacketHandler.ClientDataCache.updateCosmetic(payload.playerUUID(), CosmeticSlot.HAT, payload.cosmeticId())
         );
 
+        // SERVER -> CLIENT
+        registrar.playToClient(
+                SendCosmeticRegister.TYPE,
+                SendCosmeticRegister.STREAM_CODEC,
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        try {
+                            Type type = new TypeToken<List<ConfigCosmetic>>(){}.getType();
+                            List<ConfigCosmetic> CosmeticData = gson.fromJson(payload.cosmetics(), type);
+                            for (ConfigCosmetic CC : CosmeticData) {
+                                CosmeticType<Model> CT = (CosmeticType<Model>) cosmeticTypeMap.get(CC.getType().toLowerCase());
+
+                                CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot()));
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+        );
+
         // Server -> Client
         registrar.playToClient(
                 responsePlayerData.TYPE,
                 responsePlayerData.CODEC,
                 (payload, context) -> {
-                    // Das hier passiert auf dem Client, wenn das Paket ankommt
                     context.enqueueWork(() -> {
                         try {
-                            System.out.println("Empfange JSON: " + payload.jsonString());
 
-                            // 1. Erstmal als generisches Element parsen
                             JsonElement element = JsonParser.parseString(payload.jsonString());
 
                             if (element.isJsonObject()) {
                                 JsonObject rootObj = element.getAsJsonObject();
                                 Map<UUID, HNPlayerData> newMap = new HashMap<>();
 
-                                // 2. Jeden Eintrag einzeln durchgehen
                                 for (Map.Entry<String, JsonElement> entry : rootObj.entrySet()) {
                                     try {
                                         UUID uuid = UUID.fromString(entry.getKey());
 
-                                        // HIER passiert der Fehler:
-                                        // Wenn entry.getValue() ein String ist, kann GSON kein HNPlayerData daraus machen.
                                         if (entry.getValue().isJsonObject()) {
                                             HNPlayerData data = gson.fromJson(entry.getValue(), HNPlayerData.class);
                                             newMap.put(uuid, data);
@@ -434,6 +516,14 @@ public class HNessentials extends Hnrpmod {
         return LOGGER;
     }
 
+    public Map<UUID, HNPlayerData> getHNPlayerData() {
+        return HNplayerDataMap;
+    }
+
+    public Map<UUID, PlayerData> getPlayerData() {
+        return playerDataMap;
+    }
+
     public SettingsManager getSettingsManager() {
         return SimpleClans.getInstance().getSettingsManager();
     }
@@ -456,5 +546,9 @@ public class HNessentials extends Hnrpmod {
 
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    public ServerPlayer getServerPlayer(UUID uuid) {
+        return SimpleClans.getInstance().getServer().getPlayerList().getPlayer(uuid);
     }
 }

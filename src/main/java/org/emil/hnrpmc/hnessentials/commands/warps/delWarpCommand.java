@@ -50,7 +50,7 @@ public class delWarpCommand extends ClanSBaseCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> setWarp(String root) {
         return Commands.literal(root)
-                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "hnrpmc.essentials.warp.delete"))
+                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.warp.delete"))
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                         .suggests(Suggestions.allWarps(plugin))
                         .executes(ctx -> {

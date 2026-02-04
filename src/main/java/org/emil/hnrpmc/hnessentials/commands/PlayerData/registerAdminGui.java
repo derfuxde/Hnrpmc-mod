@@ -13,6 +13,7 @@ import org.emil.hnrpmc.hnessentials.CosmeticSlot;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.network.OpenAdminScreenPayload;
+import org.emil.hnrpmc.hnessentials.network.SendCosmeticRegister;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
@@ -48,7 +49,7 @@ public class registerAdminGui extends ClanSBaseCommand {
 
     public LiteralArgumentBuilder<CommandSourceStack> registerAdminGui(String root) {
         return Commands.literal(root)
-                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.admin")) // Admin-Check
+                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.admin.playerdata"))
                 .then(Commands.argument("target", EntityArgument.player())
                         .executes(context -> {
                             ServerPlayer admin = context.getSource().getPlayerOrException();
@@ -68,10 +69,13 @@ public class registerAdminGui extends ClanSBaseCommand {
                             // DIESES Objekt kann Gson gefahrlos in JSON verwandeln
                             String dataJson = new Gson().toJson(fullData);
 
+                            PacketDistributor.sendToAllPlayers(new SendCosmeticRegister(new Gson().toJson(plugin.getStorageManager().getGeneralData().getCosmetics())));
+
                             PacketDistributor.sendToPlayer(admin, new OpenAdminScreenPayload(
                                     target.getUUID(),
                                     target.getScoreboardName(),
-                                    dataJson
+                                    dataJson,
+                                    false
                             ));
 
                             return 1;

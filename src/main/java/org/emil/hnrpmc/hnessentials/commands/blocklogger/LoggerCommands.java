@@ -20,6 +20,7 @@ import org.emil.hnrpmc.hnessentials.managers.DatabaseManager;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.clan.Suggestions;
+import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -51,6 +52,7 @@ public class LoggerCommands extends ClanSBaseCommand {
 
     private LiteralArgumentBuilder<CommandSourceStack> root(CommandDispatcher<CommandSourceStack> dispatcher, String root) {
         return Commands.literal(root)
+                .requires(ctx -> Conditions.permission(ctx.getPlayer(), "essentials.admin.log"))
                 .then(Lookup());
     }
 

@@ -35,6 +35,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.emil.hnrpmc.hnclaim.HNClaims;
+import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.hooks.discord.DiscordHook;
 import org.emil.hnrpmc.simpleclans.overlay.ServerTickNamesHandler;
@@ -66,6 +68,7 @@ import net.neoforged.fml.config.ModConfig;
 
 import net.minecraft.resources.ResourceKey;
 
+import java.util.*;
 import java.util.UUID;
 
 
@@ -78,6 +81,11 @@ public class Hnrpmc {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
     private static Hnrpmc instance;
+
+    public static SimpleClans simpleClans = null;
+    public static HNessentials hnessentials = null;
+    public static HNClaims hnClaims = null;
+
 
     public static Hnrpmc getInstance() {
         return instance;
@@ -115,10 +123,10 @@ public class Hnrpmc {
         }
 
         modEventBus.addListener(this::onRegisterPayloads);
-        new org.emil.hnrpmc.simpleclans.SimpleClans(modEventBus);
-        new org.emil.hnrpmc.hnclaim.HNClaims(modEventBus);
+        simpleClans = new SimpleClans(modEventBus);
+        hnClaims = new HNClaims(modEventBus);
         ModContainer container = ModLoadingContext.get().getActiveContainer();
-        new org.emil.hnrpmc.hnessentials.HNessentials(modEventBus, container);
+        hnessentials = new HNessentials(modEventBus, container);
 
 
     }
@@ -133,5 +141,4 @@ public class Hnrpmc {
 
 
     }
-
 }

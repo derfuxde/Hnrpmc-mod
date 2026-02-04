@@ -15,9 +15,11 @@ import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
 import org.emil.hnrpmc.hnessentials.cosmetics.model.CosmeticStack;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.MenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.mixin.GohstMenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.mixin.PlayerRendereType;
 import org.jetbrains.annotations.Nullable;
 
-public class BackBling<T extends AbstractClientPlayer> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer {
+public class BackBling<T extends AbstractClientPlayer> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer, GohstMenuRenderLayer {
     public BackBling(RenderLayerParent<T, PlayerModel<T>> renderLayerParent) {
         super(renderLayerParent);
     }
@@ -42,6 +44,22 @@ public class BackBling<T extends AbstractClientPlayer> extends CustomLayer<T, Pl
 
         stack.pushPose();
         doCoolRenderThings(modelData, this.getParentModel().body, stack, bufferSource, packedLight, 0, -0.1f - (0.15f/6.0f), 0.1f);
+        stack.popPose();
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot) {
+        render(stack, bufferSource, packedLight, player, o, n, delta, bob, yRotDiff, xRot, 1.0f);
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot, float alpha) {
+        BakableModel modelData = OVERRIDDEN.get(() -> player.getData().backBling());
+
+        if (modelData == null) return; // if it has a model
+
+        stack.pushPose();
+        doCoolRenderThings(modelData, this.getParentModel().body, stack, bufferSource, packedLight, 0, -0.1f - (0.15f/6.0f), 0.1f, alpha);
         stack.popPose();
     }
 

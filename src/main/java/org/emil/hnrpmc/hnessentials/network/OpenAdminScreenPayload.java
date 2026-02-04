@@ -10,13 +10,14 @@ import org.emil.hnrpmc.hnessentials.HNPlayerData;
 
 import java.util.UUID;
 
-public record OpenAdminScreenPayload(UUID targetUUID, String targetName, String jsonData) implements CustomPacketPayload {
+public record OpenAdminScreenPayload(UUID targetUUID, String targetName, String jsonData, boolean vip) implements CustomPacketPayload {
     public static final Type<OpenAdminScreenPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("hnrpmc", "open_admin_gui"));
 
     public static final StreamCodec<ByteBuf, OpenAdminScreenPayload> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC, OpenAdminScreenPayload::targetUUID,
             ByteBufCodecs.STRING_UTF8, OpenAdminScreenPayload::targetName,
             ByteBufCodecs.STRING_UTF8, OpenAdminScreenPayload::jsonData,
+            ByteBufCodecs.BOOL, OpenAdminScreenPayload::vip,
             OpenAdminScreenPayload::new
     );
 

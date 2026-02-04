@@ -141,6 +141,15 @@ public class ServerPacketHandler {
                             }
                         }
                     }
+                    case "skineffect" -> {
+                        if (value.equalsIgnoreCase("none")) {
+                            targetData.setSelectedskineffect("none");
+                        } else {
+                            targetData.setSelectedskineffect(payload.value());
+                            plugin.getStorageManager().setPlayerData(targetData.getPlayerUUID(), targetData);
+                            plugin.getStorageManager().save(targetData.getPlayerUUID());
+                        }
+                    }
                     default -> {
                         admin.sendSystemMessage(Component.literal("§cUnbekanntes Feld: " + field));
                         return;
@@ -154,12 +163,13 @@ public class ServerPacketHandler {
                 sendToAllPlayers(
                         new CosmeticUpdatePayload(payload.target(), value)
                 );
-
                 sendDataToAll(payload.target());
 
                 //sendData(payload.target());
 
-                admin.sendSystemMessage(Component.literal("§aErfolgreich aktualisiert: §e" + field + " §f= §7" + value));
+                if (!payload.field().equals("cosmetic") && !payload.field().equals("skineffect")) {
+                    admin.sendSystemMessage(Component.literal("§aErfolgreich aktualisiert: §e" + field + " §f= §7" + value));
+                }
 
             } catch (Exception e) {
                 admin.sendSystemMessage(Component.literal("§cFehler beim Verarbeiten des Wertes: " + e.getMessage()));

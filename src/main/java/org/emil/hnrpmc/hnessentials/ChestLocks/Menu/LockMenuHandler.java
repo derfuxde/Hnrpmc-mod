@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockData;
@@ -23,14 +24,12 @@ import java.util.UUID;
 
 public class LockMenuHandler {
 
-    // Hilfsmethode für Items mit Namen
-    private static ItemStack createIcon(net.minecraft.world.level.ItemLike item, String name) {
+    private static ItemStack createIcon(ItemLike item, String name) {
         ItemStack stack = new ItemStack(item);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal(name));
         return stack;
     }
 
-    // Erstellt einen Spielerkopf für das Menü
     private static ItemStack getPlayerHead(ServerPlayer serverPlayer, UUID uuid, String prefix) {
         ItemStack head = new ItemStack(Items.PLAYER_HEAD);
         String name = serverPlayer.getServer().getProfileCache().get(uuid)
@@ -84,10 +83,9 @@ public class LockMenuHandler {
         player.openMenu(new SimpleMenuProvider((id, inv, p) -> {
             return new ChestMenu(MenuType.GENERIC_9x3, id, inv, new SimpleContainer(27), 3) {
                 {
-                    // Liste der aktuellen Freunde anzeigen
                     int slot = 0;
                     for (UUID trustedUuid : data.trusted()) {
-                        if (slot >= 18) break; // Max 18 Freunde anzeigen
+                        if (slot >= 18) break;
                         setItem(slot++, 0,getPlayerHead(player, trustedUuid, "§cEntfernen: §f"));
                     }
 
@@ -101,9 +99,7 @@ public class LockMenuHandler {
 
                     // Zurück
                     if (slotId == 26) openMainMenu((ServerPlayer) player, be);
-                        // Add Menu
                     else if (slotId == 22) openAddPlayerMenu((ServerPlayer) player, be);
-                        // Spieler entfernen
                     else if (slotId < data.trusted().size()) {
                         UUID toRemove = data.trusted().get(slotId);
                         LockData newData = new LockData(data.owner(), new java.util.ArrayList<>(data.trusted()));
@@ -155,7 +151,7 @@ public class LockMenuHandler {
                         be.setData(HNessentials.LOCK_DATA, newData);
 
                         player.displayClientMessage(Component.literal("§aSpieler hinzugefügt!"), true);
-                        openTrustedListMenu((ServerPlayer) player, be); // Zurück zur Liste
+                        openTrustedListMenu((ServerPlayer) player, be);
                     }
                 }
                 @Override public boolean stillValid(Player p) {

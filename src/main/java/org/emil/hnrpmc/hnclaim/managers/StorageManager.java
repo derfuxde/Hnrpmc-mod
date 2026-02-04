@@ -403,7 +403,7 @@ public final class StorageManager {
      * Delete a clan from the database
      */
     public void deleteClaim(Claim claim) {
-        String query = "DELETE FROM `" + getPrefixedTable("claims") + "` WHERE tag = '" + claim.getName() + "';";
+        String query = "DELETE FROM `" + getPrefixedTable("claims") + "` WHERE name = '" + claim.getName() + "';";
         core.executeUpdate(query);
     }
 

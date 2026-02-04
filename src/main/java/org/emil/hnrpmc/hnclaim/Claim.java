@@ -253,6 +253,7 @@ public final class Claim {
     }
 
     public Map<String, List<claimperms>> getoverridePerms() {
+        if (permsoverride == null) return new HashMap<>();
         return this.permsoverride;
     }
 
@@ -271,15 +272,18 @@ public final class Claim {
     }
 
     public List<claimperms> getPlayerPerms(UUID uuid) {
+        if (permsoverride == null) return new ArrayList<>();
         return this.permsoverride.get(uuid.toString());
     }
 
     public List<claimperms> getPlayerPerms(String playerName, HNClaims plugin) {
+        if (permsoverride == null) return new ArrayList<>();
         return this.permsoverride.get(plugin.getServer().getProfileCache().get(playerName).get().getId().toString());
     }
 
     public List<claimperms> getClaimPerms(String playerName) {
-        return this.permsoverride.get(playerName);
+        if (permsoverride == null) return new ArrayList<>();
+        return this.permsoverride.get("." + playerName);
     }
 
     public void setCenter(String pos) {

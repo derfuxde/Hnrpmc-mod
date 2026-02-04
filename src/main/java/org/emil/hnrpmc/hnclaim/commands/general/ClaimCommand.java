@@ -53,7 +53,7 @@ public final class ClaimCommand extends ClanSBaseCommand {
 
     @Override
     public RootCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String rootLiteral) {
-        LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("claim")
+        LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal(rootLiteral)
                 .requires(src -> src.getEntity() instanceof ServerPlayer)
                 // /claim (Erstellt neuen Claim)
                 .executes(ctx -> executeClaim(ctx.getSource()))

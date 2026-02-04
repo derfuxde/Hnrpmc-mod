@@ -30,6 +30,9 @@ public class AdminPlayerDataScreen extends Screen {
     private final UUID targetUUID;
     private final String targetName;
 
+
+    public static List<String> listEffects = new ArrayList<>(List.of("none", "Flat", "Echo"));
+
     public AdminPlayerDataScreen(UUID targetUUID, String targetName, HNPlayerData data) {
         super(Component.literal("Admin Editor: " + targetName));
         this.targetUUID = data.getPlayerUUID();
@@ -75,22 +78,16 @@ public class AdminPlayerDataScreen extends Screen {
         moneyInput.setValue(String.valueOf(data.getMoney()));
         this.addRenderableWidget(moneyInput);
 
-        // Button direkt neben dem Textfeld zum Bestätigen
         this.addRenderableWidget(Button.builder(Component.literal("Set"), button -> {
             sendUpdate("money", moneyInput.getValue());
         }).bounds(centerX + 45, startY + 60, 45, 20).build());
 
-        // 4. TELEPORT BUTTON (Teleportiert den Admin zum Spieler)
         this.addRenderableWidget(Button.builder(Component.literal("§bZu Spieler Teleportieren"), button -> {
-            // Wir schicken ein spezielles Feld an den Server
             sendUpdate("teleport_to", "true");
-            this.onClose(); // Schließt das Menü
+            this.onClose();
         }).bounds(centerX - 100, startY + 95, buttonWidth, 20).build());
 
-        // 5. COSMETIC BUTTON (Beispiel für Block-Animation)
         this.addRenderableWidget(Button.builder(Component.literal("Cosmetic: " + data.getCosmetic(CosmeticSlot.HAT)), button -> {
-            // Hier könnte man durch eine Liste schalten (dirt -> stone -> gold -> none)
-
             List<String> listHats = new ArrayList<>(CosmeticRegistry.all().stream().map(CustomCosmetic::getId).toList());
             listHats.add("none");
             String current = data.getCosmetic(CosmeticSlot.HAT);
@@ -112,12 +109,29 @@ public class AdminPlayerDataScreen extends Screen {
             button.setMessage(Component.literal("Cosmetic: " + nextId));
         }).bounds(centerX - 100, startY + 120, buttonWidth, 20).build());
 
+        this.addRenderableWidget(Button.builder(Component.literal("Skineffect: " + data.getSelectedskineffect()), button -> {
+            String current = data.getSelectedskineffect();
+            String currentFixed = (current == null) ? "none" : current;
+            int currentIndex = listEffects.indexOf(currentFixed);
+            int nextIndex = (currentIndex + 1) % listEffects.size();
+            String nextId = listEffects.get(nextIndex);
+            if (nextId.equals("none")) {
+                data.setSelectedskineffect("none");
+            } else {
+                data.setSelectedskineffect(nextId);
+            }
+
+            data.setSelectedskineffect(nextId);
+            sendUpdate("skineffect", nextId);
+            button.setMessage(Component.literal("Skineffect: " + nextId));
+        }).bounds(centerX - 100, startY + 145, buttonWidth, 20).build());
+
         this.addRenderableWidget(Button.builder(
                         Component.literal("Hats"),
                         button -> {
                             this.minecraft.setScreen(new AdminCosmeticSelect(targetUUID, targetName, data, CosmeticType.HAT, this));
                         })
-                .bounds(centerX - 100, startY + 145, buttonWidth, 20)
+                .bounds(centerX - 100, startY + 170, buttonWidth, 20)
                 .build());
 
         // SCHLIESSEN BUTTON (Ganz unten)

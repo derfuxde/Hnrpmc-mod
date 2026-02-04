@@ -15,10 +15,12 @@ import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.Playerish;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.TextComponents;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.collections.HashMapBackedLazyMap;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.collections.LazyMap;
+import org.emil.hnrpmc.hnessentials.mixin.GohstMenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.mixin.PlayerRendereType;
 
 import java.util.OptionalInt;
 
-public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer {
+public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer, GohstMenuRenderLayer {
     public ShoulderBuddies(RenderLayerParent<T, PlayerModel<T>> renderLayerParent, EntityModelSet entityModelSet) {
         super(renderLayerParent);
         this.builtInModels = new HashMapBackedLazyMap<>();
@@ -40,8 +42,22 @@ public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer
         BakableModel left = canOverridePlayerCosmetics ? LEFT_OVERRIDDEN.get(playerData::leftShoulderBuddy) : playerData.leftShoulderBuddy();
         BakableModel right = canOverridePlayerCosmetics ? RIGHT_OVERRIDDEN.get(playerData::rightShoulderBuddy) : playerData.rightShoulderBuddy();
 
-        if (left != null && ((left.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityLeft().isEmpty())) render(left, stack, multiBufferSource, packedLight, (Playerish) player, true);
-        if (right != null && ((right.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityRight().isEmpty())) render(right, stack, multiBufferSource, packedLight, (Playerish) player, false);
+        if (left != null && ((left.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityLeft().isEmpty())) render(left, stack, multiBufferSource, packedLight, (Playerish) player, true, 1.0f);
+        if (right != null && ((right.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityRight().isEmpty())) render(right, stack, multiBufferSource, packedLight, (Playerish) player, false, 1.0f);
+    }
+
+    public void render(PoseStack stack, MultiBufferSource multiBufferSource, int packedLight, T player, float f, float g, float pitch, float j, float k, float l, float alpha) {
+        if (player.isInvisible()) return;
+
+        boolean canOverridePlayerCosmetics = this.canOverridePlayerCosmetics(player);
+
+        PlayerData playerData = PlayerData.get(player);
+
+        BakableModel left = canOverridePlayerCosmetics ? LEFT_OVERRIDDEN.get(playerData::leftShoulderBuddy) : playerData.leftShoulderBuddy();
+        BakableModel right = canOverridePlayerCosmetics ? RIGHT_OVERRIDDEN.get(playerData::rightShoulderBuddy) : playerData.rightShoulderBuddy();
+
+        if (left != null && ((left.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityLeft().isEmpty())) render(left, stack, multiBufferSource, packedLight, (Playerish) player, true, alpha);
+        if (right != null && ((right.extraInfo() & Model.SHOW_SHOULDER_BUDDY_WITH_PARROT) != 0 || player.getShoulderEntityRight().isEmpty())) render(right, stack, multiBufferSource, packedLight, (Playerish) player, false, alpha);
     }
 
     @Override
@@ -49,11 +65,33 @@ public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer
         BakableModel left = LEFT_OVERRIDDEN.get(() -> player.getData().leftShoulderBuddy());
         BakableModel right = RIGHT_OVERRIDDEN.get(() -> player.getData().rightShoulderBuddy());
 
-        if (left != null) render(left, stack, bufferSource, packedLight, player, true);
-        if (right != null) render(right, stack, bufferSource, packedLight, player, false);
+        if (left != null) render(left, stack, bufferSource, packedLight, player, true, 1.0f);
+        if (right != null) render(right, stack, bufferSource, packedLight, player, false, 1.0f);
     }
 
-    public void render(BakableModel modelData, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, Playerish player, boolean left) {
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, FakePlayer player, float o, float n, float delta, float bob, float yRotDiff, float xRot, float alpha) {
+        BakableModel left = LEFT_OVERRIDDEN.get(() -> player.getData().leftShoulderBuddy());
+        BakableModel right = RIGHT_OVERRIDDEN.get(() -> player.getData().rightShoulderBuddy());
+
+        if (left != null) render(left, stack, bufferSource, packedLight, player, true, alpha);
+        if (right != null) render(right, stack, bufferSource, packedLight, player, false, alpha);
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot) {
+        render(stack, bufferSource, packedLight, player, o, n, delta, bob, yRotDiff, xRot, 1.0f);
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot, float alpha) {
+        BakableModel left = LEFT_OVERRIDDEN.get(() -> player.getData().leftShoulderBuddy());
+        BakableModel right = RIGHT_OVERRIDDEN.get(() -> player.getData().rightShoulderBuddy());
+
+        if (left != null) render(left, stack, bufferSource, packedLight, player, true, alpha);
+        if (right != null) render(right, stack, bufferSource, packedLight, player, false, alpha);
+    }
+
+    public void render(BakableModel modelData, PoseStack stack, MultiBufferSource multiBufferSource, int packedLightProbably, Playerish player, boolean left, float alpha) {
         stack.pushPose();
 
         if (this.builtInModels.containsKey(modelData.id())) { // builtin live sheep
@@ -65,10 +103,10 @@ public class ShoulderBuddies<T extends AbstractClientPlayer> extends CustomLayer
 
             if (staticPosition) {
                 stack.translate(left ? 0.375 : -0.375, -0.2, player.isSneaking() ? -0.16 : 0);
-                doCoolRenderThings(modelData, this.getParentModel().body, stack, multiBufferSource, packedLightProbably, 0, 0.044f, 0, !left && (modelData.extraInfo() & Model.DONT_MIRROR_SHOULDER_BUDDY) == 0);
+                doCoolRenderThings(modelData, this.getParentModel().body, stack, multiBufferSource, packedLightProbably, 0, 0.044f, 0, !left && (modelData.extraInfo() & Model.DONT_MIRROR_SHOULDER_BUDDY) == 0, alpha);
             } else {
                 ModelPart modelPart = left ? this.getParentModel().leftArm : this.getParentModel().rightArm;
-                doCoolRenderThings(modelData, modelPart, stack, multiBufferSource, packedLightProbably, 0, 0.37f, 0, !left && (modelData.extraInfo() & Model.DONT_MIRROR_SHOULDER_BUDDY) == 0);
+                doCoolRenderThings(modelData, modelPart, stack, multiBufferSource, packedLightProbably, 0, 0.37f, 0, !left && (modelData.extraInfo() & Model.DONT_MIRROR_SHOULDER_BUDDY) == 0, alpha);
             }
         }
 

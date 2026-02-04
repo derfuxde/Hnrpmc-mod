@@ -92,13 +92,10 @@ public class SCPlayerListener {
         }
         SimpleClans plugin = SimpleClans.getInstance();
 
-        // 1. Blacklist Check (World check)
         if (plugin.isBlacklistedWorld(player)) {
             plugin.getLogger().info("word ist on black list");
             return;
         }
-
-        plugin.getLogger().info("word ist nicht on black list");
 
         ClanPlayer cp = plugin.getClanManager().getAnyClanPlayer(player.getUUID());
     }
@@ -118,9 +115,6 @@ public class SCPlayerListener {
         }
 
         Clan clan = plugin.getClanManager().getClanByPlayerUniqueId(player.getUUID());
-        if (clan != null && clan.getHomeLocation() != null) {
-            // Hier sollte deine Teleport-Logik folgen
-        }
     }
 
     private void updatePlayerName(@NotNull ServerPlayer player) {

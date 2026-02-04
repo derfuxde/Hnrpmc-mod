@@ -139,6 +139,10 @@ public class Models {
     }
 
     public static void renderModel(BakedModel model, PoseStack stack, MultiBufferSource multiBufferSource, ResourceLocation texture, int packedLight) {
+        renderModel(model, stack, multiBufferSource, texture, packedLight, 1.0f);
+    }
+
+    public static void renderModel(BakedModel model, PoseStack stack, MultiBufferSource multiBufferSource, ResourceLocation texture, int packedLight, float alpha) {
         stack.pushPose();
         boolean isGUI3D = model.isGui3d();
         float transformStrength = 0.25F;
@@ -161,7 +165,7 @@ public class Models {
 
         RenderType renderType = RenderType.entityTranslucent(texture); // hopefully this is the right one
         VertexConsumer vertexConsumer4 = multiBufferSource.getBuffer(renderType);
-        renderModelLists(model, packedLight, overlayTyp, stack, vertexConsumer4);
+        renderModelLists(model, packedLight, overlayTyp, stack, vertexConsumer4, alpha);
 
         stack.popPose();
         // ItemRenderer#render end
@@ -177,6 +181,10 @@ public class Models {
     // vanilla code that I don't want to rewrite:
 
     private static void renderModelLists(BakedModel bakedModel, int packedLight, int overlayType, PoseStack poseStack, VertexConsumer vertexConsumer) {
+        renderModelLists(bakedModel, packedLight, overlayType, poseStack, vertexConsumer, 1.0f);
+    }
+
+    private static void renderModelLists(BakedModel bakedModel, int packedLight, int overlayType, PoseStack poseStack, VertexConsumer vertexConsumer, float alpha) {
         RandomSource randomSource = RandomSource.create();
         final long seed = 42L;
         Direction[] var10 = Direction.values();
@@ -185,14 +193,18 @@ public class Models {
         for(int var12 = 0; var12 < var11; ++var12) {
             Direction direction = var10[var12];
             randomSource.setSeed(seed);
-            renderQuadList(poseStack, vertexConsumer, bakedModel.getQuads(null, direction, randomSource), packedLight, overlayType);
+            renderQuadList(poseStack, vertexConsumer, bakedModel.getQuads(null, direction, randomSource), packedLight, overlayType, alpha);
         }
 
         randomSource.setSeed(seed);
-        renderQuadList(poseStack, vertexConsumer, bakedModel.getQuads(null, null, randomSource), packedLight, overlayType);
+        renderQuadList(poseStack, vertexConsumer, bakedModel.getQuads(null, null, randomSource), packedLight, overlayType, alpha);
     }
 
     private static void renderQuadList(PoseStack poseStack, VertexConsumer vertexConsumer, List<BakedQuad> list, int i, int j) {
+        renderQuadList(poseStack, vertexConsumer, list, i, j, 1.0f);
+    }
+
+    private static void renderQuadList(PoseStack poseStack, VertexConsumer vertexConsumer, List<BakedQuad> list, int i, int j, float alpha) {
         PoseStack.Pose pose = poseStack.last();
         Iterator var9 = list.iterator();
 
@@ -203,7 +215,7 @@ public class Models {
             float f = (float)(k >> 16 & 255) / 255.0F;
             float g = (float)(k >> 8 & 255) / 255.0F;
             float h = (float)(k & 255) / 255.0F;
-            vertexConsumer.putBulkData(pose, bakedQuad, f, g, h, 1.0f, i, j);
+            vertexConsumer.putBulkData(pose, bakedQuad, f, g, h, alpha, i, j);
         }
     }
 }

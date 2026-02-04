@@ -6,32 +6,41 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.CosmeticType;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.CustomCosmetic;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.Model;
 import org.emil.hnrpmc.hnessentials.network.AdminUpdateDataPayload;
 import org.emil.hnrpmc.hnessentials.network.CosmeticRegistry;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class AdminCosmeticSelect extends Screen {
+public class VIPCosmeticSelect extends Screen {
     private final HNPlayerData data;
     private final UUID targetUUID;
     private final String targetName;
-    private final CosmeticType<Model> selected;
+    @Nullable private CosmeticType<Model> selected = null;
+
     private String cosmeticID;
     private final Screen before;
     private CosmeticEntryList list;
+    private SkinEffEntryList Skinlist;
 
-    public AdminCosmeticSelect(UUID targetUUID, String targetName, HNPlayerData data, CosmeticType<Model> selected, Screen before) {
-        super(Component.literal("Cosmetic Selector " + selected.toString()));
+    public VIPCosmeticSelect(UUID targetUUID, String targetName, HNPlayerData data, @Nullable CosmeticType<Model> selected, Screen before) {
+        super(Component.literal("Cosmetic Selector " + (selected != null ? selected.toString() : "Skin effect")));
         this.targetUUID = data.getPlayerUUID();
         this.targetName = targetName;
         this.data = data;
-        this.selected = selected;
+        if (selected != null) {
+            this.selected = selected;
+            this.cosmeticID = data.getCosmetic(selected.getAssociatedSlot());
+        }else {
+            cosmeticID = data.getSelectedskineffect();
+
+        }
         this.before = before;
-        this.cosmeticID = data.getCosmetic(selected.getAssociatedSlot());
     }
 
     @Override
@@ -40,28 +49,38 @@ public class AdminCosmeticSelect extends Screen {
         int startY = 40;
         int buttonWidth = 200;
 
-        this.list = new CosmeticEntryList(this.minecraft, this.width, this.height, 32, 60, cosmeticID, this);
+        if (selected != null) {
+            this.list = new CosmeticEntryList(this.minecraft, this.width, this.height, 32, 60, cosmeticID, this);
 
-        for (CustomCosmetic cosmetic : CosmeticRegistry.all()) {
-            if (cosmetic.getType() != selected) continue;
+            for (CustomCosmetic cosmetic : CosmeticRegistry.all()) {
+                if (cosmetic.getType() != selected) continue;
 
-            this.list.addEntry(new CosmeticEntry(Component.literal(cosmetic.getName()), cosmetic, this.minecraft, this.list));
+                this.list.addEntry(new CosmeticEntry(Component.literal(cosmetic.getName()), cosmetic, this.minecraft, this.list));
+            }
+
+            this.addRenderableWidget(this.list);
+        } else {
+            this.Skinlist = new SkinEffEntryList(this.minecraft, this.width, this.height, 32, 60, cosmeticID, this);
+
+            for (String cosmetic : AdminPlayerDataScreen.listEffects) {
+                this.Skinlist.addEntry(new SkinEffEntry(Component.literal(cosmetic), cosmetic, this.minecraft, this.Skinlist));
+            }
+
+            this.addRenderableWidget(this.Skinlist);
         }
 
-        this.addRenderableWidget(this.list);
 
-        // SCHLIESSEN BUTTON (Ganz unten)
         this.addRenderableWidget(Button.builder(Component.literal("§cSchließen"), b -> {
-            this.onClose();
-            if (before != null) {
-                Minecraft.getInstance().setScreen(before);
-            }
-        }).bounds(centerX - 100, this.height - 40, buttonWidth, 20)
-          .build());
+                    this.onClose();
+                    if (before != null) {
+                        Minecraft.getInstance().setScreen(before);
+                    }
+                }).bounds(centerX - 100, this.height - 40, buttonWidth, 20)
+                .build());
     }
 
     private void sendUpdate(String option, String value) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+        PacketDistributor.sendToServer(
                 new AdminUpdateDataPayload(targetUUID, option, value)
         );
     }
@@ -79,6 +98,11 @@ public class AdminCosmeticSelect extends Screen {
 
     public void setCosmeticID(String cosmeticID) {
         this.cosmeticID = cosmeticID;
+        if (selected == null) {
+            data.setSelectedskineffect(cosmeticID);
+            sendUpdate("skineffect", cosmeticID);
+            return;
+        }
         data.setCosmetic(selected.getAssociatedSlot(), cosmeticID);
         sendUpdate("cosmetic", cosmeticID);
     }

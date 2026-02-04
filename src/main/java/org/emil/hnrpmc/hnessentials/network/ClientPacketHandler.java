@@ -10,6 +10,7 @@ import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.cosmetics.Cosmetica;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.CosmeticPosition;
 import org.emil.hnrpmc.hnessentials.menu.AdminPlayerDataScreen;
+import org.emil.hnrpmc.hnessentials.menu.VIPPlayerDataScreen;
 
 import java.util.*;
 
@@ -65,18 +66,22 @@ public class ClientPacketHandler {
         // context.enqueueWork sorgt dafür, dass der Code im Haupt-Thread des Clients läuft
         context.enqueueWork(() -> {
 
-            // Falls du die Daten als JSON-String schickst (empfohlen):
             HNPlayerData data = GSON.fromJson(payload.jsonData(), HNPlayerData.class);
 
-            // Falls du die Daten direkt schickst, nimmst du einfach payload.data()
-            // HNPlayerData data = payload.data();
+            if (payload.vip()) {
+                Minecraft.getInstance().setScreen(new VIPPlayerDataScreen(
+                        payload.targetUUID(),
+                        payload.targetName(),
+                        data
+                ));
+            } else {
+                Minecraft.getInstance().setScreen(new AdminPlayerDataScreen(
+                        payload.targetUUID(),
+                        payload.targetName(),
+                        data
+                ));
+            }
 
-            // Öffne den Screen
-            Minecraft.getInstance().setScreen(new AdminPlayerDataScreen(
-                    payload.targetUUID(),
-                    payload.targetName(),
-                    data
-            ));
         });
     }
 }

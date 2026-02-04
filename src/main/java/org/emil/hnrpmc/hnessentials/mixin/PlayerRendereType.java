@@ -1,4 +1,4 @@
-package org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer;
+package org.emil.hnrpmc.hnessentials.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
@@ -8,44 +8,44 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.emil.hnrpmc.hnessentials.cosmetics.BackBling;
 import org.emil.hnrpmc.hnessentials.cosmetics.Hats;
 import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.ShoulderBuddies;
+import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.MenuCapeLayer;
+import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.Playerish;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.TextComponents;
 
 import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 // Fake player in a normal pose except for the fact that the main arm can be raised.
-public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>, Playerish {
-    public FakePlayer(Minecraft minecraft, UUID uuid, String name, PlayerData data) {
+public class PlayerRendereType implements RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>, Playerish {
+    public PlayerRendereType(Minecraft minecraft, UUID uuid, String name, PlayerData data, boolean slim) {
         this.data = data;
         this.uuid = uuid;
         this.name = name;
 
-        // initialise layers
         this.layers.add(new MenuCapeLayer());
         this.layers.add(new Hats<>(this));
         this.layers.add(new ShoulderBuddies<>(this, Minecraft.getInstance().getEntityModels()));
         this.layers.add(new BackBling<>(this));
 
-        // initialise model
-        this.verifyModel(minecraft);
+        this.verifyModel(minecraft, slim);
     }
 
     @Nullable private PlayerModel<AbstractClientPlayer> model;
     private PlayerData data;
-    private final List<MenuRenderLayer> layers = new LinkedList<>();
+    private final List<GohstMenuRenderLayer> layers = new LinkedList<>();
 
     private final UUID uuid;
     private String name;
@@ -65,10 +65,10 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
      * @param minecraft minecraft.
      * @return whether this fake player has a model.
      */
-    public boolean verifyModel(Minecraft minecraft) {
+    public boolean verifyModel(Minecraft minecraft, boolean inslim) {
         if (this.model == null) {
             try {
-                final boolean slim = data.slim();
+                final boolean slim = inslim;
                 var context = new EntityRendererProvider.Context(
                         minecraft.getEntityRenderDispatcher(),
                         minecraft.getItemRenderer(),
@@ -144,7 +144,7 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
         return this.uuid;
     }
 
-    public String getName() {
+    public String getNames() {
         return this.name;
     }
 
@@ -152,7 +152,7 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
         return TextComponents.literal((this.data.icon() == null ? "" : "\u2001") + this.data.prefix() + this.name + this.data.suffix());
     }
 
-    public ResourceLocation getSkin() {
+    public ResourceLocation getSkinn() {
         return Minecraft.getInstance().getTextureManager().getTexture(this.data.skin(), MissingTextureAtlasSprite.getTexture()) == MissingTextureAtlasSprite.getTexture() ?
                 DefaultPlayerSkin.get(this.uuid).texture() : this.data.skin();
     }
@@ -164,7 +164,7 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
                 MissingTextureAtlasSprite.getLocation() : this.data.cape().getImage();
     }
 
-    public Iterable<MenuRenderLayer> getLayers() {
+    public Iterable<GohstMenuRenderLayer> getLayers() {
         return this.layers;
     }
 
@@ -174,6 +174,16 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
 
     public void setMainArmRaised(boolean raised) {
         this.holdingItem = raised;
+    }
+
+    private Map<EquipmentSlot, ItemStack> ghostEquipment = new HashMap<>();
+
+    public void setGhostEquipment(Map<EquipmentSlot, ItemStack> equipment) {
+        this.ghostEquipment = equipment;
+    }
+
+    public ItemStack getItemBySlot(EquipmentSlot slot) {
+        return ghostEquipment.getOrDefault(slot, ItemStack.EMPTY);
     }
 
     public HumanoidArm getMainArm() {
@@ -187,7 +197,7 @@ public class FakePlayer implements RenderLayerParent<AbstractClientPlayer, Playe
 
     @Override
     public ResourceLocation getTextureLocation(@Nullable AbstractClientPlayer entity) {
-        return this.getSkin();
+        return this.getSkinn();
     }
 
     public float getYRotBody(float delta) {

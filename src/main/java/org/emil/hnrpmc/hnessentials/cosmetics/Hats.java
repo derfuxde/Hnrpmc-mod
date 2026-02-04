@@ -17,12 +17,14 @@ import org.emil.hnrpmc.hnessentials.cosmetics.model.CosmeticStack;
 import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.MenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.mixin.GohstMenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.mixin.PlayerRendereType;
 import org.emil.hnrpmc.hnessentials.network.requestPlayerData;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer {
+public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer, GohstMenuRenderLayer {
 
     public Hats(RenderLayerParent<T, PlayerModel<T>> renderLayerParent) {
         super(renderLayerParent);
@@ -64,6 +66,30 @@ public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> imple
                 doCoolRenderThings(modelData, this.getParentModel().getHead(), stack, bufferSource, packedLight, 0, 0.75f, 0);
             } else {
                 doCoolRenderThings(modelData, this.getParentModel().body, stack, bufferSource, packedLight, 0, 0.77f, 0);
+            }
+
+            stack.scale(1.001f, 1.001f, 1.001f); // stop multiple hats conflicting
+        }
+
+        stack.popPose();
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot) {
+        render(stack, bufferSource, packedLight, player, o, n, delta, bob, yRotDiff, xRot, 1.0f);
+    }
+
+    @Override
+    public void render(PoseStack stack, MultiBufferSource bufferSource, int packedLight, PlayerRendereType player, float o, float n, float delta, float bob, float yRotDiff, float xRot, float alpha) {
+        List<BakableModel> hats = OVERRIDDEN.getList(() -> player.getData().hats());
+
+        stack.pushPose();
+
+        for (BakableModel modelData : hats) {
+            if ((modelData.extraInfo() & Model.LOCK_HAT_ORIENTATION) == 0) {
+                doCoolRenderThings(modelData, this.getParentModel().getHead(), stack, bufferSource, packedLight, 0, 0.75f, 0, alpha);
+            } else {
+                doCoolRenderThings(modelData, this.getParentModel().body, stack, bufferSource, packedLight, 0, 0.77f, 0, alpha);
             }
 
             stack.scale(1.001f, 1.001f, 1.001f); // stop multiple hats conflicting

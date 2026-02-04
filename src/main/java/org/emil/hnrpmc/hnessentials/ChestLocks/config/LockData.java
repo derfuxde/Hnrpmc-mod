@@ -2,6 +2,11 @@ package org.emil.hnrpmc.hnessentials.ChestLocks.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.emil.hnrpmc.Hnrpmc;
+import org.emil.hnrpmc.Hnrpmod;
+import org.emil.hnrpmc.hnessentials.HNessentials;
+import org.emil.hnrpmc.simpleclans.SimpleClans;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +19,7 @@ public record LockData(UUID owner, List<UUID> trusted) {
     ).apply(instance, LockData::new));
 
     public boolean canAccess(UUID player) {
-        return player.equals(owner) || trusted.contains(player);
+        return player.equals(owner) || trusted.contains(player) || SimpleClans.getInstance().getPermissionsManager().has(SimpleClans.getInstance().getClanManager().getServerPlayer(player), "hnrpmc.chestlock.admin");
     }
 
     public LockData addTrusted(UUID friend) {

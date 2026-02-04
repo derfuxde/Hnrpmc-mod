@@ -85,6 +85,13 @@ public final class HomeCommands extends ClanSBaseCommand {
                                 splitplayername = player.getName().getString();
                             }
                             UUID uuid = plugin.getServer().getProfileCache().get(splitplayername).get().getId();
+                                    if (!SimpleClans.getInstance().getPermissionsManager().has(player, "essentials.home.other") && !uuid.equals(player.getUUID())) {
+                                        String msg = commandHelper.formatMessage("§cDu bist nicht berechtigt die Häuser von anderen zu sehen");
+
+                                        player.sendSystemMessage(Component.literal(msg));
+
+                                        return 0;
+                                    }
                             Home home = plugin.getHomeManager().getHomeByName(splithome, splitplayername, player);
                             if (home == null) {
                                 player.sendSystemMessage(Component.literal(commandHelper.formatMessage("§cHaus mit dem namen {} konnte nicht gefunden werden", splithome)));
