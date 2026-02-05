@@ -232,8 +232,10 @@ public class ClaimEventHandler {
                     if (indirect != null) {
                         sp = claimManager.getServerPlayer(indirect.getUUID());
                     }
-                    if (!plugin.getPermissionsManager().has(sp, claimperms.PVP, Optional.of(true), Entityiterator.next())) {
-                        Entityiterator.remove();
+                    if (Entityiterator.hasNext()) {
+                        if (!plugin.getPermissionsManager().has(sp, claimperms.PVP, Optional.of(true), Entityiterator.next())) {
+                            Entityiterator.remove();
+                        }
                     }
                 }
             }

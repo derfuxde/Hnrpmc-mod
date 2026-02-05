@@ -49,6 +49,7 @@ public class ClientGhostManager {
 
 
         if (mc.player.tickCount % 1200 == 0) {
+            Minecraft.getInstance().player.refreshDisplayName();
             PacketDistributor.sendToServer(new requestPlayerData(mc.player.getUUID()));
         }
 

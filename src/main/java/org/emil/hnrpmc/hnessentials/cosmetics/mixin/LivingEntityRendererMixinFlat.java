@@ -47,16 +47,7 @@ public class LivingEntityRendererMixinFlat<T extends LivingEntity> {
         }
 
         if (entityIn instanceof Player target) {
-            if (target.getTags().contains("vanished")) {
-                float alpha = 0.5f;
-                renderGhost(new AbstractClientPlayer((ClientLevel) target.level(), target.getGameProfile()) {
-                    @Override
-                    public boolean isSpectator() {
-                        return super.isSpectator();
-                    }
-                }, poseStack, bufferSource, 0, alpha);
-            }
-            Flattener.prepareToyRendering(f, x, z, poseStack, entityIn);
+            Flattener.prepareToyRendering(f, x, z, poseStack, entityIn, bufferSource);
 
         }
 

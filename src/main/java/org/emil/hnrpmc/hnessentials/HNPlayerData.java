@@ -8,8 +8,12 @@ import org.emil.hnrpmc.hnessentials.cosmetics.impl.UserInfoImpl;
 import org.emil.hnrpmc.hnessentials.cosmetics.model.BakableModel;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.chat.Component;
+
+import java.awt.*;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.List;
 
 public class HNPlayerData {
     private String playerName;
@@ -20,6 +24,7 @@ public class HNPlayerData {
     private boolean teleportEnabled = true;
     private boolean teleportAuto = false;
     private boolean godMode = false;
+    private boolean vanish = false;
     private boolean muted = false;
     private boolean jailed = false;
     private boolean afk = false;
@@ -51,7 +56,7 @@ public class HNPlayerData {
 
         this.lore = "";
         this.upsideDown = false;
-        this.prefix = "";
+        this.prefix = "Gay";
         this.suffix = "";
         this.hatIds = new ArrayList<>();
         this.capeId = null;
@@ -61,7 +66,8 @@ public class HNPlayerData {
         this.skin = getSkinValue(player);
         this.slim = false;
         // 1.2.2
-        this.icon = null;
+        ResourceLocation CROWN_ICON = ResourceLocation.fromNamespaceAndPath("hnrpmc", "textures/icon/crown.png");
+        this.icon = CROWN_ICON;
         this.online = true;
 
         /*userInfo = new UserInfoImpl(
@@ -269,6 +275,14 @@ public class HNPlayerData {
         return playerName;
     }
 
+    public void setVanish(boolean vanish) {
+        this.vanish = vanish;
+    }
+
+    public boolean isVanish() {
+        return vanish;
+    }
+
     public Map<String, Integer> getTimestamps() { return timestamps; }
 
     // -- CosmeticDatas --
@@ -278,8 +292,8 @@ public class HNPlayerData {
     private final @Nullable ResourceLocation icon;
     private final boolean online;
 
-    private final String prefix;
-    private final String suffix;
+    private String prefix;
+    private String suffix;
     //private List<BakableModel> hats;
     //private final CapeData cape;
     //private final @Nullable BakableModel leftShoulderBuddy;
@@ -294,6 +308,7 @@ public class HNPlayerData {
     private final boolean slim;
     private static Map<UUID, HNPlayerData> playerDataCache = new HashMap<>();
 
+    private String DisplayName = "HI";
 
     public String lore() {
         return lore;
@@ -303,8 +318,24 @@ public class HNPlayerData {
         return upsideDown;
     }
 
+
+    public String getDisplayName() {
+        return DisplayName;
+    }
+    public void setDisplayName(String DisplayName) {
+        this.DisplayName = DisplayName;
+    }
+
     public String prefix() {
         return prefix;
+    }
+
+    public void setprefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
     }
 
     public String suffix() {

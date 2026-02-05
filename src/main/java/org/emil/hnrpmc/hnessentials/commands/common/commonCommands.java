@@ -15,8 +15,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.commands.CommandHelper;
+import org.emil.hnrpmc.hnessentials.network.ServerPacketHandler;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
 import org.emil.hnrpmc.simpleclans.commands.conditions.Conditions;
@@ -58,12 +60,22 @@ public final class commonCommands extends ClanSBaseCommand {
         return fly(root);
     }
 
-    public static LiteralArgumentBuilder<CommandSourceStack> vanish(String root) {
+    public LiteralArgumentBuilder<CommandSourceStack> vanish(String root) {
         return Commands.literal(root)
                 .requires(s -> Conditions.permission(s.getPlayer(), "essentials.admin.vanish"))
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayerOrException();
+                    HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
+
+                    if (playerData == null) return 0;
                     boolean isVanished = toggleVanish(player);
+
+                    playerData.setVanish(isVanished);
+
+                    plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
+                    plugin.getStorageManager().save(player.getUUID());
+
+                    ServerPacketHandler.sendDataToAll(player.getUUID());
 
                     context.getSource().sendSuccess(() -> Component.literal(
                             isVanished ? "Du bist nun im Vanish!" : "Vanish deaktiviert!"), true);

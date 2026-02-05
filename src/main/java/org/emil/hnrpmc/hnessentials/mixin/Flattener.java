@@ -8,6 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.social.PlayerEntry;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceKey;
@@ -20,6 +23,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -28,8 +32,11 @@ import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.network.requestPlayerData;
+import org.emil.hnrpmc.simpleclans.SimpleClans;
 
 import java.util.*;
+
+import static org.emil.hnrpmc.hnessentials.mixin.GhostRenderer.renderGhost;
 
 public class Flattener {
     public static boolean renderingEnabled = true;
@@ -184,17 +191,40 @@ public class Flattener {
         return f;
     }
 
-    public static void prepareToyRendering(float rotation, double x, double z, PoseStack poseStack, Entity entity) {
+    public static void prepareToyRendering(float rotation, double x, double z, PoseStack poseStack, Entity entity, MultiBufferSource bufferSource) {
         if (entity instanceof Player player) {
 
-           HNPlayerData hnPlayerData = HNessentials.getInstance().getHNPlayerData().get(entity.getUUID());
+            HNPlayerData hnPlayerData = HNessentials.getInstance().getHNPlayerData().get(entity.getUUID());
 
             if (hnPlayerData == null) {
                 PacketDistributor.sendToServer(new requestPlayerData(Minecraft.getInstance().player.getUUID()));
                 return;
             }
 
-            if (player.getTags().contains("vanish")) {
+            //if (player.getTags().contains("vanish")) {// || hnPlayerData.isVanish()) {
+            //return;
+            //}
+
+            if (player.getTags().contains("vanished") || hnPlayerData.isVanish()) {
+                float alpha = 0.5f;
+
+
+                if (player instanceof LocalPlayer Lplayer) {
+                    boolean canSeeVanish = SimpleClans.getInstance().getPermissionsManager().has(Lplayer, "essentials.admin.vanish.see");
+                    if (canSeeVanish) {
+                        renderGhost(Lplayer, poseStack, bufferSource, 0, alpha);
+                    }
+                }else if (player instanceof RemotePlayer Rplayer) {
+                    boolean canSeeVanish = SimpleClans.getInstance().getPermissionsManager().has(Minecraft.getInstance().player, "essentials.admin.vanish.see");
+
+                    if(canSeeVanish) {
+                        renderGhost(Rplayer, poseStack, bufferSource, 0, alpha);
+                    }
+                }
+                return;
+            }
+
+            if (Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().getConnection().getPlayerInfo(player.getUUID()) != null && Minecraft.getInstance().getConnection().getPlayerInfo(player.getUUID()).getGameMode() == GameType.SPECTATOR) {
                 return;
             }
 
@@ -215,7 +245,7 @@ public class Flattener {
         }
     }
 
-    public static void prepareToyRendering(float rotation, double x, double z, PoseStack poseStack, FakePlayer entity, String effect) {
+    public static void prepareToyRendering(float rotation, double x, double z, PoseStack poseStack, FakePlayer entity, String effect, MultiBufferSource.BufferSource bufferSource) {
 
 
         HNPlayerData hnPlayerData = HNessentials.getInstance().getHNPlayerData().get(entity.getUUID());
@@ -273,7 +303,11 @@ public class Flattener {
                     PlayerRendereType savedPlayerData = new PlayerRendereType(Minecraft.getInstance(), entity.getUUID(), entity.getName().getString(), playerData, otherSkin.model() == PlayerSkin.Model.SLIM);
                     long startTime = System.currentTimeMillis();
                     if (savedPlayerData.getModel() == null) return;
-                    ghosts.add(new GhostSnapshot(
+
+
+                    if (player instanceof LocalPlayer Lplayer) {
+                        SavedPlayerModel savedPlayerModel = new SavedPlayerModel(Lplayer.clientLevel, Lplayer);
+                        ghosts.add(new GhostSnapshot(
                                 player.position(),
                                 player.yBodyRot,
                                 player.yHeadRot,
@@ -288,8 +322,11 @@ public class Flattener {
                                 player.isCrouching(),
                                 player.isSwimming(),
                                 player.isFallFlying(),
-                                equipment
+                                equipment,
+                                savedPlayerModel
                         ));
+                    }
+
 
                 }
 
@@ -318,24 +355,24 @@ public class Flattener {
                 ResourceLocation tex = defaultSkin.texture();
                 PlayerRendereType savedPlayerData = new PlayerRendereType(Minecraft.getInstance(), entity.getUUID(), entity.getName(), playerData, mc.player.getSkin().model() == PlayerSkin.Model.SLIM);
                 if (savedPlayerData.getModel() == null) return;
-                    ghosts.add(new GhostSnapshot(
-                            entity.getVelocity(),
-                            entity.yRotBody,
-                            entity.yRotHead,
-                            entity.getXRot(0),
-                            defaultSkin,
-                            entity.tickCount,
-                            System.currentTimeMillis(),
-                            savedPlayerData,
-                            0.0f,
-                            0.0f,
-                            0.0f,
-                            entity.isSneaking(),
-                            false,
-                            false,
-                            new HashMap<>()
-                    ));
-
+                ghosts.add(new GhostSnapshot(
+                        entity.getVelocity(),
+                        entity.yRotBody,
+                        entity.yRotHead,
+                        entity.getXRot(0),
+                        defaultSkin,
+                        entity.tickCount,
+                        System.currentTimeMillis(),
+                        savedPlayerData,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        entity.isSneaking(),
+                        false,
+                        false,
+                        new HashMap<>(),
+                        null
+                ));
             }
         }
     }

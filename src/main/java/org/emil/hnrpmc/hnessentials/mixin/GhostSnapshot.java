@@ -1,6 +1,7 @@
 package org.emil.hnrpmc.hnessentials.mixin;
 
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -25,5 +26,6 @@ public record GhostSnapshot(
         boolean isCrouching,
         boolean isSwimming,
         boolean isFallFlying,
-        Map<EquipmentSlot, ItemStack> equipment
+        Map<EquipmentSlot, ItemStack> equipment,
+        SavedPlayerModel AbstractClientPlayer
 ) {}

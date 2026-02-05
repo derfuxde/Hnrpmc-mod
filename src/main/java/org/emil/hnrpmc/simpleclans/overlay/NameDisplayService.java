@@ -4,6 +4,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
+import org.emil.hnrpmc.hnessentials.HNPlayerData;
+import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.config.NameRulesStore;
 
@@ -75,6 +77,7 @@ public final class NameDisplayService {
 
         // Sicherstellen, dass der Spieler im Team ist
         sb.addPlayerToTeam(p.getScoreboardName(), team);
+
 
         team.setPlayerPrefix(Component.literal(prefix));
         team.setPlayerSuffix(Component.literal(suffix));

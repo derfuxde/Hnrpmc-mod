@@ -127,7 +127,7 @@ public class SkinEffEntry extends ObjectSelectionList.Entry<SkinEffEntry> {
 
         RenderSystem.runAsFancy(() -> {
             if (fakePlayer.verifyModel(Minecraft.getInstance())) {
-                Flattener.prepareToyRendering(0.0F, 0.0D, 0.0D, viewStack, fakePlayer, skinEffect);
+                Flattener.prepareToyRendering(0.0F, 0.0D, 0.0D, viewStack, fakePlayer, skinEffect, bufferSource);
                 FakePlayerRenderer.render(viewStack, fakePlayer, bufferSource, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, 15728880);
             }
         });

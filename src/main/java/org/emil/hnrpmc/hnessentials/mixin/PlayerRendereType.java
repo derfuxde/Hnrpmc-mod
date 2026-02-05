@@ -3,6 +3,7 @@ package org.emil.hnrpmc.hnessentials.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -40,6 +41,8 @@ public class PlayerRendereType implements RenderLayerParent<AbstractClientPlayer
         this.layers.add(new ShoulderBuddies<>(this, Minecraft.getInstance().getEntityModels()));
         this.layers.add(new BackBling<>(this));
 
+        //ModelPart root = minecraft.getContext().bakeLayer(ModelLayers.PLAYER);
+        //model = new PlayerModel<>(root, false);
         this.verifyModel(minecraft, slim);
     }
 

@@ -22,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -37,6 +38,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import org.emil.hnrpmc.Hnrpmc;
+import org.emil.hnrpmc.hnessentials.cosmetics.mixin.ElytraLayerAccessor;
 import org.emil.hnrpmc.hnessentials.cosmetics.mixin.ElytraModelAccessor;
 import org.emil.hnrpmc.hnessentials.cosmetics.mixin.fakeplayer.HumanoidModelAccessor;
 import org.emil.hnrpmc.hnessentials.cosmetics.mixin.fakeplayer.PlayerModelAccessor;
@@ -54,6 +56,92 @@ public class GhostRenderer {
 
     //public static final List<GhostSnapshot> ghosts = new ArrayList<>();
     public static final Map<Integer, Float> lastages = new HashMap<>();
+
+//    @SubscribeEvent
+//    public static void onRenderLevel(RenderLevelStageEvent event) {
+//        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
+//
+//        Minecraft mc = Minecraft.getInstance();
+//        if (mc.player == null) return;
+//
+//
+//        boolean isFrozen;
+//        if (mc.level != null) {
+//            isFrozen = mc.level.tickRateManager().isFrozen();
+//        } else {
+//            isFrozen = false;
+//        }
+//
+//        long now = System.currentTimeMillis();
+//        PoseStack poseStack = event.getPoseStack();
+//        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
+//        Vec3 cameraPos = event.getCamera().getPosition();
+//
+//        EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+//
+//        List<GhostSnapshot> ghosts = Flattener.ghosts;
+//
+//        if (ghosts.isEmpty()) return;
+//
+//        for (GhostSnapshot ghost : ghosts) {
+//            float lastage = lastages.containsKey(ghosts.indexOf(ghost)) ? lastages.get(ghosts.indexOf(ghost)) : !isFrozen ? (event.getRenderTick() - ghost.startTick()) / 20.0f : ghost.startTick();
+//            float age = !isFrozen ? (now - ghost.startTime()) / 1000.0f : lastage;
+//
+//            setModelProperties(ghost.PlayerSaved());
+//
+//
+//            if (age > 2.0f && !isFrozen) {
+//                //ghosts.remove(ghost);
+//                continue;
+//            }
+//
+//            PlayerModel<AbstractClientPlayer> model = ghost.PlayerSaved().getModel();
+//
+//            if (!isFrozen) {
+//                lastages.put(ghosts.indexOf(ghost), age);
+//            }
+//
+//            float fade = Math.max(0, 1.0f - (age / 2.0f));
+//            float alpha = 0.4f * fade;
+//
+//            poseStack.pushPose();
+//            poseStack.translate(
+//                    ghost.position().x - cameraPos.x,
+//                    ghost.position().y - cameraPos.y,
+//                    ghost.position().z - cameraPos.z
+//            );
+//
+//
+//            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - ghost.yBodyRot()));
+//            poseStack.scale(-1.0F, -1.0F, 1.0F);
+//            poseStack.translate(0.0D, -1.501D, 0.0D);
+//
+//            if (model == null) return;
+//
+//            //model = ghost.AbstractClientPlayer().model;
+//
+//            int alphaInt = (int)(alpha * 255);
+//            int ghostColor = FastColor.ARGB32.color(alphaInt, 150, 150, 255);
+//
+//            ResourceLocation skinTex = ghost.PlayerSkin().texture();
+//            RenderType ghostLayer = RenderType.entityTranslucent(skinTex);
+//            VertexConsumer vertexConsumer = bufferSource.getBuffer(ghostLayer);
+//            int packedOverlayCoords = getOverlayCoords(0.0f);
+//
+//            float yRotDiff = ghost.yHeadRot() - ghost.yBodyRot();
+//            modelSetupAnim(
+//                    model,
+//                    ghost.AbstractClientPlayer().pose,
+//                    model.getHead().yRot - model.body.yRot,
+//                    ghost.xRot()
+//            );
+//
+//            model.renderToBuffer(poseStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY, ghostColor);
+//
+//
+//            poseStack.popPose();
+//        }
+//    }
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -82,12 +170,13 @@ public class GhostRenderer {
 
         if (ghosts.isEmpty()) return;
 
+        ghosts.removeIf(ghost -> (System.currentTimeMillis() - ghost.startTime()) > 2000 && !isFrozen);
+
         for (GhostSnapshot ghost : ghosts) {
             //float age = !isFrozen ? (now - ghost.timestamp()) / 500f : ghost.age();
             float lastage = lastages.containsKey(ghosts.indexOf(ghost)) ? lastages.get(ghosts.indexOf(ghost)) : !isFrozen ? (event.getRenderTick() - ghost.startTick()) / 20.0f : ghost.startTick();
             float age = !isFrozen ? (now - ghost.startTime()) / 1000.0f : lastage;
 
-            // Cleanup: Wenn der Geist älter als 2 Sekunden ist
             if (age > 2.0f && !isFrozen) {
                 //ghosts.remove(ghost);
                 continue;
@@ -98,6 +187,8 @@ public class GhostRenderer {
 
             setModelProperties(ghost.PlayerSaved());
             //RenderPlayerRenderer.render(poseStack, ghost.PlayerSaved(), bufferSource, 0, 0, 0, ghost.yBodyRot(), 0, 100);
+
+            //EntityRenderer<? super AbstractClientPlayer> renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(ghost.AbstractClientPlayer());
 
             PlayerModel<AbstractClientPlayer> model = ghost.PlayerSaved().getModel();
 
@@ -116,29 +207,30 @@ public class GhostRenderer {
             );
 
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - ghost.yBodyRot()));
+            //poseStack.mulPose(Axis.XP.rotationDegrees(ghost.AbstractClientPlayer().pose.bodyPose.zRot));
             poseStack.scale(-1.0F, -1.0F, 1.0F);
             poseStack.translate(0.0D, -1.501D, 0.0D);
 
             if (model == null) return;
 
-            model.body.xRot = ghost.xRot();
-            model.body.yRot = ghost.yBodyRot();
+
+            if ( ghost.AbstractClientPlayer() == null) return;
+            model.body.xRot = ghost.AbstractClientPlayer().pose.bodyPose.xRot;
+            //model.body.yRot = ghost.AbstractClientPlayer().pose.bodyPose.yRot;
 
             model.attackTime = 0;
             model.riding = false;
             model.young = false;
-            model.crouching = ghost.isCrouching();;
-            if (ghost.isFallFlying()) {
-                model.leftArm.xRot = (float)Math.toRadians(180.0);
-                model.rightArm.xRot = (float)Math.toRadians(180.0);
-                model.leftLeg.xRot = (float)Math.toRadians(0.0);
-                model.rightLeg.xRot = (float)Math.toRadians(0.0);
-                poseStack.mulPose(Axis.XP.rotationDegrees(ghost.xRot() + 90));
-                poseStack.translate(0.0D, -1.0D, 0.0D);
-            }
-            model.swimAmount = ghost.isSwimming() ? 1 : 0;
 
-            model.attackTime = ghost.swingTime();
+            boolean isFlying = ghost.AbstractClientPlayer().pose.isFlying;
+            boolean isSwimming = ghost.AbstractClientPlayer().pose.isSwimming;
+
+            if (isFlying || isSwimming) {
+                poseStack.mulPose(Axis.XP.rotationDegrees(ghost.xRot() + 90.0F));
+                //poseStack.translate(0.0D, -0.0D, 0.0D);
+            } else {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(ghost.AbstractClientPlayer().pose.bodyPose.zRot));
+            }
 
             float limbNodes = ghost.walkAnimPos();
             float limbSpeed = ghost.walkAnimSpeed();
@@ -147,23 +239,18 @@ public class GhostRenderer {
 
             int color = java.awt.Color.HSBtoRGB(0.6f, 0.8f, 1.0f); // Optional: Bläulicher Flash-Look
 
-            /*model.renderToBuffer(
-                    poseStack,
-                    vertexConsumer,
-                    0xF000F0,
-                    OverlayTexture.NO_OVERLAY,
-                    ghostColor
-            );*/
-            float yRotDiff = ghost.yHeadRot() - ghost.yBodyRot();
+            float yRotDiff = ghost.AbstractClientPlayer().pose.headPose.yRot - ghost.AbstractClientPlayer().pose.bodyPose.yRot;
             modelSetupAnim(
                     model,
-                    ghost.PlayerSaved(),
-                    limbNodes,
-                    limbSpeed,
-                    0.0f,
-                    ghost.yHeadRot() - ghost.yBodyRot(),
+                    ghost.AbstractClientPlayer().pose,
+                    yRotDiff,//ghost.yHeadRot() - ghost.yBodyRot(),
                     ghost.xRot()
             );
+
+            model.body.xRot = ghost.AbstractClientPlayer().pose.bodyPose.xRot;
+            model.body.yRot = ghost.AbstractClientPlayer().pose.bodyPose.yRot;
+            model.body.zRot = ghost.AbstractClientPlayer().pose.bodyPose.zRot;
+
 
             int alphaInt = (int)(alpha * 255);
             int ghostColor = FastColor.ARGB32.color(alphaInt, 150, 150, 255);
@@ -214,8 +301,6 @@ public class GhostRenderer {
 
             poseStack.popPose();
         }
-
-        ghosts.removeIf(ghost -> (System.currentTimeMillis() - ghost.startTime()) > 2000);
     }
 
     public static void renderGhost(AbstractClientPlayer player, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float alpha) {
@@ -225,7 +310,7 @@ public class GhostRenderer {
         EntityRenderer<? super AbstractClientPlayer> renderer = renderDispatcher.getRenderer(player);
         if (!(renderer instanceof PlayerRenderer playerRenderer)) return;
 
-        // 2. Modell vorbereiten
+        // 2. Modell vorbereite
         PlayerModel<AbstractClientPlayer> model = playerRenderer.getModel();
 
         model.attackTime = player.getAttackAnim(mc.getFrameTimeNs());
@@ -243,11 +328,6 @@ public class GhostRenderer {
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityTranslucent(texture));
 
         int color = FastColor.ARGB32.color((int)(alpha * 255), 255, 255, 255);
-
-        if (player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ElytraItem) {
-            // Hier deine fertige renderGhostElytra Methode aufrufen,
-            // aber 'player' statt 'ghost' übergeben
-        }
 
         // Das Hauptmodell zeichnen
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, color);
@@ -318,53 +398,38 @@ public class GhostRenderer {
         armorModel.renderToBuffer(poseStack, vertexConsumer, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, color);
     }
 
+    // Irgendwo außerhalb der Methode (z.B. in deiner Renderer-Klasse)
+    private static ElytraModel<LivingEntity> STATIC_ELYTRA_MODEL;
+
     private static void renderGhostElytra(GhostSnapshot ghost, PlayerModel<AbstractClientPlayer> playerModel, PoseStack poseStack, MultiBufferSource buffer, int light, float alpha) {
         ItemStack chestStack = ghost.PlayerSaved().getItemBySlot(EquipmentSlot.CHEST);
         if (!(chestStack.getItem() instanceof net.minecraft.world.item.ElytraItem)) return;
 
-        poseStack.pushPose();
-
-        var elytraModel = new net.minecraft.client.model.ElytraModel<net.minecraft.world.entity.LivingEntity>(
-                Minecraft.getInstance().getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.ELYTRA)
-        );
-
-        ElytraModelAccessor accessor = (ElytraModelAccessor) elytraModel;
-        ModelPart left = accessor.getLeftWing();
-        ModelPart right = accessor.getRightWing();
-
-        AbstractClientPlayer ACP = new AbstractClientPlayer(Minecraft.getInstance().player.clientLevel, Minecraft.getInstance().player.getGameProfile()) {
-            @Override
-            public boolean isSpectator() {
-                return super.isSpectator();
-            }
-        };
-
-        right.xRot = ACP.elytraRotX;
-        right.yRot = ACP.elytraRotY;
-        right.zRot = ACP.elytraRotZ;
-
-        // Rechts ist gespiegelt
-        right.xRot = left.xRot;
-        right.yRot = -left.yRot;
-        right.zRot = -left.zRot;
-
-        // Positionierung am Rücken (wie besprochen)
-        playerModel.body.translateAndRotate(poseStack);
-        poseStack.translate(0.0D, -1.5, 0.125D);
-
-        poseStack.scale(2, 2, 2);
-
-        // Falls der Geist schleicht, muss die Elytra auch physisch tiefer sitzen
-        if (ghost.isCrouching()) {
-            left.y = 3.0F;
-            right.y = 3.0F;
+        if (STATIC_ELYTRA_MODEL == null) {
+            STATIC_ELYTRA_MODEL = new ElytraModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.ELYTRA));
         }
 
-        ResourceLocation texture = ResourceLocation.withDefaultNamespace("textures/entity/elytra.png");
+        poseStack.pushPose();
+
+        //playerModel.body.translateAndRotate(poseStack);
+
+
+       // poseStack.scale(2.0F, 2.0F, 2.0F);
+
+        //poseStack.translate(0.0D, -0.73D, 0.06D);
+
+        ((ElytraModelAccessor) STATIC_ELYTRA_MODEL).getLeftWing().loadPose(ghost.AbstractClientPlayer().pose.leftWing);
+        ((ElytraModelAccessor) STATIC_ELYTRA_MODEL).getRightWing().loadPose(ghost.AbstractClientPlayer().pose.rightWing);
+
+        STATIC_ELYTRA_MODEL.young = false;
+        ResourceLocation texture = ghost.PlayerSkin().elytraTexture() != null
+                ? ghost.PlayerSkin().elytraTexture()
+                : ResourceLocation.withDefaultNamespace("textures/entity/elytra.png");
+
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(texture));
         int color = FastColor.ARGB32.color((int)(alpha * 255), 255, 255, 255);
 
-        elytraModel.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, color);
+        STATIC_ELYTRA_MODEL.renderToBuffer(poseStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, color);
 
         poseStack.popPose();
     }
@@ -405,6 +470,25 @@ public class GhostRenderer {
             return isGlowing ? RenderType.outline(resourceLocation) : null;
         }
     }
+
+    private static void modelSetupAnim(PlayerModel<AbstractClientPlayer> model, SavedPose player, float yRotDiff, float xRot) {
+        /*player.head.loadPose(player.head.getInitialPose());
+        player.hat.loadPose(player.hat.getInitialPose());
+        player.body.loadPose(player.body.getInitialPose());
+        player.rightArm.loadPose(player.rightArm.getInitialPose());
+        player.leftArm.loadPose(player.leftArm.getInitialPose());
+        player.leftLeg.loadPose(player.leftLeg.getInitialPose());
+        player.rightLeg.loadPose(player.rightLeg.getInitialPose());*/
+
+        player.applyTo(model);
+
+        model.leftPants.copyFrom(model.leftLeg);
+        model.rightPants.copyFrom(model.rightLeg);
+        model.leftSleeve.copyFrom(model.leftArm);
+        model.rightSleeve.copyFrom(model.rightArm);
+        model.jacket.copyFrom(model.body);
+    }
+
 
     private static void modelSetupAnim(PlayerModel<AbstractClientPlayer> model, PlayerRendereType player, float f, float g, float bob, float yRotDiff, float xRot) {
         model.head.yRot = yRotDiff * 0.017453292F;

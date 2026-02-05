@@ -102,11 +102,10 @@ public class ServerPacketHandler {
             // Der Spieler, der das Paket gesendet hat (der Admin)
             ServerPlayer admin = (ServerPlayer) context.player();
 
-            // Sicherheitscheck: Hat der Absender überhaupt Admin-Rechte?
-            if (!Conditions.permission(admin, "essentials.admin")) {
+            /*if (!Conditions.permission(admin, "essentials.admin")) {
                 admin.sendSystemMessage(Component.literal("§cDu hast keine Berechtigung, Daten zu ändern!"));
                 return;
-            }
+            }*/
 
             // Die Daten des Ziel-Spielers laden
             HNessentials plugin = HNessentials.getInstance();
