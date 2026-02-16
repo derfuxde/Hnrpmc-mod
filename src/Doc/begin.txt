@@ -1,4 +1,9 @@
 Willkommen zu der Hnrpmc Mod wiki!
 <br> 
 <br>
-<->----------------------------------<.->
+<->----------------------------------<.-><br>
+<bb>Was dich erwartet<.bb>
+- Clan System<br>
+- Claim System<br>
+- Chestlock System<br>
+- und viele Nützliche Commands
