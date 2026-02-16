@@ -2,6 +2,8 @@ package org.emil.hnrpmc.hnclaim;
 
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.level.ServerPlayer;
+import org.emil.hnrpmc.hnessentials.GeneralDefaultData;
+import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 
 import java.lang.reflect.Type;
@@ -173,10 +175,9 @@ public final class Claim {
         for (Map.Entry<String, List<String>> plperms : restoredMap.entrySet()) {
             List<claimperms> permslis = new ArrayList<>();
             for (String permname : plperms.getValue()) {
-                for (claimperms claimperms : claimperms.values()) {
-                    if (Objects.equals(claimperms.getPermName(), permname)) {
-                        permslis.add(claimperms);
-                    }
+                claimperms pern = claimperms.valueOf(permname);
+                if (Objects.equals(pern.toString(), permname)) {
+                    permslis.add(pern);
                 }
             }
             endemap.put(plperms.getKey(), permslis);
@@ -200,6 +201,7 @@ public final class Claim {
 
             map.put(uuid.toString(), listperms);
         }
+        this.permsoverride = map;
     }
 
     public void addoverridePerms(String clanname, claimperms perm) {
@@ -218,6 +220,7 @@ public final class Claim {
 
             map.put(clanname, listperms);
         }
+        this.permsoverride = map;
     }
 
     public void removeoverridePerms(UUID uuid, claimperms perm) {
@@ -234,6 +237,7 @@ public final class Claim {
 
             map.put(uuid.toString(), listperms);
         }
+        this.permsoverride = map;
     }
 
     public void removeoverridePerms(String name, claimperms perm) {
@@ -250,6 +254,16 @@ public final class Claim {
 
             map.put(name, listperms);
         }
+
+        this.permsoverride = map;
+    }
+
+    public void deleteoverridePerms(String name) {
+        Map<String, List<claimperms>> map = getoverridePerms();
+
+        map.remove(name);
+
+        this.permsoverride = map;
     }
 
     public Map<String, List<claimperms>> getoverridePerms() {
@@ -278,12 +292,28 @@ public final class Claim {
 
     public List<claimperms> getPlayerPerms(String playerName, HNClaims plugin) {
         if (permsoverride == null) return new ArrayList<>();
+
+        if (HNessentials.getInstance().getStorageManager() != null) {
+            HNessentials.getInstance().getStorageManager().loadGeneralData();
+            GeneralDefaultData GDD = HNessentials.getInstance().getStorageManager().getGeneralData();
+            if (GDD.getPlayerCache().containsValue(playerName)) {
+                UUID playeruuid = GDD.getPlayerCache().entrySet().stream().filter(entery -> entery.getValue().equals(playerName)).toList().getFirst().getKey();
+                return this.permsoverride.get(playeruuid.toString());
+            } else {
+                Objects.requireNonNull(plugin.getServer().getProfileCache()).load();
+                if (plugin.getServer().getProfileCache().get(playerName).isEmpty()) return new ArrayList<>();
+                return this.permsoverride.get(plugin.getServer().getProfileCache().get(playerName).get().getId().toString());
+            }
+        }
+
         return this.permsoverride.get(plugin.getServer().getProfileCache().get(playerName).get().getId().toString());
     }
 
-    public List<claimperms> getClaimPerms(String playerName) {
+    public List<claimperms> getClaimPerms(String clanName) {
         if (permsoverride == null) return new ArrayList<>();
-        return this.permsoverride.get("." + playerName);
+        if (clanName == null) return new ArrayList<>();
+        if (clanName.startsWith(".")) return this.permsoverride.get(clanName);
+        return this.permsoverride.get("." + clanName);
     }
 
     public void setCenter(String pos) {

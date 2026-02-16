@@ -1,5 +1,6 @@
 package org.emil.hnrpmc.hnessentials;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
@@ -11,6 +12,7 @@ public class Tpa {
     private final boolean here;
     private final TpaUsers tpaUsers;
     private final Vec3 sendPos;
+    private final ServerLevel sendDimension;
 
     private final String tpaID;
 
@@ -19,6 +21,8 @@ public class Tpa {
         this.receiver = receiver;
         this.here = here;
         this.sendPos = requester.getPosition(0);
+
+        this.sendDimension = requester.serverLevel();
 
         this.tpaUsers = new TpaUsers(requester.getUUID(), receiver.getUUID());
 
@@ -55,5 +59,9 @@ public class Tpa {
 
     public Vec3 getSendPos() {
         return this.sendPos;
+    }
+
+    public ServerLevel getSendDimension() {
+        return this.sendDimension;
     }
 }

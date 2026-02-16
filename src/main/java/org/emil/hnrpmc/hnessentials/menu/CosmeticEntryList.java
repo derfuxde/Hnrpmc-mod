@@ -33,6 +33,12 @@ public class CosmeticEntryList extends ObjectSelectionList<CosmeticEntry> {
 
     public int addEntry(@NotNull CosmeticEntry entry) {
         super.addEntry(entry);
+        if (entry.cosmetic == null && currentcosmetic == null || entry.cosmetic == null && currentcosmetic.equalsIgnoreCase("none")) {
+            this.setSelected(entry);
+            if (currentcosmetic == null) currentcosmetic = "none";
+            return 1;
+        }
+        if (entry.cosmetic == null) return 0;
         if (entry.cosmetic.getId().equals(currentcosmetic)) {
             this.setSelected(entry);
         }

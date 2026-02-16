@@ -164,13 +164,28 @@ public class ClientModEvents {
         Minecraft mc = Minecraft.getInstance();
 
         // Wenn es der lokale Spieler ist und wir in der Third-Person-Ansicht sind
-        if (event.getEntity() == mc.getCameraEntity() && event.getEntity() instanceof Player) {
+        if (event.getEntity() == mc.getCameraEntity() && event.getEntity() instanceof Player player) {
             boolean isThirdPerson = mc.options.getCameraType() != CameraType.FIRST_PERSON;
 
-            if (isThirdPerson) {
-                // ALLOW erzwingt das Rendering, auch wenn Minecraft es normalerweise unterdrückt
-                event.setCanRender(TriState.TRUE);
+            HNPlayerData playerData = HNessentials.getInstance().getHNPlayerData().get(player.getUUID());
+            HNPlayerData localplayerData = HNessentials.getInstance().getHNPlayerData().get(mc.player.getUUID());
+
+            if (playerData.isVanish() && localplayerData.getTags().contains("vanish_see")) {
+                if (isThirdPerson) {
+                    // ALLOW erzwingt das Rendering, auch wenn Minecraft es normalerweise unterdrückt
+                    event.setCanRender(TriState.TRUE);
+                }
+            } else if (!playerData.isVanish()) {
+                if (isThirdPerson) {
+                    // ALLOW erzwingt das Rendering, auch wenn Minecraft es normalerweise unterdrückt
+                    event.setCanRender(TriState.TRUE);
+                }
+            } else if (playerData.isVanish() && !localplayerData.getTags().contains("vanish_see")) {
+                if (isThirdPerson) {
+                    event.setCanRender(TriState.FALSE);
+                }
             }
+
         }
     }
 

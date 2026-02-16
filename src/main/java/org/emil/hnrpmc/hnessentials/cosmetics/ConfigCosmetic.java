@@ -4,20 +4,19 @@ public class ConfigCosmetic {
     private final String ID;
     private final String name;
     private final String Type;
-    private final String textureoverride;
+    private boolean showHelmet = true;
 
-    public ConfigCosmetic(String name, String ID, String Type, String textureoverride) {
+    public ConfigCosmetic(String name, String ID, String Type, boolean showHelmet) {
         this.name = name;
         this.ID = ID;
         this.Type = Type;
-        this.textureoverride = textureoverride;
+        this.showHelmet = showHelmet;
     }
 
     public ConfigCosmetic(String name, String ID, String Type) {
         this.name = name;
         this.ID = ID;
         this.Type = Type;
-        this.textureoverride = "";
     }
 
     public String getName() {
@@ -32,7 +31,7 @@ public class ConfigCosmetic {
         return Type;
     }
 
-    public String getTextureoverride() {
-        return textureoverride;
+    public boolean showHelmet() {
+        return showHelmet;
     }
 }

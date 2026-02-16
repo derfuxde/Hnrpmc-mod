@@ -857,6 +857,7 @@ public final class StorageManager {
      */
     public void updateClanPlayer(ClanPlayer cp) {
         cp.updateLastSeen();
+        if (ChatManager.isDiscordHookEnabled(plugin)) return;
         plugin.getProxyManager().sendUpdate(cp);
         if (plugin.getSettingsManager().is(PERFORMANCE_SAVE_PERIODICALLY)) {
             modifiedClanPlayers.add(cp);

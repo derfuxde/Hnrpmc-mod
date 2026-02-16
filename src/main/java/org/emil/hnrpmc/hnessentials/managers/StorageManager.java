@@ -46,10 +46,10 @@ public class StorageManager {
     }
 
     private GeneralDefaultData DefaultGeneralData() {
-        ConfigCosmetic LONG_HAT = new ConfigCosmetic("Lang Hut", "longhat", "hat");
-        ConfigCosmetic WITCH_HAT = new ConfigCosmetic("Hexen Hut", "witchhat", "hat");
-        ConfigCosmetic WASSER_MELONE = new ConfigCosmetic("Wassermelonen Hut", "wassermelone", "hat");
-        ConfigCosmetic MASK = new ConfigCosmetic("Player Mask", "mask", "hat");
+        ConfigCosmetic LONG_HAT = new ConfigCosmetic("Lang Hut", "longhat", "hat", true);
+        ConfigCosmetic WITCH_HAT = new ConfigCosmetic("Hexen Hut", "witchhat", "hat", false);
+        ConfigCosmetic WASSER_MELONE = new ConfigCosmetic("Wassermelonen Hut", "wassermelone", "hat", true);
+        ConfigCosmetic MASK = new ConfigCosmetic("Player Mask", "mask", "hat", true);
 
         List<ConfigCosmetic> LCC = List.of(LONG_HAT, WITCH_HAT, WASSER_MELONE, MASK);
 

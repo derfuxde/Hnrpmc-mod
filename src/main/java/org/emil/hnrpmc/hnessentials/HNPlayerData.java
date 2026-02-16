@@ -29,6 +29,7 @@ public class HNPlayerData {
     private boolean jailed = false;
     private boolean afk = false;
     private String selectedskineffect = "none";
+    private String watchingPlayer = null;
 
     private Map<CosmeticSlot, String> equippedCosmetics = new HashMap<>();
     //private transient UserInfoImpl userInfo;
@@ -421,5 +422,39 @@ public class HNPlayerData {
 
     public void setSelectedskineffect(String selectedskineffect) {
         this.selectedskineffect = selectedskineffect;
+    }
+
+    private List<String> tags = new ArrayList<>();
+
+    public List<String> getTags() {
+        if (this.tags == null) return new ArrayList<>();
+        if (this.tags.isEmpty()) return new ArrayList<>();
+        return tags;
+    }
+
+    public void addTag(String str) {
+        if (this.tags == null) this.tags = new ArrayList<>();
+        if (this.tags.isEmpty()) this.tags = new ArrayList<>();
+        tags.add(str);
+    }
+
+    public void removeTag(String str) {
+        if (this.tags == null) this.tags = new ArrayList<>();
+        if (this.tags.isEmpty()) this.tags = new ArrayList<>();
+        tags.remove(str);
+    }
+
+    public boolean containsTag(String str) {
+        if (this.tags == null) this.tags = new ArrayList<>();
+        if (this.tags.isEmpty()) this.tags = new ArrayList<>();
+        return tags.contains(str);
+    }
+
+    public String getWatchingPlayer() {
+        return watchingPlayer;
+    }
+
+    public void setWatchingPlayer(String watchingPlayer) {
+        this.watchingPlayer = watchingPlayer;
     }
 }

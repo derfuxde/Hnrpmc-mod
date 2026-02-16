@@ -17,6 +17,7 @@ import org.emil.hnrpmc.Hnrpmod;
 import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
 import org.emil.hnrpmc.hnclaim.claimperms;
+import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.hnessentials.Home;
 import org.emil.hnrpmc.simpleclans.*;
@@ -36,7 +37,7 @@ public final class Suggestions {
     }
 
     public static SuggestionProvider<CommandSourceStack> Allclans(SimpleClans plugin) {
-        return (ctx, b) -> suggest(plugin.getClanManager().getClans().stream().map(Clan::getStringName), b);
+        return (ctx, b) -> suggest(plugin.getClanManager().getClans().stream().map(Clan::getTag), b);
     }
 
     public static SuggestionProvider<CommandSourceStack> rivals(SimpleClans plugin) {
@@ -44,7 +45,7 @@ public final class Suggestions {
     }
 
     public static SuggestionProvider<CommandSourceStack> allclaimperms(HNClaims plugin) {
-        return (ctx, b) -> suggest(Arrays.stream(claimperms.values()).map(cperm -> cperm.getPermName().toLowerCase().replace(" ", "_")),b);
+        return (ctx, b) -> suggest(Arrays.stream(claimperms.values()).map(cperm -> cperm.toString().toLowerCase()), b);
     }
 
     public static SuggestionProvider<CommandSourceStack> claimsfromplayer(HNClaims plugin) {
@@ -151,7 +152,14 @@ public final class Suggestions {
 
     public static SuggestionProvider<CommandSourceStack> allPlayerNameFromHomes(HNessentials plugin) {
         //boolean hhideme = true;
-        return (ctx, b) -> suggest( plugin.getStorageManager().getAllPlayerData().values().stream().map(pd -> pd.getPlayerName()).toList(),b);
+        if (plugin.getServer() == null) {
+            return (ctx, b) -> suggest(new ArrayList<>(), b);
+        }
+        if (plugin.getStorageManager() != null) {
+            plugin.getStorageManager().loadAllPlayerDatas();
+        }
+
+        return (ctx, b) -> suggest( plugin.getStorageManager().getAllPlayerData().values().stream().map(HNPlayerData::getPlayerName).toList(),b);
     }
 
 
@@ -267,84 +275,66 @@ public final class Suggestions {
 
     public static SuggestionProvider<CommandSourceStack> lookupsugests(Hnrpmod plugin) {
         return (ctx, b) -> {
-            String input = b.getInput().toLowerCase();
-            String remaining = b.getRemaining().toLowerCase();
-            String[] args = b.getRemaining().toLowerCase().split("(?= )");
-            List<String> argslist = Arrays.stream(args).toList();
-
+            String remaining = b.getRemaining();
+            // Wir splitten den bisherigen Text in einzelne Wörter
+            String[] parts = remaining.split(" ");
+            // Das Wort, an dem der Cursor gerade schreibt
+            String currentWord = remaining.endsWith(" ") ? "" : parts[parts.length - 1];
 
             List<String> allKeys = List.of("time:", "radius:", "player:", "action:");
-            List<String> allactions = List.of("BLOCK_BREAK", "BLOCK_PLACE", "ITEM_PICKUP", "ITEM_DROP", "KILL", "CHAT");
+            List<String> allActions = List.of("BLOCK_BREAK", "BLOCK_PLACE", "ITEM_PICKUP", "ITEM_DROP", "KILL", "CHAT");
+            List<String> timeFormats = List.of("m", "h", "d", "w");
 
-            List<String> timeformats = List.of("m", "h", "d", "w");
-            List<String> timenumbers = List.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
-
-
-            String lastarg = "";
-            String beforelastarg = "";
-            if (argslist != null && !argslist.isEmpty()) {
-                lastarg = argslist.getLast();
-                if (argslist.size() >= 2) {
-                    beforelastarg = argslist.get(argslist.size() - 2);
+            // 1. Wenn wir ein neues Wort anfangen oder gerade ein Key-Präfix schreiben
+            if (currentWord.isEmpty() || (!currentWord.contains(":") && allKeys.stream().anyMatch(k -> k.startsWith(currentWord)))) {
+                for (String key : allKeys) {
+                    // Nur vorschlagen, wenn der Key noch nicht im gesamten Befehl vorkommt
+                    if (!remaining.contains(key)) {
+                        b.suggest(key);
+                    }
                 }
             }
 
-            String keyPart = lastarg.equals(" ") || lastarg.isEmpty() ? "" : allKeys.stream().filter(lastarg::startsWith).toList().getFirst();
+            // 2. Logik für die Werte NACH dem Doppelpunkt
+            if (currentWord.contains(":")) {
+                String key = currentWord.substring(0, currentWord.indexOf(":") + 1);
+                String value = currentWord.substring(currentWord.indexOf(":") + 1);
 
-            SuggestionsBuilder subBuilder = remaining.endsWith(" ") ? b.createOffset(b.getStart() + keyPart.length()) : b;
+                switch (key) {
+                    case "action:":
+                        allActions.stream()
+                                .filter(a -> a.toLowerCase().startsWith(value.toLowerCase()))
+                                .forEach(a -> b.suggest(key + a));
+                        break;
 
-            for (String key : allKeys) {
-                if (lastarg.isEmpty()) {
-                    b.suggest(key);
-                } else {
-                    if (allKeys.stream().noneMatch(lastarg::endsWith) && argslist.getLast().equals(" ")) { // wenn list allkey keine ding mit der endung von lastarg hat
-                        if (allKeys.stream().noneMatch(beforelastarg::endsWith)) {
-                            if (argslist.stream().noneMatch(s -> s.startsWith(key))) {
-                                subBuilder.suggest(key);
+                    case "player:":
+                        // Player-Cache von HNessentials
+                        HNessentials.getInstance().getStorageManager().getGeneralData().getPlayerCache().values().stream()
+                                .filter(name -> name.toLowerCase().startsWith(value.toLowerCase()))
+                                .forEach(name -> b.suggest(key + name));
+                        break;
+
+                    case "time:":
+                        // Wenn am Ende eine Zahl steht, schlage Einheiten vor
+                        if (value.matches("\\d+")) {
+                            for (String unit : timeFormats) {
+                                b.suggest(key + value + unit);
                             }
+                        } else if (value.isEmpty()) {
+                            // Schlage Zahlen vor, wenn noch nichts da steht
+                            List.of("1", "5", "10", "30").forEach(n -> b.suggest(key + n));
                         }
-                    }
-                }
+                        break;
 
-
-                //if (!input.contains(key) && key.startsWith(remaining)) {
-                /*if (argslist.stream().noneMatch(s -> s.startsWith(key)) && Character.toString(remaining.charAt(remaining.length() - 1)).equals(" ")) {
-                    b.suggest(key);
-                }*/
-            }
-
-            if (lastarg.replace(" ", "").startsWith("time:") || allKeys.stream().noneMatch(lastarg::endsWith) && beforelastarg.replace(" ", "").startsWith("time:")) {
-                List<String> spaceargs = new ArrayList<>();
-                argslist.forEach(str -> spaceargs.add(argslist.getFirst().equals(str) ? removeLastTwo(str) : " " + str));
-                int plus = (spaceargs.getLast().equals(" ") || spaceargs.getLast().isEmpty() ? 0 : 2);
-                subBuilder = spaceargs.getLast().length() <= 2 || spaceargs.getLast().isEmpty() ? b.createOffset(b.getStart() + remaining.length()) : b.createOffset(b.getStart() + remaining.length() - (spaceargs.getLast().length() + plus ));
-                if (remaining.matches(".*[0-9]")) {
-                    for (String timeformat : timeformats) {
-                        subBuilder.suggest((lastarg + timeformat).replace(" ", ""));
-                    }
-                } else if (timeformats.stream().noneMatch(lastarg::endsWith) && lastarg.matches(".*[^0-9]") && input.matches(".*:[ ]?")) {
-                    for (String number : timenumbers) {
-                        subBuilder.suggest((lastarg + number).replace(" ", ""));
-                    }
-                }
-            } else if (lastarg.equals("radius:") || beforelastarg.equals("radius:")) {
-                if (remaining.matches(".*[^0-9]")) {
-                    for (String number : timenumbers) {
-                        subBuilder.suggest((lastarg + number).replace(" ", ""));
-                    }
-                }
-            } else if (lastarg.equals("player:")) {
-                List<String> playerstring = HNessentials.getInstance().getStorageManager().getGeneralData().getPlayerCache().values().stream().toList();
-                for (String playername : playerstring) {
-                    subBuilder.suggest((lastarg + playername).replace(" ", ""));
-                }
-            } else if (lastarg.equals("action:")) {
-                for (String aktion : allactions) {
-                    subBuilder.suggest((lastarg + aktion).replace(" ", ""));
+                    case "radius:":
+                        if (value.isEmpty()) {
+                            List.of("5", "10", "20", "50").forEach(r -> b.suggest(key + r));
+                        }
+                        break;
                 }
             }
 
-            return subBuilder.buildFuture();
+            return b.buildFuture();
         };
     }
 

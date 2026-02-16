@@ -319,9 +319,6 @@ public final class StorageManager {
     public void updateAllClaim() {
         for (Claim claim : plugin.getClaimManager().getClaims()) {
             updateClaim(claim, false);
-            if (Objects.equals(claim.getName(), "Dev_claim-8")) {
-                plugin.getLogger().debug("Dev-8 ist da");
-            }
         }
     }
 

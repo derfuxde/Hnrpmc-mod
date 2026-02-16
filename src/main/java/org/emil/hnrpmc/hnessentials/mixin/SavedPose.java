@@ -12,7 +12,14 @@ import org.emil.hnrpmc.hnessentials.cosmetics.mixin.ElytraLayerAccessor;
 import org.emil.hnrpmc.hnessentials.cosmetics.mixin.ElytraModelAccessor;
 
 public class SavedPose {
-    public final PartPose headPose, bodyPose, rightArmPose, leftArmPose, rightLegPose, leftLegPose, leftWing, rightWing;
+    public final PartPose headPose;
+    public final PartPose bodyPose;
+    public final PartPose rightArmPose;
+    public final PartPose leftArmPose;
+    public final PartPose rightLegPose;
+    public final PartPose leftLegPose;
+    public PartPose leftWing;
+    public PartPose rightWing;
 
     public final boolean isFlying, isSwimming;
 
@@ -23,14 +30,19 @@ public class SavedPose {
         this.leftArmPose = model.leftArm.storePose();
         this.rightLegPose = model.rightLeg.storePose();
         this.leftLegPose = model.leftLeg.storePose();
-        ElytraModel<LivingEntity> sourceElytra = ((ElytraLayerAccessor) EL).getElytraModel();
-        ModelPart snapshotLeftWing = ((ElytraModelAccessor) sourceElytra).getLeftWing();
-        ModelPart snapshotRightWing = ((ElytraModelAccessor) sourceElytra).getRightWing();
+        this.leftWing = null;
+        this.rightWing = null;
+        if (EL != null) {
+            ElytraModel<LivingEntity> sourceElytra = ((ElytraLayerAccessor) EL).getElytraModel();
+            ModelPart snapshotLeftWing = ((ElytraModelAccessor) sourceElytra).getLeftWing();
+            ModelPart snapshotRightWing = ((ElytraModelAccessor) sourceElytra).getRightWing();
+
+            leftWing = snapshotLeftWing.storePose();
+            this.rightWing = snapshotRightWing.storePose();
+        }
 
         this.isFlying = isFlying;
         this.isSwimming = isSwimming;
-        this.leftWing = snapshotLeftWing.storePose();
-        this.rightWing = snapshotRightWing.storePose();
     }
 
     public void applyTo(PlayerModel<?> model) {

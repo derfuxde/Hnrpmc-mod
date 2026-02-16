@@ -40,6 +40,12 @@ public class DatabaseManager {
         init();
     }
 
+    public static Connection openConnection() throws SQLException {
+        if (URL == null) throw new SQLException("DatabaseManager URL ist noch nicht initialisiert.");
+        return DriverManager.getConnection(URL);
+    }
+
+
     public static void init() {
         try (Connection conn = DriverManager.getConnection(URL);
              Statement stmt = conn.createStatement()) {

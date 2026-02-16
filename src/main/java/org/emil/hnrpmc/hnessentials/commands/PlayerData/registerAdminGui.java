@@ -57,16 +57,14 @@ public class registerAdminGui extends ClanSBaseCommand {
 
                             HNPlayerData fullData = HNessentials.getInstance().getStorageManager().getOrCreatePlayerData(target.getUUID()); //380df991-f603-344c-a090-369bad2a924a
 
-                            // Erstelle eine "saubere" Kopie ohne Client-Klassen
                             AdminSyncData safeData = new AdminSyncData(
                                     fullData.getMoney(),
                                     fullData.prefix(),
                                     fullData.suffix(),
-                                    fullData.hats(), // Methode die nur String-IDs liefert
+                                    fullData.hats(),
                                     fullData.isJailed()
                             );
 
-                            // DIESES Objekt kann Gson gefahrlos in JSON verwandeln
                             String dataJson = new Gson().toJson(fullData);
 
                             PacketDistributor.sendToAllPlayers(new SendCosmeticRegister(new Gson().toJson(plugin.getStorageManager().getGeneralData().getCosmetics())));

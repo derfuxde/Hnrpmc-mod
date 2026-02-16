@@ -13,11 +13,13 @@ public class SimpleCosmetic implements CustomCosmetic {
     private final String name;
     private final CosmeticType<?> type;
     private final Cosmetic internalCosmetic;
+    private final boolean showHelmet;
 
-    public SimpleCosmetic(String id, String name, CosmeticType<?> type, CosmeticSlot slot) {
+    public SimpleCosmetic(String id, String name, CosmeticType<?> type, CosmeticSlot slot, boolean showHelmet) {
         this.id = id;
         this.name = name;
         this.type = type;
+        this.showHelmet = showHelmet;
 
         ResourceLocation modelRl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/" + id);
 
@@ -29,5 +31,6 @@ public class SimpleCosmetic implements CustomCosmetic {
     @Override public CosmeticType<?> getType() { return type; }
     @Override public Cosmetic getasCosmetic() { return internalCosmetic; }
     @Override public User getOwner() { return new User(new UUID(0, 0), "System"); }
+    @Override public boolean showHelmet() { return showHelmet; }
     @Override public long getUploadTime() { return 0; }
 }

@@ -11,6 +11,7 @@ import org.emil.hnrpmc.hnessentials.HNPlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.CosmeticType;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.CustomCosmetic;
 import org.emil.hnrpmc.hnessentials.cosmetics.api.Model;
+import org.emil.hnrpmc.hnessentials.cosmetics.api.SimpleCosmetic;
 import org.emil.hnrpmc.hnessentials.network.AdminUpdateDataPayload;
 import org.emil.hnrpmc.hnessentials.network.CosmeticRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -51,6 +52,8 @@ public class VIPCosmeticSelect extends Screen {
 
         if (selected != null) {
             this.list = new CosmeticEntryList(this.minecraft, this.width, this.height, 32, 60, cosmeticID, this);
+
+            this.list.addEntry(new CosmeticEntry(Component.literal("None"), null, this.minecraft, this.list));
 
             for (CustomCosmetic cosmetic : CosmeticRegistry.all()) {
                 if (cosmetic.getType() != selected) continue;

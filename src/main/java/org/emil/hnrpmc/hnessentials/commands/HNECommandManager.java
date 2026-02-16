@@ -101,6 +101,10 @@ public final class HNECommandManager {
         String command = event.getParseResults().getReader().getString();
         CommandSourceStack source = event.getParseResults().getContext().getSource();
 
+        if (source.getPlayer() == null) return;
+
+        plugin.getStorageManager().getOrCreatePlayerData(source.getPlayer().getUUID()).updateLastLocation(source.getPosition());
+
         if (allcommandstarts.contains(command.split(" ")[0])) {
             if (!(source.getEntity() instanceof ServerPlayer player)) {
                 if (command.split(" ")[0].equals("restart")) {

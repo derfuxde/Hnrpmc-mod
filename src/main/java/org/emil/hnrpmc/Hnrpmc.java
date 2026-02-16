@@ -24,6 +24,7 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -35,12 +36,15 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.emil.hnrpmc.doc.HNDoc;
+import org.emil.hnrpmc.doc.listeners.clientlisten;
 import org.emil.hnrpmc.hnclaim.HNClaims;
 import org.emil.hnrpmc.hnessentials.HNessentials;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.hooks.discord.DiscordHook;
 import org.emil.hnrpmc.simpleclans.overlay.ServerTickNamesHandler;
 import org.emil.hnrpmc.simpleclans.proxy.dto.BungeePayload;
+import org.emil.hnrpmc.world.storage.WorldJsonStorage;
 import org.slf4j.Logger;
 
 // GeckoLib Imports
@@ -85,6 +89,7 @@ public class Hnrpmc {
     public static SimpleClans simpleClans = null;
     public static HNessentials hnessentials = null;
     public static HNClaims hnClaims = null;
+    public static HNDoc hndoc = null;
 
 
     public static Hnrpmc getInstance() {
@@ -93,7 +98,7 @@ public class Hnrpmc {
 
     @SubscribeEvent
     public void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("bungeecord");
+        final PayloadRegistrar registrar = event.registrar(Hnrpmc.MODID);
 
         registrar.playToClient(
                 BungeePayload.TYPE,
@@ -118,8 +123,10 @@ public class Hnrpmc {
 
         instance = this;
 
-        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             modEventBus.addListener(org.emil.hnrpmc.simpleclans.overlay.ClientHandler::onAddLayers);
+            hndoc = new HNDoc(modEventBus);
+            modEventBus.addListener(clientlisten::registerKeys);
         }
 
         modEventBus.addListener(this::onRegisterPayloads);
@@ -138,7 +145,6 @@ public class Hnrpmc {
 
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
-
 
     }
 }

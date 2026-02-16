@@ -20,6 +20,8 @@ public interface CustomCosmetic {
      */
     User getOwner();
 
+    boolean showHelmet();
+
     /**
      * Get the upload time of this cosmetic.
      * @return the UTC unix timestamp, in seconds, at which this model was uploaded.

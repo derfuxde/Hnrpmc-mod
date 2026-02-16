@@ -555,6 +555,7 @@ public final class DiscordHook {
     public void updateClanRoleAll(String clanTag) {
         List<Member> members = getGuild().getMembers();
 
+
         for (Member member : members) {
             MinecraftAccount MCA = MinecraftAccount.fromDiscordId(member.getId());
             if (MCA == null) {
@@ -562,6 +563,7 @@ public final class DiscordHook {
                 return;
             }
             ClanPlayer cp = clanManager.getClanPlayer(MCA.toGameProfile().getId());
+            if (cp == null) continue;
             if (cp.getClan() == null) {
                 Clan clan = clanManager.getClan(clanTag);
                 Role clanRole = getClanRole(clan.getStringName());
@@ -574,7 +576,6 @@ public final class DiscordHook {
                     }
                 }
             }
-            String formatedname = "[" + cp.getClan().getColorTag() + "] " + MCA.getUsername();
 
             if (member.getNickname().contains("[")) {
                 if (cp.getClan() == null) {

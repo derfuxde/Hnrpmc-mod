@@ -41,7 +41,7 @@ public final class PermissionsManager {
      * Prüft, ob ein Spieler eine Berechtigung hat.
      * Nutzt in Forge primär das LuckPerms API oder die native OP-Stufe.
      */
-    public boolean has(Player player, String permission) {
+    public static boolean has(Player player, String permission) {
         LuckPerms lp = Hnrpmc.getLuckPerms();
 
         if (player == null) {

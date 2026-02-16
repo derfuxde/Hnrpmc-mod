@@ -20,6 +20,7 @@ class CosmeticaCape extends BaseCape implements CustomCape {
 
         this.owner = owner;
         this.uploadTime = uploadTime;
+        this.showHemlet = true;
 
         ResourceLocation rl = ResourceLocation.fromNamespaceAndPath("hnrpmc", "cosmetics/" + id);
 
@@ -34,10 +35,15 @@ class CosmeticaCape extends BaseCape implements CustomCape {
     private final Cosmetic cosmetic;
     private final User owner;
     private final long uploadTime;
+    private final boolean showHemlet;
 
     @Override
     public User getOwner() {
         return this.owner;
+    }
+
+    public boolean showHelmet() {
+        return this.showHemlet;
     }
 
     @Override

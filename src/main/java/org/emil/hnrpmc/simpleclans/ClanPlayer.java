@@ -78,6 +78,7 @@ public class ClanPlayer implements Serializable, Comparable<ClanPlayer> {
         if (onlinePlayer != null) {
             displayName = String.valueOf(onlinePlayer.getName());
         } else {
+            if (SimpleClans.getInstance().getServer().getProfileCache() != null) return;
             GameProfile offlinePlayer = SimpleClans.getInstance().getServer().getProfileCache().get(uuid).get();
             displayName = offlinePlayer.getName() != null ? offlinePlayer.getName() : "null";
         }
@@ -118,6 +119,15 @@ public class ClanPlayer implements Serializable, Comparable<ClanPlayer> {
      */
     @Placeholder("name")
     public @Nullable String getName() {
+        if (displayName == null || displayName.isEmpty()) {
+            if (toPlayer() != null) {
+                if (!toPlayer().getName().getString().isEmpty()) {
+                    displayName = toPlayer().getName().getString().toLowerCase();
+                }
+                return toPlayer().getName().getString().toLowerCase();
+            }
+            return "";
+        }
         return displayName;
     }
 
@@ -137,6 +147,12 @@ public class ClanPlayer implements Serializable, Comparable<ClanPlayer> {
      */
     @Placeholder("clean_name")
     public String getCleanName() {
+        if (displayName == null) {
+            if (toPlayer() != null) {
+                return toPlayer().getName().getString().toLowerCase();
+            }
+            return "";
+        }
         return displayName.toLowerCase();
     }
 

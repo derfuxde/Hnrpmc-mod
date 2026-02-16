@@ -110,24 +110,19 @@ public final class PerPlayerSidebar {
             // DISPLAY (Sidebar)
             p.connection.send(new ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, obj));
         } else {
-            // UPDATE (2) - Nur den Titel aktualisieren, das Display-Paket ist nicht erneut nötig
             p.connection.send(new ClientboundSetObjectivePacket(obj, 2));
         }
 
-        // Status aktualisieren
         STATES.put(p.getUUID(), new State(st.objectiveId(), st.lastLines(), title));
     }
 
     private static String makeObjectiveId(UUID uuid) {
-        // max 16 chars! z.B. "ui" + 14 hex
         String h = Integer.toHexString(uuid.hashCode());
         h = (h.length() > 14) ? h.substring(0, 14) : String.format("%1$14s", h).replace(' ', '0');
-        return "ui" + h; // 16 chars
+        return "ui" + h;
     }
 
     private static String entryKey(String objId, int index) {
-        // entry key sollte kurz sein, pro Zeile stabil
-        // z.B. "l00uiabcd..." aber Achtung: entry wird angezeigt wenn du nicht mit Teams arbeitest!
         return "l" + String.format("%02d", index) + objId.substring(0, 4);
     }
 }

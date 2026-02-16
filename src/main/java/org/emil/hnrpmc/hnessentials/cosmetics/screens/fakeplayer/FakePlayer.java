@@ -14,10 +14,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
-import org.emil.hnrpmc.hnessentials.cosmetics.BackBling;
-import org.emil.hnrpmc.hnessentials.cosmetics.Hats;
-import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
-import org.emil.hnrpmc.hnessentials.cosmetics.ShoulderBuddies;
+import org.emil.hnrpmc.hnessentials.cosmetics.*;
 import org.emil.hnrpmc.hnessentials.cosmetics.utils.TextComponents;
 
 import javax.annotation.Nullable;

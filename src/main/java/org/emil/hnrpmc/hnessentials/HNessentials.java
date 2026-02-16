@@ -76,6 +76,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static org.emil.hnrpmc.Hnrpmc.MODID;
+
 public class HNessentials extends Hnrpmod {
     private static StorageManager storageManager;
     private MinecraftServer server;
@@ -83,7 +85,7 @@ public class HNessentials extends Hnrpmod {
     private static HomeManager homeManager;
     private static DatabaseManager databaseManager;
     public static final Logger LOGGER = LogUtils.getLogger();
-    private static final List<String> skins = List.of("Standard", "Shadow", "Gold", "Diamond", "Rainbow");
+    private static final List<String> skins = List.of("Standard", "Shadow", "Gold", "Diamond", "Rainbow", "Fly");
     public static final Map<UUID, Integer> clientPetSkins = new HashMap<>();
     public static int clientVipScore = 0;
     public Map<UUID, HNPlayerData> HNplayerDataMap = new HashMap<>();
@@ -92,9 +94,6 @@ public class HNessentials extends Hnrpmod {
     private CommandHelper commandHelper;
 
     private static HNessentials instance;
-
-
-    public static final String MODID = "simpleblocklock";
 
     // Registrierung des AttachmentTypes (ersetzt Capabilities)
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
@@ -153,11 +152,10 @@ public class HNessentials extends Hnrpmod {
 
         GeneralDefaultData GDD = getStorageManager().getGeneralData();
 
-
         for (ConfigCosmetic CC : GDD.getCosmetics()) {
             CosmeticType<Model> CT = (CosmeticType<Model>) cosmeticTypeMap.get(CC.getType().toLowerCase());
 
-            CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot()));
+            CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot(), CC.showHelmet()));
         }
 
         getStorageManager().saveGeneralData();
@@ -271,7 +269,7 @@ public class HNessentials extends Hnrpmod {
                 })
         );
 
-        // --- CLIENT --> SERVER ---
+        // --- SERVER --> CLIENT ---
         registrar.playToClient(
                 RequestScoreData.TYPE,
                 RequestScoreData.STREAM_CODEC,
@@ -353,6 +351,33 @@ public class HNessentials extends Hnrpmod {
                 ServerPacketHandler::handleAdminUpdate
         );
 
+        // CLIENT -> SERVER
+        registrar.playToServer(
+                NotAfkanymoreRequest.TYPE,
+                NotAfkanymoreRequest.STREAM_CODEC,
+                (payload, context) -> context.enqueueWork(() -> {
+                    ServerPlayer player = getServerPlayer(payload.playerUUID());
+                    HNPlayerData playerData = getStorageManager().getOrCreatePlayerData(player.getUUID());
+
+                    if (playerData == null) return;
+
+                    playerData.setAfk(!playerData.isAfk());
+
+                    getStorageManager().setPlayerData(player.getUUID(), playerData);
+                    getStorageManager().save(player.getUUID());
+
+                    ServerPacketHandler.sendDataToAll();
+
+                    for (ServerPlayer p : getServer().getPlayerList().getPlayers()) {
+                        if (p.getUUID().equals(player.getUUID())) continue;
+                        p.sendSystemMessage(Component.literal(playerData.isAfk() ? commandHelper.formatMessage("§7* §v{}§7 ist nun abwesend.", player.getName().getString()) : commandHelper.formatMessage("§7* §v{}§7 ist wieder da.", player.getName().getString())));
+                    }
+
+                    player.sendSystemMessage(Component.literal(
+                            playerData.isAfk() ? "§7Du bist nun abwesend." : "§7Du bist nicht länger abwesend."), false);
+                })
+        );
+
 
         // CLIENT -> SERVER
         registrar.playToServer(
@@ -382,7 +407,7 @@ public class HNessentials extends Hnrpmod {
                             for (ConfigCosmetic CC : CosmeticData) {
                                 CosmeticType<Model> CT = (CosmeticType<Model>) cosmeticTypeMap.get(CC.getType().toLowerCase());
 
-                                CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot()));
+                                CosmeticRegistry.register(create(CC.getID(), CC.getName(), CT, CT.getAssociatedSlot(), CC.showHelmet()));
                             }
                         } catch (Exception e) {
                             throw new RuntimeException(e);
@@ -486,12 +511,17 @@ public class HNessentials extends Hnrpmod {
     }
 
     public static final CustomCosmetic LONG_HAT = create("longhat", "Long Hat", CosmeticType.HAT, CosmeticSlot.HAT);
-    public static final CustomCosmetic WITCH_HAT = create("witchhat", "Witch Hat", CosmeticType.HAT, CosmeticSlot.HAT);
+    public static final CustomCosmetic WITCH_HAT = create("witchhat", "Witch Hat", CosmeticType.HAT, CosmeticSlot.HAT, false);
     public static final CustomCosmetic WASSER_MELONE = create("wassermelone", "Wassermelone", CosmeticType.HAT, CosmeticSlot.HAT);
     public static final CustomCosmetic MASK = create("mask", "Player Mask", CosmeticType.HAT, CosmeticSlot.HAT);
-    private static CustomCosmetic create(String id, String name, CosmeticType<?> type, CosmeticSlot slot) {
-        return new SimpleCosmetic(id, name, type, slot);
+    private static CustomCosmetic create(String id, String name, CosmeticType<?> type, CosmeticSlot slot, boolean showHelmet) {
+        return new SimpleCosmetic(id, name, type, slot, showHelmet);
     }
+
+    private static CustomCosmetic create(String id, String name, CosmeticType<?> type, CosmeticSlot slot) {
+        return new SimpleCosmetic(id, name, type, slot, true);
+    }
+
 
 
     private void registerEvents() {
@@ -517,10 +547,14 @@ public class HNessentials extends Hnrpmod {
     }
 
     public Map<UUID, HNPlayerData> getHNPlayerData() {
+        if (HNplayerDataMap == null) return new HashMap<>();
+        if (HNplayerDataMap.isEmpty()) return new HashMap<>();
         return HNplayerDataMap;
     }
 
     public Map<UUID, PlayerData> getPlayerData() {
+        if (playerDataMap == null) return new HashMap<>();
+        if (playerDataMap.isEmpty()) return new HashMap<>();
         return playerDataMap;
     }
 

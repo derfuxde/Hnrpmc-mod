@@ -24,6 +24,7 @@ import org.emil.hnrpmc.hnclaim.Claim;
 import org.emil.hnrpmc.hnclaim.HNClaims;
 import org.emil.hnrpmc.hnclaim.claimperms;
 import org.emil.hnrpmc.hnclaim.managers.ClaimManager;
+import org.emil.hnrpmc.hnclaim.menu.ClaimMenuHandler;
 import org.emil.hnrpmc.simpleclans.ChatBlock;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.emil.hnrpmc.simpleclans.commands.ClanSBaseCommand;
@@ -58,6 +59,10 @@ public final class ClaimCommand extends ClanSBaseCommand {
                 // /claim (Erstellt neuen Claim)
                 .executes(ctx -> executeClaim(ctx.getSource()))
                 // /claim list
+                .then(Commands.literal("manage")
+                        .then(Commands.argument("claim", StringArgumentType.string())
+                                .suggests(Suggestions.claimsfromplayer(plugin))
+                                .executes(this::executeManage)))
                 .then(Commands.literal("list")
                         .executes(ctx -> executeList(ctx.getSource())))
                 .then(Commands.literal("giveItem")
@@ -132,6 +137,25 @@ public final class ClaimCommand extends ClanSBaseCommand {
                 .map(claim -> claim.getName() + " " + claim.getCenter())
                 .collect(Collectors.joining(", "));
         ChatBlock.sendMessage(src, ChatFormatting.AQUA + "Alle Claims: " + ChatFormatting.WHITE + allClaims);
+        return 1;
+    }
+
+    private int executeManage(CommandContext<CommandSourceStack> ctx) {
+        String claimname = StringArgumentType.getString(ctx, "claim");
+        Claim claim = plugin.getClaimManager().getClaim(claimname);
+        CommandSourceStack src = ctx.getSource();
+        ServerPlayer player = src.getPlayer();
+        if (player == null) {
+            return 0;
+        }
+        if (claim != null && !Conditions.permission(player, "hnrpmc.claim.admin") && !claim.getownerUUID().equals(player.getUUID())) {
+            ChatBlock.sendMessage(src, ChatFormatting.RED + "Nur der Besitzer kann das.");
+            return 0;
+        } else if (claim == null) {
+            ChatBlock.sendMessage(src, ChatFormatting.RED + "Claim konnte nicht gefunden werden.");
+            return 0;
+        }
+        ClaimMenuHandler.openMainMenu(player, claim);
         return 1;
     }
 
@@ -430,6 +454,8 @@ public final class ClaimCommand extends ClanSBaseCommand {
         } else {
             ChatBlock.sendMessage(src, ChatFormatting.YELLOW + "Es wurden keine Änderungen vorgenommen.");
         }
+
+        plugin.getStorageManager().updateAllClaim();
 
         return 1;
     }

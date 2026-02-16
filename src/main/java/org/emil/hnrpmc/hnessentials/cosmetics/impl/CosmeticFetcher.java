@@ -55,7 +55,7 @@ public final class CosmeticFetcher {
 
     @Nullable
 
-    public static Model getModel(CosmeticType<Model> type, String id) {
+    public static Model getModel(CosmeticType<?> type, String id) {
 
         CustomCosmetic CC = API.getCosmetic(type, id).getOrNull();
 
@@ -101,7 +101,7 @@ public final class CosmeticFetcher {
 
 
 
-        Model model = new ModelImpl( type, id, CC.getName(), 1, headBounds, modelJsonContent, texturePath, CC.getOwner(), CC.getUploadTime(), false);
+        Model model = new ModelImpl( type, id, CC.getName(), 0x1, headBounds, modelJsonContent, texturePath, CC.getOwner(), CC.getUploadTime(), false, CC.showHelmet());
 
         return model;
 

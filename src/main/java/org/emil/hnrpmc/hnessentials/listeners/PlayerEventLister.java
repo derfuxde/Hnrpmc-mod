@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
@@ -29,6 +30,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -41,6 +43,7 @@ import org.emil.hnrpmc.hnessentials.ChestLocks.config.LockData;
 import org.emil.hnrpmc.hnessentials.cosmetics.SyncCosmeticPayload;
 import org.emil.hnrpmc.hnessentials.network.*;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
+import org.emil.hnrpmc.world.storage.WorldJsonStorage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -68,6 +71,12 @@ public class PlayerEventLister {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         plugin.getStorageManager().loadPlayerData(player.getUUID());
         HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(player.getUUID());
+
+        for (Level dimen : plugin.getServer().getAllLevels()) {
+            WorldJsonStorage.loaddimen( plugin.getServer(), dimen);
+        }
+
+        plugin.getStorageManager().loadGeneralData();
 
         plugin.getStorageManager().setPlayerData(player.getUUID(), playerData);
         GeneralDefaultData GGD = plugin.getStorageManager().getGeneralData();
@@ -185,6 +194,8 @@ public class PlayerEventLister {
                 LockMenuHandler.openMainMenu(player, be);
                 return;
             }
+
+            if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) return;
 
             if (!data.canAccess(player.getUUID())) {
                 event.setCanceled(true);

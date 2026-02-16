@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import org.emil.hnrpmc.Hnrpmc;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +24,7 @@ public abstract class MyMenu extends ChestMenu {
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
         // 1. Prüfen, ob der Klick überhaupt in einem gültigen Slot landete
+        SimpleClans.getInstance().getLogger().info("MyMenu click slot={} button={} type={}", slotId, button, clickType);
         if (slotId < 0) {
             super.clicked(slotId, button, clickType, player);
             return;
@@ -34,16 +36,10 @@ public abstract class MyMenu extends ChestMenu {
             action = (button == 0) ? ClickAction.PRIMARY : ClickAction.SECONDARY;
         }
 
-        // 3. Deinen Controller benachrichtigen (WICHTIG!)
         if (player instanceof ServerPlayer serverPlayer) {
-            // Hier rufen wir deine Logik auf
             InventoryController.handleInternalClick(serverPlayer, slotId, clickType, action);
         }
 
-        // 4. ITEM-ENTNAHME VERHINDERN:
-        // Wir rufen NICHT super.clicked auf, wenn es einer UNSERER Slots ist.
-        // Stattdessen schicken wir ein Inventar-Update an den Client, damit
-        // das Item visuell wieder zurück in den Slot springt.
         this.sendAllDataToRemote();
     }
 

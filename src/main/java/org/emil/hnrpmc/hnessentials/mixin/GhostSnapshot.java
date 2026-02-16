@@ -27,5 +27,6 @@ public record GhostSnapshot(
         boolean isSwimming,
         boolean isFallFlying,
         Map<EquipmentSlot, ItemStack> equipment,
-        SavedPlayerModel AbstractClientPlayer
+        SavedPlayerModel AbstractClientPlayer,
+        boolean islocal
 ) {}

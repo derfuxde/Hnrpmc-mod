@@ -34,6 +34,23 @@ class ModelImpl implements Model {
         this.usesUVRotations = usesUVRotations;
         this.type = type;
         this.name = name;
+        this.showHemlet = true;
+    }
+
+    ModelImpl(CosmeticType<?> type, String id, String name, int flags, Box bounds,
+              String model, String base64Texture, User owner, long uploadTime, boolean usesUVRotations, boolean showHemlet) {
+        this.id = id;
+        this.flags = flags;
+        this.bounds = bounds;
+
+        this.model = model;
+        this.texture = base64Texture;
+        this.owner = owner;
+        this.uploadTime = uploadTime;
+        this.usesUVRotations = usesUVRotations;
+        this.type = type;
+        this.name = name;
+        this.showHemlet = showHemlet;
     }
 
     private final String id;
@@ -47,6 +64,7 @@ class ModelImpl implements Model {
     private final boolean usesUVRotations;
     private final CosmeticType<?> type;
     private final String name;
+    private final boolean showHemlet;
 
     @Override
     public String getId() {
@@ -81,6 +99,10 @@ class ModelImpl implements Model {
     @Override
     public User getOwner() {
         return this.owner;
+    }
+
+    public boolean showHelmet() {
+        return this.showHemlet;
     }
 
     @Override
@@ -167,7 +189,8 @@ class ModelImpl implements Model {
                 json.get("texture").getAsString(),
                 new User(Yootil.toUUID(json.get("owner").getAsString()), json.get("ownerName").getAsString()),
                 json.get("uploaded").getAsLong(),
-                json.get("usesUvRotations").getAsBoolean()
+                json.get("usesUvRotations").getAsBoolean(),
+                json.get("showHelmet").getAsBoolean()
         );
     }
 }

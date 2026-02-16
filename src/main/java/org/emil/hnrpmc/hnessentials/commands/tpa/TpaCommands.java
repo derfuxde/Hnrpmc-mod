@@ -171,12 +171,13 @@ public final class TpaCommands extends ClanSBaseCommand {
         if (requester != null && !requester.hasDisconnected()) {
             if (deny) {
                 receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §cabgelehnt§7.", requester.getName().getString())));
+                requester.sendSystemMessage(Component.literal(formatMessage("§7Die Teleportierungsanfrage wurde von {} §cabgelehnt§7.", receiver.getName().getString())));
             } else {
                 if (!targetRequest.isHere()) {
                     requester.teleportTo(receiver.serverLevel(), receiver.getX(), receiver.getY(), receiver.getZ(), receiver.getYRot(), receiver.getXRot());
                     receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
                 } else {
-                    receiver.teleportTo(receiver.serverLevel(), targetRequest.getSendPos().x, targetRequest.getSendPos().y, targetRequest.getSendPos().z, receiver.getYRot(), receiver.getXRot());
+                    receiver.teleportTo(targetRequest.getSendDimension(), targetRequest.getSendPos().x, targetRequest.getSendPos().y, targetRequest.getSendPos().z, receiver.getYRot(), receiver.getXRot());
                     receiver.sendSystemMessage(Component.literal(formatMessage("§7Du hast die Teleportierungsanfrage von {} §aangenommen§7.", requester.getName().getString())));
                 }
             }

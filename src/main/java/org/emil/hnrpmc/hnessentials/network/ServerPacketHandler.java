@@ -51,6 +51,25 @@ public class ServerPacketHandler {
         }
     }
 
+    public static void sendoneDataToAll(UUID target) {
+        UUID uuid = target;
+
+        HNessentials plugin = HNessentials.getInstance();
+
+        HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(uuid);
+        Map<String, HNPlayerData> playerDatas = new HashMap<>();
+
+        playerDatas.put(String.valueOf(target), playerData);
+
+        ServerPlayer sp = plugin.getServer().getPlayerList().getPlayer(uuid);
+        if (sp == null) return;
+
+        if (playerDatas != null) {
+            String jsonString = gson.toJson(playerDatas);
+            PacketDistributor.sendToAllPlayers(new responsePlayerData(jsonString));
+        }
+    }
+
     public static void syncEntityData(LivingEntity entity) {
         if (entity.level() instanceof ServerLevel serverLevel) {
             EntityNBTPayload payload = new EntityNBTPayload(entity.getId(), entity.getPersistentData());
@@ -59,17 +78,17 @@ public class ServerPacketHandler {
         }
     }
 
-    public static void sendDataToAll(UUID target) {
-        UUID uuid = target;
+    public static void sendDataToAll() {
+        //UUID uuid = target;
 
         HNessentials plugin = HNessentials.getInstance();
 
-        HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(uuid);
+        //HNPlayerData playerData = plugin.getStorageManager().getOrCreatePlayerData(uuid);
         Map<String, HNPlayerData> playerDatas = plugin.getStorageManager().getAllPlayerData();//new HashMap<>();
         //playerDatas.put(String.valueOf(target), plugin.getStorageManager().getOrCreatePlayerData(uuid));
 
-        ServerPlayer sp = plugin.getServer().getPlayerList().getPlayer(uuid);
-        if (sp == null) return;
+        //ServerPlayer sp = plugin.getServer().getPlayerList().getPlayer(uuid);
+        //if (sp == null) return;
 
         if (playerDatas != null) {
             String jsonString = gson.toJson(playerDatas);
@@ -162,7 +181,7 @@ public class ServerPacketHandler {
                 sendToAllPlayers(
                         new CosmeticUpdatePayload(payload.target(), value)
                 );
-                sendDataToAll(payload.target());
+                sendDataToAll();
 
                 //sendData(payload.target());
 

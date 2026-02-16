@@ -33,6 +33,7 @@ import org.emil.hnrpmc.hnessentials.cosmetics.PlayerData;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.network.requestPlayerData;
 import org.emil.hnrpmc.simpleclans.SimpleClans;
+import org.emil.hnrpmc.simpleclans.managers.PermissionsManager;
 
 import java.util.*;
 
@@ -195,6 +196,7 @@ public class Flattener {
         if (entity instanceof Player player) {
 
             HNPlayerData hnPlayerData = HNessentials.getInstance().getHNPlayerData().get(entity.getUUID());
+            HNPlayerData localhnPlayerData = HNessentials.getInstance().getHNPlayerData().get(Minecraft.getInstance().player.getUUID());
 
             if (hnPlayerData == null) {
                 PacketDistributor.sendToServer(new requestPlayerData(Minecraft.getInstance().player.getUUID()));
@@ -209,13 +211,14 @@ public class Flattener {
                 float alpha = 0.5f;
 
 
+                if (Minecraft.getInstance().player == null) return;
                 if (player instanceof LocalPlayer Lplayer) {
-                    boolean canSeeVanish = SimpleClans.getInstance().getPermissionsManager().has(Lplayer, "essentials.admin.vanish.see");
+                    boolean canSeeVanish = localhnPlayerData.getTags().contains("vanish_see");//PermissionsManager.has(Lplayer, "essentials.admin.vanish.see");
                     if (canSeeVanish) {
                         renderGhost(Lplayer, poseStack, bufferSource, 0, alpha);
                     }
                 }else if (player instanceof RemotePlayer Rplayer) {
-                    boolean canSeeVanish = SimpleClans.getInstance().getPermissionsManager().has(Minecraft.getInstance().player, "essentials.admin.vanish.see");
+                    boolean canSeeVanish = localhnPlayerData.getTags().contains("vanish_see");//PermissionsManager.has(Minecraft.getInstance().player, "essentials.admin.vanish.see");
 
                     if(canSeeVanish) {
                         renderGhost(Rplayer, poseStack, bufferSource, 0, alpha);
@@ -269,6 +272,7 @@ public class Flattener {
     static Map<UUID, Vec3> lastDeltaMoventent = new HashMap<>();
 
     public static final List<GhostSnapshot> ghosts = new ArrayList<>();
+    public static final List<GhostSnapshot> loacalghosts = new ArrayList<>();
 
     public static void applyGhostEffect(PoseStack poseStack, Entity entity, float partialTicks) {
         Vec3 velocity = entity.getPosition(partialTicks);
@@ -281,7 +285,6 @@ public class Flattener {
         if (isMoving) {
             boolean isFrozen = false;
             if (entity.level() != null) {
-                // Der TickRateManager verwaltet den Status der Spielgeschwindigkeit
                 isFrozen = entity.level().tickRateManager().isFrozen();
             }
             if (entity.tickCount % 3 == 0 && !isFrozen) {
@@ -308,22 +311,44 @@ public class Flattener {
                     if (player instanceof LocalPlayer Lplayer) {
                         SavedPlayerModel savedPlayerModel = new SavedPlayerModel(Lplayer.clientLevel, Lplayer);
                         ghosts.add(new GhostSnapshot(
-                                player.position(),
-                                player.yBodyRot,
-                                player.yHeadRot,
-                                player.getXRot(),
+                                Lplayer.position(),
+                                Lplayer.yBodyRot,
+                                Lplayer.yHeadRot,
+                                Lplayer.getXRot(),
                                 otherSkin,
-                                entity.tickCount,
+                                Lplayer.tickCount,
                                 startTime,
                                 savedPlayerData,
-                                player.walkAnimation.position(),
-                                player.walkAnimation.speed(),
-                                player.attackAnim,
-                                player.isCrouching(),
-                                player.isSwimming(),
-                                player.isFallFlying(),
+                                Lplayer.walkAnimation.position(),
+                                Lplayer.walkAnimation.speed(),
+                                Lplayer.attackAnim,
+                                Lplayer.isCrouching(),
+                                Lplayer.isSwimming(),
+                                Lplayer.isFallFlying(),
                                 equipment,
-                                savedPlayerModel
+                                savedPlayerModel,
+                                true
+                        ));
+                    } else if (player instanceof RemotePlayer Rplayer) {
+                        SavedPlayerModel savedPlayerModel = new SavedPlayerModel(Rplayer.clientLevel, Rplayer);
+                        ghosts.add(new GhostSnapshot(
+                                Rplayer.position(),
+                                Rplayer.yBodyRot,
+                                Rplayer.yHeadRot,
+                                Rplayer.getXRot(),
+                                otherSkin,
+                                Rplayer.tickCount,
+                                startTime,
+                                savedPlayerData,
+                                Rplayer.walkAnimation.position(),
+                                Rplayer.walkAnimation.speed(),
+                                Rplayer.attackAnim,
+                                Rplayer.isCrouching(),
+                                Rplayer.isSwimming(),
+                                Rplayer.isFallFlying(),
+                                equipment,
+                                savedPlayerModel,
+                                true
                         ));
                     }
 
@@ -371,7 +396,8 @@ public class Flattener {
                         false,
                         false,
                         new HashMap<>(),
-                        null
+                        null,
+                        true
                 ));
             }
         }

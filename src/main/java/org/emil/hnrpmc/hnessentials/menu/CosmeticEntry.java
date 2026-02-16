@@ -74,14 +74,19 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
 
         if (player == null) return;
 
+
         List<BakableModel> hatbakableModels = new ArrayList<>();
-        Model hatmodel = CosmeticFetcher.getModel((CosmeticType<Model>) cosmetic.getType(), cosmetic.getId());
-        if (hatmodel != null) {
-            BakableModel hatbm = Models.createBakableModel(hatmodel);
-            if (hatbm != null) {
-                hatbakableModels.add(hatbm);
+        if (cosmetic != null) {
+            hatbakableModels = new ArrayList<>();
+            Model hatmodel = CosmeticFetcher.getModel(cosmetic.getType(), cosmetic.getId());
+            if (hatmodel != null) {
+                BakableModel hatbm = Models.createBakableModel(hatmodel);
+                if (hatbm != null) {
+                    hatbakableModels.add(hatbm);
+                }
             }
         }
+
 
         PlayerSkin skin = Minecraft.getInstance().getSkinManager().getInsecureSkin(player.getGameProfile());
 
@@ -149,8 +154,8 @@ public class CosmeticEntry extends ObjectSelectionList.Entry<CosmeticEntry> {
     @Override
     public boolean mouseClicked(double p_331676_, double p_330254_, int p_331536_) {
         parent.setSelected(this);
-        parent.currentcosmetic = this.cosmetic.getId();
-        parent.setCurrentcosmetic(cosmetic.getId());
+        parent.currentcosmetic = this.cosmetic != null ? this.cosmetic.getId() : "None";
+        parent.setCurrentcosmetic(this.cosmetic != null ? this.cosmetic.getId() : "None");
         return super.mouseClicked(p_331676_, p_330254_, p_331536_);
     }
 

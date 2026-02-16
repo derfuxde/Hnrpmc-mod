@@ -2,8 +2,10 @@ package org.emil.hnrpmc.hnessentials.cosmetics;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -17,12 +19,15 @@ import org.emil.hnrpmc.hnessentials.cosmetics.model.CosmeticStack;
 import org.emil.hnrpmc.hnessentials.cosmetics.model.Models;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.FakePlayer;
 import org.emil.hnrpmc.hnessentials.cosmetics.screens.fakeplayer.MenuRenderLayer;
+import org.emil.hnrpmc.hnessentials.cosmetics.utils.LinearAlgebra;
 import org.emil.hnrpmc.hnessentials.mixin.GohstMenuRenderLayer;
 import org.emil.hnrpmc.hnessentials.mixin.PlayerRendereType;
 import org.emil.hnrpmc.hnessentials.network.requestPlayerData;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.emil.hnrpmc.hnessentials.cosmetics.api.Model.SHOW_HAT_WITH_HELMET;
 
 public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> implements MenuRenderLayer, GohstMenuRenderLayer {
 
@@ -39,8 +44,8 @@ public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> imple
         stack.pushPose();
 
         for (BakableModel modelData : hats) {
-            if ((modelData.extraInfo() & Model.SHOW_HAT_WITH_HELMET) == 0 && player.hasItemInSlot(EquipmentSlot.HEAD)) {
-
+            if ((modelData.extraInfo() & SHOW_HAT_WITH_HELMET) == 0 && player.hasItemInSlot(EquipmentSlot.HEAD)) {
+                
             }
 
             if ((modelData.extraInfo() & Model.LOCK_HAT_ORIENTATION) == 0) {
@@ -115,6 +120,7 @@ public class Hats<T extends Player> extends CustomLayer<T, PlayerModel<T>> imple
         }
 
         List<BakableModel> bakableModels = new ArrayList<>();
+
         for (String hatid : data.hats()) {
             Model hatmodel = CosmeticFetcher.getModel(CosmeticType.HAT, hatid);
             if (hatmodel != null) {
