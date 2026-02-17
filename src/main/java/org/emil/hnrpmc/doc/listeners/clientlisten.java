@@ -36,7 +36,7 @@ public class clientlisten {
 
         while (OPEN_DOC_MENU.consumeClick()) {
             HNDoc.getInstance().getLoader().loadFromGithub();
-            mc.setScreen(new MainMenu(Component.literal("test")));
+            mc.setScreen(new MainMenu(Component.literal("HNRPMC mod Wiki")));
         }
     }
 }

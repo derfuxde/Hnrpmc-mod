@@ -16,27 +16,34 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.emil.hnrpmc.Hnrpmc;
+import org.emil.hnrpmc.doc.HNDoc;
+import org.emil.hnrpmc.doc.menu.MainMenu;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextScreen extends AbstractWidget {
-    private final Screen parent;
+    private final MainMenu parent;
     private final String content;
     private List<FormattedCharSequence> splitLines;
 
-    public TextScreen(int width, int height, int x, int y, Screen parent, Component title, String content) {
+    public TextScreen(int width, int height, int x, int y, MainMenu parent, Component title, String content) {
         super(x, y, width, height, title);
         this.parent = parent;
+        this.content = content;
+        this.parsedLines = new ArrayList<>();
+        parseAndSplit(content);
+    }
+
+    public TextScreen(TextScreen lastScreen, String content) {
+        super(lastScreen.getX(), lastScreen.getY(), lastScreen.width, lastScreen.getHeight(), lastScreen.getMessage());
+        this.parent = lastScreen.parent;
         this.content = content;
         this.parsedLines = new ArrayList<>();
         parseAndSplit(content);
@@ -204,7 +211,50 @@ public class TextScreen extends AbstractWidget {
                             if (clickedLine.getUrlholder().contains(word)) {
                                 System.out.println("Geklicktes Wort/URL: " + word);
 
-                                Util.getPlatform().openUri(clickedLine.getUrl());
+                                String url = clickedLine.getUrl();
+
+                                if (url.contains(":") && url.split(":")[0].equals("doc")) {
+                                    String path = "/" + url.split(":")[1];
+                                    String displayName = Arrays.stream(url.split("/")).toList().getLast();
+
+                                    for (Map.Entry<String, String> fileEntry : HNDoc.getInstance().getLoader().Files.entrySet()) {
+                                        String fullPath = fileEntry.getKey();
+                                        if (fullPath.replace("src/Doc", "").equals(path)) {
+                                            try {
+                                                //String fileContent = fileEntry.getValue();
+
+                                                //Gson gson = HNDoc.getInstance().getGson();
+                                                //Type listType = new TypeToken<Map<String, ?>>(){}.getType();
+                                                //Map<String, ?> item = gson.fromJson(fileContent, listType);
+
+                                                String itemPath = fullPath.replace("src/Doc", "");
+
+
+                                                String jsonResponse = HNDoc.getInstance().getLoader().Files.get(itemPath);
+
+
+                                                if (parent.currentText != null) {
+                                                    parent.currentText.active = false;
+                                                    parent.currentText.visible = false;
+                                                }
+
+                                                TextScreen ts = new TextScreen(this, jsonResponse);
+
+                                                parent.render(ts);
+                                                parent.currentText = ts;
+                                            } catch (Exception e) {
+                                                System.out.println("error " + e);
+                                                return false;
+                                            }
+
+
+                                            return true;
+                                        }
+                                    }
+                                } else {
+                                    Util.getPlatform().openUri(url);
+                                }
+
 
                                 return true;
                             } else {
@@ -237,7 +287,8 @@ public class TextScreen extends AbstractWidget {
         this.parsedLines.clear();
         String text = content.replace("<br>", "\n")
                 .replaceAll("<bb>(.*?)<\\.bb>", "§l$1§r")
-                .replaceAll("<_>(.*?)<\\._>", "§n$1§r");
+                .replaceAll("<_>(.*?)<\\._>", "§n$1§r")
+                .replaceAll("<->(.*?)<\\.->", "§m$1§r");
         text = convertHexTags(text);
 
         Pattern urlPattern = Pattern.compile("<URL>\\((.*?)\\)(.*?)<\\.URL>|<img>\\((.*?)\\)");
