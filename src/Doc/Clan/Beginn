@@ -1,4 +1,22 @@
-Claim System
-<br> 
-<br> 
-<->---------------------<.->
+<bb>Clan System<.bb><br>
+<->----------------------------------<.-><br>
+Ein Clan ist deine feste Gruppe auf dem Server: gemeinsamer Chat, gemeinsame Base (Clan-Home) und ein Rang-/Rechtesystem, damit nicht jeder alles darf.<br>
+<br>
+<bb>Für Einsteiger (3 Minuten Setup)<.bb><br>
+1) Clan erstellen: <#00d9ff>/clan create <Tag> <Name><.#><br>
+2) Leute einladen: <#00d9ff>/clan invite <Spieler><.#><br>
+3) Eingeladene nehmen an mit: <#00d9ff>/accept<.#> (oder lehnen ab mit <#00d9ff>/deny<.#>)<br>
+4) Clan-Chat: <#00d9ff>/clan chat join<.#> (zum verlassen: <#00d9ff>/clan chat leave<.#>)<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wichtige Seiten<.bb><br>
+- <URL>(doc:Clan/Commands)Clan Commands (Übersicht)<.URL><br>
+- <URL>(doc:Clan/Chat)Chat & Kanäle (Clan/Ally)<.URL><br>
+- <URL>(doc:Clan/Ranks)Ränge & Permissions<.URL><br>
+- <URL>(doc:Clan/Home_und_Regroup)Clan-Home & Regroup<.URL><br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Good to know<.bb><br>
+- Der <bb>Clan-Tag<.bb> ist das kurze Kürzel (ohne Leerzeichen), das im Chat auffällt.<br>
+- Der <bb>Clan-Name<.bb> darf länger sein und ist eher „Deko“ fürs Menü/Profil.<br>
+- Viele Aktionen (Allies, Ränge, Home setzen, etc.) hängen an Rechten. Wenn etwas nicht klappt: <URL>(doc:Clan/Ranks)Rang/Permissions checken<.URL>.<br>
