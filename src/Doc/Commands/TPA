@@ -1,0 +1,18 @@
+<bb>TPA (Teleport-Anfragen)<.bb><br>
+<->----------------------------------<.-><br>
+TPA ist ein „freundlicher“ Teleport: du fragst erst an, der andere nimmt an oder lehnt ab.<br>
+<br>
+<bb>Ich will zu jemandem<.bb><br>
+- <#00d9ff>/tpa <Spieler><.#>  → Anfrage senden, dass du zu ihm teleportieren möchtest.<br>
+<br>
+<bb>Jemand soll zu mir kommen<.bb><br>
+- <#00d9ff>/tpahere <Spieler><.#>  → Anfrage senden, dass er zu dir teleportiert.<br>
+<br>
+<bb>Anfragen beantworten<.bb><br>
+- <#00d9ff>/tpaccept<.#>  → letzte TPA-Anfrage annehmen.<br>
+- <#00d9ff>/tpadeny<.#>  → letzte TPA-Anfrage ablehnen.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Pro-Tipps<.bb><br>
+- Nutze TPA für „Hol mich am Netherportal“ oder „Komm kurz zum Shop“ statt Koordinaten zu spammen.<br>
+- Bei PvP/War-Situationen: erst klären, ob Teleports erlaubt sind – sonst wird’s unfair.<br>

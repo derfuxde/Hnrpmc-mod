@@ -1,0 +1,17 @@
+<bb>Clan-Home & Regroup<.bb><br>
+<->----------------------------------<.-><br>
+Das Clan-Home ist ein gemeinsamer Teleportpunkt für den Clan (z. B. eure Hauptbase). „Regroup“ ist dafür da, die Gruppe schnell zusammenzuziehen.<br>
+<br>
+<bb>Clan-Home setzen / löschen<.bb><br>
+- <#00d9ff>/clan home set<.#>  → setzt das Clan-Home auf deine aktuelle Position.<br>
+- <#00d9ff>/clan home clear<.#>  → entfernt das Clan-Home.<br>
+- <#00d9ff>/clan home<.#>  → teleportiert dich zum Clan-Home (wenn gesetzt).<br>
+<br>
+<bb>Regroup (schnell sammeln)<.bb><br>
+- <#00d9ff>/clan regroup me<.#>  → versucht, Clanmitglieder zu dir zu regroupen (nur mit Recht).<br>
+- <#00d9ff>/clan regroup home<.#>  → sammelt am Clan-Home (nur mit Recht).<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Pro-Tipps<.bb><br>
+- Setze das Clan-Home <bb>im Claim<.bb> und sichere wichtige Kisten zusätzlich mit Chestlocks.<br>
+- Wenn dein Clan größer wird: Gib Home/Regroup nur Officers/Leadern, sonst wird es „Teleport-Chaos“.<br>

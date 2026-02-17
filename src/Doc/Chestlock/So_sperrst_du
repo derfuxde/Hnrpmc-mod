@@ -1,0 +1,18 @@
+<bb>So sperrst du Container / Entities<.bb><br>
+<->----------------------------------<.-><br>
+<bb>Container sperren<.bb><br>
+1) Halte <bb>nichts</bb> in der Haupt-Hand (Mainhand leer).<br>
+2) Schleiche (Shift) und mache <#00d9ff>Rechtsklick<.#> auf den Container.<br>
+3) Wenn noch nicht gesperrt: Es wird eine Sperre gesetzt und du bist Owner.<br>
+4) Wenn schon gesperrt: Es öffnet sich das Schloss-Menü (nur Owner/Vertraute).<br>
+<br>
+<bb>Welche Container gehen?<.bb><br>
+Alles, was in Minecraft als „Container“ zählt (typisch: Kisten, Barrels, Shulker, Truhenwagen, etc.). Wenn etwas nicht reagiert, ist es wahrscheinlich kein Container oder wird serverseitig nicht als lockbar behandelt.<br>
+<br>
+<bb>Entities sperren (wenn unterstützt)<.bb><br>
+Das System kann auch bestimmte Entities schützen (z. B. Entities mit Inventar/Interaktionen). Der Workflow ist derselbe: Shift + Rechtsklick mit leerer Hand.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Fehlerbilder<.bb><br>
+- „Ich kann nicht sperren“ → du bist im fremden Claim oder hast keine Rechte.<br>
+- „Menü geht nicht auf“ → du bist nicht Owner/Trusted oder der Container ist nicht (mehr) vorhanden.<br>

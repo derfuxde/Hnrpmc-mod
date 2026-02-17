@@ -1,0 +1,19 @@
+<bb>Claim System<.bb><br>
+<->----------------------------------<.-><br>
+Claims schützen dein Gebiet vor Griefing: in deinem Claim können andere Spieler (je nach Einstellung) nichts abbauen, platzieren oder mit Redstone/Controllern rumspielen.<br>
+<br>
+<bb>Quick-Start<.bb><br>
+1) Stell dich in die Mitte deiner Base und nutze: <#00d9ff>/claim<.#><br>
+2) Öffne die Verwaltung: <#00d9ff>/claim manage <ClaimName><.#><br>
+3) Größe anpassen: <#00d9ff>/claim giveItem<.#> (Claim-Tool) und Ecken verschieben.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wichtige Seiten<.bb><br>
+- <URL>(doc:Claim/Erstellen)Claim erstellen & Basics<.URL><br>
+- <URL>(doc:Claim/Claim_Tool)Claim-Tool (Ecken verschieben)<.URL><br>
+- <URL>(doc:Claim/Permissions)Permissions & Freigaben<.URL><br>
+- <URL>(doc:Claim/Commands)Claim Commands (Übersicht)<.URL><br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Hinweis<.bb><br>
+Ein Claim ersetzt nicht alles: wertvolle Container am besten zusätzlich mit <URL>(doc:Chestlock/Beginn)Chestlocks<.URL> sichern.<br>

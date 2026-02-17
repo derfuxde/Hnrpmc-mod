@@ -1,0 +1,21 @@
+<bb>Clan-Chat & Ally-Chat<.bb><br>
+<->----------------------------------<.-><br>
+Du hast zwei „private“ Chat-Kanäle: Clan und Allies. Das ist perfekt für Koordination, ohne dass der globale Chat vollgespammt wird.<br>
+<br>
+<bb>Clan-Chat<.bb><br>
+- <#00d9ff>/clan chat join<.#>  → du schreibst ab jetzt automatisch in den Clan-Chat.<br>
+- <#00d9ff>/clan chat leave<.#>  → zurück in den normalen Chat.<br>
+- <#00d9ff>/clan chat mute<.#>  → Clan-Chat ausblenden.<br>
+- <#00d9ff>/clan chat <Nachricht…><.#>  → eine einzelne Nachricht in den Clan-Chat (ohne join).<br>
+- Shortcut: <#00d9ff>/.<Nachricht…><.#>  → sendet direkt in den Clan-Chat.<br>
+<br>
+<bb>Ally-Chat (mit verbündeten Clans)<.bb><br>
+- <#00d9ff>/ally join<.#>  → du schreibst ab jetzt automatisch in den Ally-Chat.<br>
+- <#00d9ff>/ally leave<.#>  → zurück in den normalen Chat.<br>
+- <#00d9ff>/ally mute<.#>  → Ally-Chat ausblenden.<br>
+- <#00d9ff>/ally <Nachricht…><.#>  → eine einzelne Nachricht in den Ally-Chat.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Chat-Etikette (damit’s nicht eskaliert)<.bb><br>
+- Koordination kurz & klar: „2 Leute am Netherportal“, „Regroup in 30s“, etc.<br>
+- Keine Base-Koordinaten im Ally-Chat posten, wenn du nicht 100% sicher bist, wer mitliest.<br>

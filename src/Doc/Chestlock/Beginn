@@ -1,0 +1,18 @@
+<bb>Chestlock System<.bb><br>
+<->----------------------------------<.-><br>
+Chestlocks sind deine „Schlösser“ für Container <bb>und<.bb> bestimmte Entities. Damit kannst du selbst in einem öffentlichen Bereich verhindern, dass jemand deine Kisten/Barrels/Shulker/etc. öffnet.<br>
+<br>
+<bb>Quick-Start<.bb><br>
+1) An den Container gehen.<br>
+2) <#00d9ff>Shift + Rechtsklick<.#> mit <bb>leerem</bb> Mainhand → sperrt (oder öffnet das Menü, wenn schon gesperrt).<br>
+3) Im Menü „Spieler verwalten“ → Freunde hinzufügen.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wichtige Seiten<.bb><br>
+- <URL>(doc:Chestlock/So_sperrst_du)So sperrst du Container/Entities<.URL><br>
+- <URL>(doc:Chestlock/Trusted_und_Menu)Vertraute Spieler & Menü erklärt<.URL><br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wichtig<.bb><br>
+- Chestlocks sind <bb>zusätzlich<.bb> zu Claims sinnvoll: Claim schützt das Gebiet, Chestlock schützt einzelne Kisten.<br>
+- In fremden Claims kannst du nichts „einfach so“ sperren (Owner/Permissions zählen).<br>

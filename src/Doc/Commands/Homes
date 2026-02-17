@@ -1,0 +1,22 @@
+<bb>Homes (SetHome / Home / Homes / DelHome)<.bb><br>
+<->----------------------------------<.-><br>
+Homes sind persönliche Teleportpunkte. Ideal für Base, Farm, Netherhub, etc.<br>
+<br>
+<bb>Home setzen<.bb><br>
+- <#00d9ff>/sethome <Name><.#>  → setzt ein Home auf deine aktuelle Position.<br>
+Beispiel: <#aaaaaa>/sethome base<.#> oder <#aaaaaa>/sethome farm<.#><br>
+<br>
+<bb>Teleport zum Home<.bb><br>
+- <#00d9ff>/home <Name><.#>  → teleportiert dich zu diesem Home.<br>
+- <#00d9ff>/homes<.#>  → listet deine Homes.<br>
+<br>
+<bb>Home löschen<.bb><br>
+- <#00d9ff>/delhome <Name><.#>  → entfernt dieses Home.<br>
+<br>
+<bb>Spawn<.bb><br>
+- <#00d9ff>/spawn<.#>  → teleportiert dich zum Server-Spawn.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Tipps<.bb><br>
+- Benenne Homes eindeutig: <#aaaaaa>base, nether, farm1, shop, end, …<.#><br>
+- Wenn du „zu viele“ Homes setzen willst, kann es ein Limit geben (serverseitig).<br>

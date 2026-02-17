@@ -1,0 +1,23 @@
+<bb>Vertraute Spieler & Menü erklärt<.bb><br>
+<->----------------------------------<.-><br>
+Das Schloss-Menü ist deine zentrale Verwaltung: Wer darf öffnen? Wer ist Owner? Wie entferne ich die Sperre?<br>
+<br>
+<bb>Menü öffnen<.bb><br>
+- Shift + Rechtsklick (Mainhand leer) auf den gesperrten Container.<br>
+<br>
+<bb>Hauptmenü (3 Buttons)<.bb><br>
+- <#00d9ff>Spieler verwalten<.#>  → Trusted-Liste (wer darf zugreifen).<br>
+- <#00d9ff>Besitzer<.#>  → zeigt den Owner (nur Info).<br>
+- <#00d9ff>Sperre entfernen<.#>  → entfernt die Sperre komplett (danach ist es wieder „normal“).<br>
+<br>
+<bb>Trusted-Liste (Vertraute Spieler)<.bb><br>
+- In der Liste siehst du alle Trusted-Spieler als Köpfe.<br>
+- Klick auf einen Kopf → entfernt diesen Spieler aus der Trusted-Liste.<br>
+- „Online-Spieler hinzufügen“ → öffnet eine Liste aller aktuell online Spieler.<br>
+- Klick auf einen Spieler-Kopf in der Online-Liste → fügt ihn als Trusted hinzu.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Best Practice<.bb><br>
+- Gib Trusted nur Leuten, denen du wirklich vertraust.<br>
+- Für „öffentliche“ Bereiche lieber Claim-Permissions nutzen statt alle Kisten zu vertrauen.<br>
+- Wenn du umbaust: Sperren entfernen und neu setzen kann manchmal cleaner sein als 20 Leute einzeln rauszuklicken.<br>

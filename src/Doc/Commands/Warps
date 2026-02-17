@@ -1,0 +1,14 @@
+<bb>Warps (warp / setWarp / delWarp)<.bb><br>
+<->----------------------------------<.-><br>
+Warps sind serverweite Teleportpunkte (z. B. Spawn, Shop, Event-Area).<br>
+<br>
+<bb>Warp nutzen (Spieler)<.bb><br>
+- <#00d9ff>/warp<.#>  → listet verfügbare Warps.<br>
+- <#00d9ff>/warp <Name><.#>  → teleportiert dich zum Warp.<br>
+<br>
+<bb>Warp erstellen / löschen (meist Admin/Team)<.bb><br>
+- <#00d9ff>/setWarp <Name><.#>  → setzt einen Warp auf deine aktuelle Position.<br>
+- <#00d9ff>/delWarp <Name><.#>  → löscht einen Warp.<br>
+<br>
+<->----------------------------------<.-><br>
+Tipp: Warps sind ideal für „öffentliche“ Orte. Für deine privaten Orte sind Homes besser: <URL>(doc:Commands/Homes)Homes<.URL>.<br>

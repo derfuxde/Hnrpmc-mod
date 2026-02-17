@@ -1,0 +1,14 @@
+<bb>Admin-Commands (Fly, Vanish, Watch, etc.)<.bb><br>
+<->----------------------------------<.-><br>
+Diese Befehle sind für Team/Moderation gedacht und oft per Permission geschützt.<br>
+<br>
+<bb>Übersicht<.bb><br>
+- <#00d9ff>/fly<.#>  → Flugmodus togglen.<br>
+- <#00d9ff>/vanish<.#>  → unsichtbar werden (für Moderation).<br>
+- <#00d9ff>/watch <Spieler><.#>  → Spieler beobachten (Anti-Grief / Support).<br>
+- <#00d9ff>/restart<.#>  → Server-Neustart auslösen (nur Admins).<br>
+- <#00d9ff>/afk<.#>  → AFK-Status togglen.<br>
+- <#00d9ff>/tpo <Spieler><.#>  → zu einem Spieler teleportieren (auch hilfreich, wenn er nicht bei dir ist).<br>
+<br>
+<->----------------------------------<.-><br>
+Hinweis: Wenn du „keine Rechte“ bekommst, ist das normal – das ist kein Bug, sondern Absicherung.<br>

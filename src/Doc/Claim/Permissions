@@ -1,0 +1,28 @@
+<bb>Permissions & Freigaben<.bb><br>
+<->----------------------------------<.-><br>
+Du entscheidest, was andere in deinem Claim dürfen. Es gibt zwei Ebenen:<br>
+- <bb>Global<.bb> (gilt für alle, die nicht extra eingetragen sind)<br>
+- <bb>Pro Spieler / pro Clan<.bb> (Feintuning für einzelne Personen oder Gruppen)<br>
+<br>
+<bb>Am einfachsten: GUI nutzen<.bb><br>
+- <#00d9ff>/claim manage <ClaimName><.#>  → öffnet das Claim-Menü.<br>
+Dort kannst du globale Rechte togglen und Spieler/Clans hinzufügen bzw. entfernen.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wichtige Permission-Typen (was bedeutet was?)<.bb><br>
+- <#00d9ff>place<.#>  → Blöcke platzieren<br>
+- <#00d9ff>break<.#>  → Blöcke abbauen<br>
+- <#00d9ff>blockinteractions<.#>  → Kisten, Türen, Knöpfe, Hebel, etc. benutzen<br>
+- <#00d9ff>redstone<.#>  → Redstone-Mechanik beeinflussen (z. B. Hebel/Schalter-Systeme)<br>
+- <#00d9ff>itementeractions<.#>  → Items benutzen, die „interagieren“ (z. B. Eimer, Lead, etc.)<br>
+- <#00d9ff>pickupitem<.#>  → Items aufsammeln<br>
+- <#00d9ff>entityinteractions<.#>  → Tiere/Entities benutzen (z. B. reiten, füttern, Inventare von Entities)<br>
+- <#00d9ff>pvp<.#>  → PvP im Claim<br>
+- <#00d9ff>hitentities<.#>  → Entities schlagen (auch Mobs/Tiere, je nach Kontext)<br>
+- <#00d9ff>dropitem<.#>  → Items droppen (hilft gegen „Drop-Tricks“ in manchen Setups)
+<br>
+<->----------------------------------<.-><br>
+<bb>Empfehlungen (sicher & alltagstauglich)<.bb><br>
+- Globale Rechte eher <bb>streng<.bb> lassen (nur owner).<br>
+- Für Freunde/Clanmitglieder: gezielt pro Spieler/Clan freigeben.<br>
+- Für Shops/öffentliche Bereiche: nur <#00d9ff>blockinteractions<.#> erlauben, aber <#00d9ff>break/place<.#> aus lassen.<br>

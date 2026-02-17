@@ -1,0 +1,28 @@
+<bb>Claim Commands (Übersicht)<.bb><br>
+<->----------------------------------<.-><br>
+<bb>Basics<.bb><br>
+- <#00d9ff>/claim<.#>  → erstellt einen neuen Claim (Standardgröße, Auto-Name).<br>
+- <#00d9ff>/claim list<.#>  → listet alle Claims (mit Center-Coords).<br>
+- <#00d9ff>/claim info <ClaimName><.#>  → Infos zu einem Claim.<br>
+- <#00d9ff>/claim manage <ClaimName><.#>  → öffnet das GUI zur Verwaltung.<br>
+- <#00d9ff>/claim delete <ClaimName><.#>  → Claim löschen.<br>
+<br>
+<bb>Claim-Tool<.bb><br>
+- <#00d9ff>/claim giveItem<.#>  → gibt dir das Claim-Tool (Stick) zum Verschieben der Ecken.<br>
+<br>
+<bb>Permissions (global)<.bb><br>
+- <#00d9ff>/claim setperm <ClaimName> add <Permission><.#>  → Permission global erlauben.<br>
+- <#00d9ff>/claim setperm <ClaimName> remove <Permission><.#>  → Permission global verbieten.<br>
+→ Liste der Permissions: siehe <URL>(doc:Claim/Permissions)Permissions & Freigaben<.URL>.<br>
+<br>
+<bb>Permissions (pro Spieler / Clan)<.bb><br>
+- <#00d9ff>/claim playerperm <PlayerOderClan> <ClaimName> add <Permission><.#><br>
+- <#00d9ff>/claim playerperm <PlayerOderClan> <ClaimName> remove <Permission><.#><br>
+Tipp: Am bequemsten ist das GUI: <#00d9ff>/claim manage<.#>.<br>
+<br>
+<bb>Bans (hartes „Nein“ für bestimmte Spieler)<.bb><br>
+- <#00d9ff>/claim ban <ClaimName> <Spieler><.#>  → Spieler vom Claim bannen.<br>
+- <#00d9ff>/claim unban <ClaimName> <Spieler><.#>  → Bann entfernen.<br>
+<br>
+<->----------------------------------<.-><br>
+Hinweis: Manche Subcommands sind evtl. nur für Admins/Owner gedacht (Permission-basiert).<br>

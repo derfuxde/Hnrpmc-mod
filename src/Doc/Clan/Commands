@@ -1,0 +1,45 @@
+<bb>Clan Commands (Übersicht)<.bb><br>
+<->----------------------------------<.-><br>
+Hier sind die wichtigsten Befehle. Manche Aktionen brauchen Rang-Rechte im Clan (siehe: <URL>(doc:Clan/Ranks)Ränge & Permissions<.URL>).<br>
+<br>
+<bb>Basis (für alle)<.bb><br>
+- <#00d9ff>/clan<.#>  → öffnet (falls aktiviert) das Clan-Menü / zeigt Hilfe.<br>
+- <#00d9ff>/clan help<.#>  → zeigt die Befehlsübersicht.<br>
+- <#00d9ff>/clan create <Tag> <Name><.#>  → Clan erstellen.<br>
+- <#00d9ff>/clan invite <Spieler><.#>  → Spieler einladen.<br>
+- <#00d9ff>/accept<.#>  → Einladung/Request annehmen (Clan, Ally, War, etc.).<br>
+- <#00d9ff>/deny<.#>  → Einladung/Request ablehnen.<br>
+- <#00d9ff>/clan resign confirm<.#>  → Clan verlassen (mit Bestätigung).<br>
+<br>
+<bb>Info & Übersicht<.bb><br>
+- <#00d9ff>/clan profile<.#>  → Clan-Profil (Beschreibung, Tag, etc.).<br>
+- <#00d9ff>/clan roster<.#>  → Mitgliederliste.<br>
+- <#00d9ff>/clan stats<.#>  → Statistik-Ansicht (wenn freigeschaltet).<br>
+- <#00d9ff>/clan vitals<.#>  → „Vitals“ (wichtige Clan-Basics).<br>
+- <#00d9ff>/clan coords<.#>  → Positionen der online Clanmitglieder (wenn erlaubt).<br>
+<br>
+<bb>Führung & Verwaltung<.bb><br>
+- <#00d9ff>/clan kick <Spieler><.#>  → Mitglied entfernen.<br>
+- <#00d9ff>/clan description <Text…><.#>  → Clan-Beschreibung setzen.<br>
+- <#00d9ff>/clan color <Farbe><.#>  → Clan-Farbe ändern (für Chat/Anzeige).<br>
+- <#00d9ff>/clan setbanner<.#>  → Banner des Clans übernehmen (mit Banner in Hand).<br>
+<br>
+<bb>Allies / Rivals / War<.bb><br>
+- <#00d9ff>/clan ally add <Clan><.#>  → Allianz anfragen.<br>
+- <#00d9ff>/clan ally remove <Clan><.#>  → Allianz lösen.<br>
+- <#00d9ff>/clan rival add <Clan><.#>  → Rivalität setzen.<br>
+- <#00d9ff>/clan rival remove <Clan><.#>  → Rivalität entfernen.<br>
+- <#00d9ff>/clan war start <Clan><.#>  → Krieg starten (Request).<br>
+- <#00d9ff>/clan war end <Clan><.#>  → Krieg beenden.<br>
+<br>
+<bb>Friendly Fire<.bb><br>
+- <#00d9ff>/clan clanff allow<.#>  → Friendly Fire an.<br>
+- <#00d9ff>/clan clanff block<.#>  → Friendly Fire aus.<br>
+<br>
+<bb>Bulletin Board (BB)<.bb><br>
+- <#00d9ff>/clan bb<.#>  → BB anzeigen.<br>
+- <#00d9ff>/clan bb add <Nachricht…><.#>  → Nachricht ans BB.<br>
+- <#00d9ff>/clan bb clear<.#>  → BB leeren (nur mit Recht).<br>
+<br>
+<->----------------------------------<.-><br>
+Tipp: Wenn du nach einem Befehl TAB drückst, siehst du oft gültige Argumente (Spieler/Clan-Namen, etc.).<br>

@@ -1,0 +1,27 @@
+<bb>Block-Logger (Lookup / Rollback)<.bb><br>
+<->----------------------------------<.-><br>
+Der Block-Logger protokolliert Aktionen wie Place/Break/Interact und hilft bei Supportfällen: „Wer hat hier die Truhe geklaut?“ oder „Mach das wieder rückgängig“.<br>
+<br>
+<bb>Lookup (anzeigen / suchen)<.bb><br>
+- <#00d9ff>/co lookup <Args…><.#>  → zeigt Log-Einträge.<br>
+Wichtige Args (Format: <bb>key:value<.bb>):<br>
+- <#00d9ff>t:<.#>Zeit in Minuten (z. B. <#aaaaaa>t:60<.#> = letzte 60 Min)<br>
+- <#00d9ff>r:<.#>Radius in Blöcken (z. B. <#aaaaaa>r:20<.#>)<br>
+- <#00d9ff>u:<.#>User (z. B. <#aaaaaa>u:Steve<.#>)<br>
+- <#00d9ff>e:<.#>Exclude User (z. B. <#aaaaaa>e:Griefer1,Griefer2<.#>)<br>
+- <#00d9ff>a:<.#>Action (z. B. <#aaaaaa>a:break<.#>, <#aaaaaa>a:place<.#>, <#aaaaaa>a:interact<.#>)<br>
+- <#00d9ff>obj:<.#>Objekt/Block-Name enthält (z. B. <#aaaaaa>obj:chest<.#>)<br>
+- <#00d9ff>limit:<.#>max. Einträge (z. B. <#aaaaaa>limit:15<.#>)<br>
+- <#00d9ff>page:<.#>Seite (z. B. <#aaaaaa>page:2<.#>)<br>
+<br>
+<bb>Beispiele<.bb><br>
+- <#aaaaaa>/co lookup t:30 r:15 a:break<.#>  → wer hat im Umkreis 15 in den letzten 30 Min Blöcke abgebaut?<br>
+- <#aaaaaa>/co lookup t:120 r:10 u:Steve obj:shulker<.#>  → Steve + Shulker im Umkreis 10, letzte 2 Std<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Rollback (rückgängig machen)<.bb><br>
+- <#00d9ff>/co rollback <Args…><.#>  → erstellt eine Rollback-Anfrage (mit Sicherheitsabfrage).<br>
+Danach bekommst du eine ID und musst bestätigen:<br>
+- <#00d9ff>/co rollback confirm <ID><.#>
+<br>
+Wichtig: Die Bestätigung läuft nach kurzer Zeit ab (Sicherheitsfeature).<br>

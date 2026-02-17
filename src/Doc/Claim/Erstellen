@@ -1,0 +1,23 @@
+<bb>Claim erstellen & Basics<.bb><br>
+<->----------------------------------<.-><br>
+<bb>1) Claim erstellen<.bb><br>
+- Stelle dich in die Mitte des Bereichs, den du schützen willst.<br>
+- Tippe: <#00d9ff>/claim<.#><br>
+→ Es wird ein neuer Claim um dich herum erstellt (Standardgröße). Der Name wird automatisch vergeben, z. B. <#aaaaaa>DeinName_claim-1<.#>.<br>
+<br>
+<bb>2) Claim finden / anzeigen<.bb><br>
+- <#00d9ff>/claim list<.#>  → zeigt dir deine Claims.<br>
+- <#00d9ff>/claim info <ClaimName><.#>  → Infos zu einem Claim (Owner, Größe, etc.).<br>
+<br>
+<bb>3) Claim verwalten<.bb><br>
+- <#00d9ff>/claim manage <ClaimName><.#>  → öffnet das GUI zum Einstellen von Permissions.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Wie Schutz funktioniert (einfach erklärt)<.bb><br>
+- Ein Claim schützt den Bereich „senkrecht“: vom Boden bis hoch in den Himmel (nicht nur eine Y-Höhe).<br>
+- Standardmäßig darf nur der Owner alles.<br>
+- Du kannst gezielt freigeben: bauen, abbauen, Redstone, Container öffnen, PvP, etc. (siehe: <URL>(doc:Claim/Permissions)Permissions<.URL>).<br>
+<br>
+<bb>Wenn etwas nicht klappt<.bb><br>
+- Du bist evtl. im Limit (maximale Claim-Fläche).<br>
+- Du bist in einem fremden Claim (dort hilft nur: Owner fragen oder Permission bekommen).<br>

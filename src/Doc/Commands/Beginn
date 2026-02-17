@@ -1,0 +1,12 @@
+<bb>Nützliche Commands<.bb><br>
+<->----------------------------------<.-><br>
+Hier findest du die „Quality of Life“-Befehle aus HNessentials (und ein paar Admin-Tools). Wenn du neu bist: fang mit Homes/TPA an – das spart dir 90% Laufwege.<br>
+<br>
+<bb>Spieler-Komfort<.bb><br>
+- <URL>(doc:Commands/Homes)Homes (SetHome / Home / Homes / DelHome)<.URL><br>
+- <URL>(doc:Commands/TPA)TPA (Teleport-Anfragen)<.URL><br>
+- <URL>(doc:Commands/Warps)Warps (Warp / setWarp / delWarp)<.URL><br>
+<br>
+<bb>Admin / Moderation<.bb><br>
+- <URL>(doc:Commands/Admin)Admin-Commands (Fly, Vanish, Watch, etc.)<.URL><br>
+- <URL>(doc:Commands/Logger)Block-Logger (Lookup / Rollback)<.URL><br>

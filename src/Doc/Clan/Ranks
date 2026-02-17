@@ -1,0 +1,29 @@
+<bb>Ränge & Permissions<.bb><br>
+<->----------------------------------<.-><br>
+Ränge sind dein „Rechtesystem“ im Clan. Damit kannst du z. B. nur 1–2 Leute als Leitung haben, während normale Member nicht kicken, nicht Allies verwalten und nicht am Clan-Home rumschrauben.<br>
+<br>
+<bb>Wie das System grob tickt<.bb><br>
+- Jeder Member hat genau <bb>einen<.bb> Rang (z. B. Member, Officer, Leader).<br>
+- Ein Rang hat eine Liste an <bb>Permissions<.bb> (was darf der Rang?).<br>
+- Manche Clan-Befehle prüfen zusätzlich „Rang-Rechte“ wie <#00d9ff>INVITE, KICK, ALLY, WAR, HOME, BB, …<.#><br>
+<br>
+<bb>Rang-Befehle (Kurzreferenz)<.bb><br>
+- <#00d9ff>/clan rank list<.#>  → alle Ränge anzeigen.<br>
+- <#00d9ff>/clan rank create <Name><.#>  → neuen Rang erstellen.<br>
+- <#00d9ff>/clan rank delete <Name><.#>  → Rang löschen.<br>
+- <#00d9ff>/clan rank assign <Spieler> <Rang><.#>  → Rang geben.<br>
+- <#00d9ff>/clan rank unassign <Spieler><.#>  → Rang entfernen (fällt dann auf Default zurück).<br>
+- <#00d9ff>/clan rank setdefault <Rang><.#>  → Standardrang für neue Member.<br>
+- <#00d9ff>/clan rank removedefault<.#>  → Standardrang zurücksetzen.<br>
+- <#00d9ff>/clan rank setdisplayname <Rang> <Anzeigename…><.#>  → hübscher Name im Chat/Menü.<br>
+- <#00d9ff>/clan rank permissions <Rang><.#>  → zeigt die Permissions des Rangs.<br>
+- <#00d9ff>/clan rank permissions add <Rang> <Permission><.#>  → Permission hinzufügen.<br>
+- <#00d9ff>/clan rank permissions remove <Rang> <Permission><.#>  → Permission entfernen.<br>
+<br>
+<->----------------------------------<.-><br>
+<bb>Empfohlenes Setup (funktioniert fast immer)<.bb><br>
+1) <bb>Member<.bb>: Chat, Basics, BB lesen.<br>
+2) <bb>Officer<.bb>: einladen, kicken, BB schreiben, ggf. Home setzen.<br>
+3) <bb>Leader<.bb>: alles (Allies, War, Ränge, Banner, etc.).<br>
+<br>
+Tipp: Fang klein an. Wenn du zu viele Rechte verteilst, wird’s schnell chaotisch („Wer hat das Home versetzt?!“).<br>
